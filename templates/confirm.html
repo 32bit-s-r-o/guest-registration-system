@@ -72,6 +72,65 @@
         </div>
     </div>
 
+    <!-- Invoice Request Information -->
+    {% if data.invoice_request %}
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+            <h5><i class="fas fa-file-invoice"></i> Invoice Request</h5>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i>
+                <strong>Invoice Requested:</strong> A draft invoice will be created for your registration.
+            </div>
+
+            {% if data.invoice_data.company_name %}
+            <div class="row mb-2">
+                <div class="col-md-6">
+                    <strong>Company Name:</strong><br>
+                    {{ data.invoice_data.company_name }}
+                </div>
+                {% if data.invoice_data.vat_number %}
+                <div class="col-md-6">
+                    <strong>VAT Number:</strong><br>
+                    {{ data.invoice_data.vat_number }}
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            {% if data.invoice_data.address %}
+            <div class="row mb-2">
+                <div class="col-12">
+                    <strong>Billing Address:</strong><br>
+                    {{ data.invoice_data.address | nl2br }}
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="row mb-2">
+                <div class="col-md-6">
+                    <strong>Preferred Currency:</strong><br>
+                    {{ data.invoice_data.currency }}
+                </div>
+                {% if data.invoice_data.notes %}
+                <div class="col-md-6">
+                    <strong>Additional Notes:</strong><br>
+                    {{ data.invoice_data.notes }}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                <strong>Note:</strong> The admin will review your registration and complete the invoice with pricing
+                details.
+                You will be notified when the invoice is ready.
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Important Notice -->
     <div class="alert alert-warning" role="alert">
         <h5><i class="fas fa-exclamation-triangle"></i> Important Notice</h5>

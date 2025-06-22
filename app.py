@@ -137,6 +137,7 @@ class Invoice(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     invoice_number = db.Column(db.String(50), unique=True, nullable=False)
     admin_id = db.Column(db.Integer, db.ForeignKey(f'{app.config["TABLE_PREFIX"]}admin.id'), nullable=False)
+    registration_id = db.Column(db.Integer, db.ForeignKey(f'{app.config["TABLE_PREFIX"]}registration.id'))
     client_name = db.Column(db.String(200), nullable=False)
     client_email = db.Column(db.String(200))
     client_address = db.Column(db.Text)
@@ -154,6 +155,7 @@ class Invoice(db.Model):
     # Relationships
     items = db.relationship('InvoiceItem', backref='invoice', lazy=True, cascade='all, delete-orphan')
     admin = db.relationship('Admin', backref='invoices')
+    registration = db.relationship('Registration', backref='invoices')
 
 class InvoiceItem(db.Model):
     __tablename__ = f"{app.config['TABLE_PREFIX']}invoice_item"
@@ -459,12 +461,27 @@ def submit_registration(trip_id):
             file.save(file_path)
             uploaded_files.append(filename)
     
+    # Handle invoice request
+    invoice_request = request.form.get('request_invoice') == 'on'
+    invoice_data = None
+    
+    if invoice_request:
+        invoice_data = {
+            'company_name': request.form.get('invoice_company_name'),
+            'vat_number': request.form.get('invoice_vat_number'),
+            'address': request.form.get('invoice_address'),
+            'currency': request.form.get('invoice_currency', 'EUR'),
+            'notes': request.form.get('invoice_notes')
+        }
+    
     # Store in session for confirmation
     session['registration_data'] = {
         'trip_id': trip_id,
         'email': email,
         'guests': guests_data,
-        'uploaded_files': uploaded_files
+        'uploaded_files': uploaded_files,
+        'invoice_request': invoice_request,
+        'invoice_data': invoice_data
     }
     
     return redirect(url_for('confirm_registration'))
@@ -507,6 +524,42 @@ def submit_for_approval():
             gdpr_consent=guest_data['gdpr_consent']
         )
         db.session.add(guest)
+    
+    # Create draft invoice if requested
+    if data.get('invoice_request') and data.get('invoice_data'):
+        # Generate invoice number
+        invoice_number = f"INV-{datetime.now().strftime('%Y%m%d')}-{Invoice.query.filter_by(admin_id=trip.admin_id).count() + 1:03d}"
+        
+        # Determine client name
+        client_name = data['invoice_data']['company_name'] if data['invoice_data']['company_name'] else f"{data['guests'][0]['first_name']} {data['guests'][0]['last_name']}"
+        
+        # Create draft invoice
+        invoice = Invoice(
+            invoice_number=invoice_number,
+            admin_id=trip.admin_id,
+            registration_id=registration.id,
+            client_name=client_name,
+            client_email=data['email'],
+            client_address=data['invoice_data']['address'],
+            issue_date=datetime.utcnow().date(),
+            currency=data['invoice_data']['currency'],
+            notes=f"Registration: {trip.title}\nGuest Notes: {data['invoice_data']['notes']}\nVAT Number: {data['invoice_data']['vat_number']}" if data['invoice_data']['vat_number'] else f"Registration: {trip.title}\nGuest Notes: {data['invoice_data']['notes']}",
+            status='draft'
+        )
+        db.session.add(invoice)
+        
+        # Add a placeholder item for the admin to complete
+        placeholder_item = InvoiceItem(
+            invoice_id=invoice.id,
+            description=f"Registration for {trip.title} - {len(data['guests'])} guest(s)",
+            quantity=1,
+            unit_price=0,
+            vat_rate=0,
+            line_total=0,
+            vat_amount=0,
+            total_with_vat=0
+        )
+        db.session.add(placeholder_item)
     
     db.session.commit()
     
@@ -698,6 +751,7 @@ def new_invoice():
         invoice = Invoice(
             invoice_number=invoice_number,
             admin_id=current_user.id,
+            registration_id=request.form.get('registration_id'),
             client_name=request.form.get('client_name'),
             client_email=request.form.get('client_email'),
             client_address=request.form.get('client_address'),
