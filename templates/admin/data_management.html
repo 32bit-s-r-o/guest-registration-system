@@ -123,11 +123,14 @@
                         This action will permanently delete all data from the database including:
                     </p>
                     <ul class="text-muted">
-                        <li>All admin accounts</li>
                         <li>All trips</li>
                         <li>All registrations and guest information</li>
                         <li>All uploaded documents</li>
                     </ul>
+                    <div class="alert alert-info" role="alert">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Note:</strong> Admin accounts will be preserved during reset operations.
+                    </div>
                     <div class="alert alert-danger" role="alert">
                         <strong>Warning:</strong> This action cannot be undone! Make sure you have backups if needed.
                     </div>
@@ -151,6 +154,32 @@
                     </ul>
                     <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#seedModal">
                         <i class="fas fa-plus"></i> Seed Sample Data
+                    </button>
+                </div>
+
+                <hr>
+
+                <!-- Seed Reset Section -->
+                <div class="mb-4">
+                    <h5 class="text-warning"><i class="fas fa-sync-alt"></i> Reset and Seed Data</h5>
+                    <p class="text-muted">
+                        This action will reset all data and then seed with sample data:
+                    </p>
+                    <ul class="text-muted">
+                        <li>Delete all existing trips, registrations, and guests</li>
+                        <li>Preserve admin accounts</li>
+                        <li>Create sample admin user (if none exists)</li>
+                        <li>Create 5 sample trips with variety</li>
+                        <li>Create 6 sample registrations (approved, pending, rejected)</li>
+                    </ul>
+                    <div class="alert alert-warning" role="alert">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Warning:</strong> This will delete all existing trips, registrations, and guests before
+                        seeding!
+                    </div>
+                    <button type="button" class="btn btn-warning" data-bs-toggle="modal"
+                        data-bs-target="#seedResetModal">
+                        <i class="fas fa-sync-alt"></i> Reset and Seed Data
                     </button>
                 </div>
 
@@ -216,22 +245,26 @@
                 <p><strong>Are you absolutely sure you want to reset all data?</strong></p>
                 <p>This action will:</p>
                 <ul>
-                    <li>Delete all admin accounts</li>
                     <li>Delete all trips</li>
                     <li>Delete all registrations and guest data</li>
                     <li>Delete all uploaded documents</li>
-                    <li>Recreate empty database tables</li>
+                    <li>Preserve admin accounts</li>
                 </ul>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Note:</strong> Admin accounts will be preserved during this operation.
+                </div>
                 <div class="alert alert-warning">
                     <i class="fas fa-exclamation-triangle"></i>
-                    <strong>This action cannot be undone!</strong> All data will be permanently lost.
+                    <strong>This action cannot be undone!</strong> All trips, registrations, and guest data will be
+                    permanently lost.
                 </div>
                 <p>Type <strong>RESET</strong> to confirm:</p>
                 <input type="text" class="form-control" id="resetConfirmation" placeholder="Type RESET to confirm">
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form method="POST" action="{{ url_for('reset_data') }}" style="display: inline;">
+                <form method="POST" action="{{ url_for('reset_data') }}" style="display: inline;" id="resetForm">
                     <button type="submit" class="btn btn-danger" id="resetButton" disabled>
                         <i class="fas fa-trash"></i> Reset All Data
                     </button>
@@ -265,9 +298,53 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form method="POST" action="{{ url_for('seed_data') }}" style="display: inline;">
+                <form method="POST" action="{{ url_for('seed_data') }}" style="display: inline;" id="seedForm">
                     <button type="submit" class="btn btn-success">
                         <i class="fas fa-plus"></i> Seed Sample Data
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Seed Reset Confirmation Modal -->
+<div class="modal fade" id="seedResetModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title">
+                    <i class="fas fa-sync-alt"></i> Confirm Reset and Seed
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Are you sure you want to reset all data and seed with sample data?</strong></p>
+                <p>This action will:</p>
+                <ul>
+                    <li>Delete all existing trips, registrations, and guests</li>
+                    <li>Preserve admin accounts</li>
+                    <li>Create sample admin user (if none exists)</li>
+                    <li>Create 5 sample trips with variety</li>
+                    <li>Create 6 sample registrations (approved, pending, rejected)</li>
+                </ul>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Note:</strong> Admin accounts will be preserved during this operation.
+                </div>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Warning:</strong> All trips, registrations, and guest data will be permanently deleted!
+                </div>
+                <p>Type <strong>RESET-SEED</strong> to confirm:</p>
+                <input type="text" class="form-control" id="seedResetConfirmation"
+                    placeholder="Type RESET-SEED to confirm">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="{{ url_for('seed_reset') }}" style="display: inline;" id="seedResetForm">
+                    <button type="submit" class="btn btn-warning" id="seedResetButton" disabled>
+                        <i class="fas fa-sync-alt"></i> Reset and Seed Data
                     </button>
                 </form>
             </div>
@@ -286,6 +363,64 @@
         } else {
             resetButton.disabled = true;
         }
+    });
+
+    // Reset form handling with loading state
+    document.getElementById('resetForm').addEventListener('submit', function (e) {
+        const resetButton = document.getElementById('resetButton');
+        const originalText = resetButton.innerHTML;
+
+        // Show loading state
+        resetButton.disabled = true;
+        resetButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Resetting...';
+
+        // Prevent form resubmission
+        e.preventDefault();
+
+        // Submit the form
+        this.submit();
+    });
+
+    // Seed form handling with loading state
+    document.getElementById('seedForm').addEventListener('submit', function (e) {
+        const seedButton = document.querySelector('#seedForm button[type="submit"]');
+        const originalText = seedButton.innerHTML;
+
+        // Show loading state
+        seedButton.disabled = true;
+        seedButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Seeding...';
+
+        // Prevent form resubmission
+        e.preventDefault();
+
+        // Submit the form
+        this.submit();
+    });
+
+    // Seed Reset confirmation logic
+    document.getElementById('seedResetConfirmation').addEventListener('input', function () {
+        const seedResetButton = document.getElementById('seedResetButton');
+        if (this.value === 'RESET-SEED') {
+            seedResetButton.disabled = false;
+        } else {
+            seedResetButton.disabled = true;
+        }
+    });
+
+    // Seed Reset form handling with loading state
+    document.getElementById('seedResetForm').addEventListener('submit', function (e) {
+        const seedResetButton = document.getElementById('seedResetButton');
+        const originalText = seedResetButton.innerHTML;
+
+        // Show loading state
+        seedResetButton.disabled = true;
+        seedResetButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Resetting and Seeding...';
+
+        // Prevent form resubmission
+        e.preventDefault();
+
+        // Submit the form
+        this.submit();
     });
 </script>
 {% endblock %}

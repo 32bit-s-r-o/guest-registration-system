@@ -1,0 +1,274 @@
+#!/usr/bin/env python3
+"""
+Quick Database Reset Script
+This script provides a fast way to reset the database without the web interface.
+"""
+
+import os
+import sys
+from app import app, db, Admin, Trip, Registration, Guest
+from datetime import datetime, timedelta
+from werkzeug.security import generate_password_hash
+
+def quick_reset():
+    """Quickly reset all database tables except admin."""
+    print("🔄 Quick Database Reset (Preserving Admin)")
+    print("=" * 40)
+    
+    try:
+        with app.app_context():
+            # Get table prefix
+            table_prefix = app.config.get('TABLE_PREFIX', 'guest_reg_')
+            tables_to_reset = [
+                f"{table_prefix}trip", 
+                f"{table_prefix}registration",
+                f"{table_prefix}guest"
+            ]
+            admin_table = f"{table_prefix}admin"
+            
+            print(f"📋 Tables to reset: {', '.join(tables_to_reset)}")
+            print(f"🔒 Preserving admin table: {admin_table}")
+            
+            # Delete data from specific tables instead of dropping all
+            Guest.query.delete()
+            Registration.query.delete()
+            Trip.query.delete()
+            
+            # Commit the deletions
+            db.session.commit()
+            
+            print("✅ Database reset completed successfully!")
+            print(f"🗑️  Data deleted from: {', '.join(tables_to_reset)}")
+            print(f"🔒 Admin accounts preserved in: {admin_table}")
+            
+            return True
+            
+    except Exception as e:
+        print(f"❌ Error during reset: {e}")
+        return False
+
+def quick_seed():
+    """Quickly seed the database with sample data."""
+    print("🌱 Quick Database Seed")
+    print("=" * 30)
+    
+    try:
+        with app.app_context():
+            # Use existing admin or create one if none exists
+            existing_admin = Admin.query.first()
+            if not existing_admin:
+                admin = Admin(
+                    username='admin',
+                    email='admin@example.com',
+                    password_hash=generate_password_hash('admin123')
+                )
+                db.session.add(admin)
+                db.session.flush()
+                print("👤 Created admin user: admin/admin123")
+            else:
+                admin = existing_admin
+                print(f"👤 Using existing admin: {admin.username}")
+            
+            # Create sample trips with variety
+            trips_data = [
+                {
+                    'title': "Summer Beach Vacation 2024",
+                    'start_date': datetime.now().date() + timedelta(days=30),
+                    'end_date': datetime.now().date() + timedelta(days=37),
+                    'max_guests': 6,
+                    'is_airbnb_synced': True,
+                    'airbnb_guest_name': 'John Smith',
+                    'airbnb_guest_email': 'john.smith@example.com',
+                    'airbnb_guest_count': 4
+                },
+                {
+                    'title': "Mountain Retreat Weekend",
+                    'start_date': datetime.now().date() + timedelta(days=14),
+                    'end_date': datetime.now().date() + timedelta(days=16),
+                    'max_guests': 4,
+                    'is_airbnb_synced': False
+                },
+                {
+                    'title': "City Break Adventure",
+                    'start_date': datetime.now().date() + timedelta(days=60),
+                    'end_date': datetime.now().date() + timedelta(days=65),
+                    'max_guests': 8,
+                    'is_airbnb_synced': True,
+                    'airbnb_guest_name': 'Alice Johnson',
+                    'airbnb_guest_email': 'alice.j@example.com',
+                    'airbnb_guest_count': 3
+                },
+                {
+                    'title': "Winter Ski Trip",
+                    'start_date': datetime.now().date() + timedelta(days=90),
+                    'end_date': datetime.now().date() + timedelta(days=97),
+                    'max_guests': 5,
+                    'is_airbnb_synced': False
+                },
+                {
+                    'title': "Weekend Getaway",
+                    'start_date': datetime.now().date() + timedelta(days=7),
+                    'end_date': datetime.now().date() + timedelta(days=9),
+                    'max_guests': 3,
+                    'is_airbnb_synced': True,
+                    'airbnb_guest_name': 'Bob Wilson',
+                    'airbnb_guest_email': 'bob.wilson@example.com',
+                    'airbnb_guest_count': 2
+                }
+            ]
+            
+            created_trips = []
+            for trip_data in trips_data:
+                trip = Trip(
+                    title=trip_data['title'],
+                    start_date=trip_data['start_date'],
+                    end_date=trip_data['end_date'],
+                    max_guests=trip_data['max_guests'],
+                    admin_id=admin.id,
+                    is_airbnb_synced=trip_data.get('is_airbnb_synced', False),
+                    airbnb_guest_name=trip_data.get('airbnb_guest_name'),
+                    airbnb_guest_email=trip_data.get('airbnb_guest_email'),
+                    airbnb_guest_count=trip_data.get('airbnb_guest_count'),
+                    airbnb_synced_at=datetime.utcnow() if trip_data.get('is_airbnb_synced') else None
+                )
+                db.session.add(trip)
+                created_trips.append(trip)
+            
+            db.session.flush()
+            print(f"🏖️  Created {len(created_trips)} sample trips")
+            
+            # Create sample registrations with different statuses
+            registrations_data = [
+                # Approved registrations
+                {
+                    'trip_index': 0,
+                    'email': 'john.doe@example.com',
+                    'status': 'approved',
+                    'created_at': datetime.now() - timedelta(days=5),
+                    'guests': [
+                        {'first_name': 'John', 'last_name': 'Doe', 'document_type': 'passport', 'document_number': 'AB1234567'},
+                        {'first_name': 'Jane', 'last_name': 'Doe', 'document_type': 'driving_license', 'document_number': 'DL9876543'},
+                        {'first_name': 'Mike', 'last_name': 'Doe', 'document_type': 'citizen_id', 'document_number': 'CID123456789'}
+                    ]
+                },
+                {
+                    'trip_index': 2,
+                    'email': 'alice.smith@example.com',
+                    'status': 'approved',
+                    'created_at': datetime.now() - timedelta(days=3),
+                    'guests': [
+                        {'first_name': 'Alice', 'last_name': 'Smith', 'document_type': 'passport', 'document_number': 'CD9876543'},
+                        {'first_name': 'Bob', 'last_name': 'Smith', 'document_type': 'driving_license', 'document_number': 'DL5556667'}
+                    ]
+                },
+                # Pending registrations
+                {
+                    'trip_index': 1,
+                    'email': 'charlie.brown@example.com',
+                    'status': 'pending',
+                    'created_at': datetime.now() - timedelta(days=2),
+                    'guests': [
+                        {'first_name': 'Charlie', 'last_name': 'Brown', 'document_type': 'passport', 'document_number': 'EF1234567'},
+                        {'first_name': 'Lucy', 'last_name': 'Brown', 'document_type': 'citizen_id', 'document_number': 'CID987654321'}
+                    ]
+                },
+                {
+                    'trip_index': 3,
+                    'email': 'diana.prince@example.com',
+                    'status': 'pending',
+                    'created_at': datetime.now() - timedelta(days=1),
+                    'guests': [
+                        {'first_name': 'Diana', 'last_name': 'Prince', 'document_type': 'passport', 'document_number': 'GH9876543'},
+                        {'first_name': 'Bruce', 'last_name': 'Wayne', 'document_type': 'driving_license', 'document_number': 'DL1112223'},
+                        {'first_name': 'Clark', 'last_name': 'Kent', 'document_type': 'citizen_id', 'document_number': 'CID555666777'}
+                    ]
+                },
+                {
+                    'trip_index': 4,
+                    'email': 'peter.parker@example.com',
+                    'status': 'pending',
+                    'created_at': datetime.now() - timedelta(hours=6),
+                    'guests': [
+                        {'first_name': 'Peter', 'last_name': 'Parker', 'document_type': 'passport', 'document_number': 'IJ1234567'},
+                        {'first_name': 'Mary', 'last_name': 'Jane', 'document_type': 'driving_license', 'document_number': 'DL4445556'}
+                    ]
+                },
+                # Rejected registration
+                {
+                    'trip_index': 0,
+                    'email': 'tony.stark@example.com',
+                    'status': 'rejected',
+                    'admin_comment': 'Document images were unclear. Please upload clearer photos.',
+                    'created_at': datetime.now() - timedelta(days=4),
+                    'updated_at': datetime.now() - timedelta(days=3),
+                    'guests': [
+                        {'first_name': 'Tony', 'last_name': 'Stark', 'document_type': 'passport', 'document_number': 'KL9876543'}
+                    ]
+                }
+            ]
+            
+            for reg_data in registrations_data:
+                registration = Registration(
+                    trip_id=created_trips[reg_data['trip_index']].id,
+                    email=reg_data['email'],
+                    status=reg_data['status'],
+                    admin_comment=reg_data.get('admin_comment'),
+                    created_at=reg_data['created_at'],
+                    updated_at=reg_data.get('updated_at', reg_data['created_at'])
+                )
+                db.session.add(registration)
+                db.session.flush()
+                
+                # Add guests for this registration
+                for guest_data in reg_data['guests']:
+                    guest = Guest(
+                        registration_id=registration.id,
+                        first_name=guest_data['first_name'],
+                        last_name=guest_data['last_name'],
+                        document_type=guest_data['document_type'],
+                        document_number=guest_data['document_number'],
+                        gdpr_consent=True
+                    )
+                    db.session.add(guest)
+            
+            db.session.commit()
+            print(f"📝 Created {len(registrations_data)} sample registrations")
+            print("✅ Database seeding completed successfully!")
+            
+            return True
+            
+    except Exception as e:
+        print(f"❌ Error during seeding: {e}")
+        return False
+
+def quick_reset_seed():
+    """Quickly reset and seed the database."""
+    print("🔄 Quick Database Reset and Seed")
+    print("=" * 40)
+    
+    if quick_reset():
+        print("\n" + "=" * 40)
+        quick_seed()
+    else:
+        print("❌ Reset failed, skipping seed")
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Usage:")
+        print("  python quick_reset.py --confirm     # Reset all data")
+        print("  python quick_reset.py --seed        # Seed sample data")
+        print("  python quick_reset.py --reset-seed  # Reset and seed")
+        sys.exit(1)
+    
+    command = sys.argv[1]
+    
+    if command == "--confirm":
+        quick_reset()
+    elif command == "--seed":
+        quick_seed()
+    elif command == "--reset-seed":
+        quick_reset_seed()
+    else:
+        print(f"❌ Unknown command: {command}")
+        print("Available commands: --confirm, --seed, --reset-seed")
+        sys.exit(1) 

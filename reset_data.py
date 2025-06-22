@@ -21,23 +21,25 @@ def get_table_names():
     }
 
 def reset_all_data():
-    """Reset all data in the database."""
-    print("\n=== Resetting All Data ===")
+    """Reset all data in the database except admin accounts."""
+    print("\n=== Resetting All Data (Preserving Admin) ===")
     
     try:
         with app.app_context():
             # Get table names for display
             tables = get_table_names()
             
-            # Drop all tables
-            db.drop_all()
-            print("✅ All tables dropped successfully")
-            print(f"   Tables removed: {', '.join(tables.values())}")
+            # Delete data from specific tables instead of dropping all
+            Guest.query.delete()
+            Registration.query.delete()
+            Trip.query.delete()
             
-            # Recreate all tables
-            db.create_all()
-            print("✅ All tables recreated successfully")
-            print(f"   Tables created: {', '.join(tables.values())}")
+            # Commit the deletions
+            db.session.commit()
+            
+            print("✅ Data deleted successfully from trips, registrations, and guests tables")
+            print(f"   Tables reset: {tables['trip']}, {tables['registration']}, {tables['guest']}")
+            print(f"   Admin preserved: {tables['admin']}")
             
             return True
     except Exception as e:
@@ -45,18 +47,18 @@ def reset_all_data():
         return False
 
 def create_sample_admin():
-    """Create a sample admin user."""
+    """Create a sample admin user if none exists."""
     print("\n=== Creating Sample Admin ===")
     
     try:
         with app.app_context():
-            # Check if admin already exists
-            existing_admin = Admin.query.filter_by(username='admin').first()
+            # Check if any admin exists
+            existing_admin = Admin.query.first()
             if existing_admin:
-                print("Admin user 'admin' already exists!")
+                print(f"✅ Using existing admin: {existing_admin.username}")
                 return True
             
-            # Create sample admin
+            # Create sample admin if none exists
             admin = Admin(
                 username='admin',
                 email='admin@example.com',
@@ -307,9 +309,9 @@ def main():
     
     if len(sys.argv) < 2:
         print("\nUsage:")
-        print("  python reset_data.py reset          # Reset all data")
+        print("  python reset_data.py reset          # Reset all data (preserves admin)")
         print("  python reset_data.py seed           # Seed with sample data")
-        print("  python reset_data.py reset-seed     # Reset and seed")
+        print("  python reset_data.py reset-seed     # Reset and seed (preserves admin)")
         print("  python reset_data.py stats          # Show database statistics")
         print("  python reset_data.py tables         # Show table structure")
         sys.exit(1)
@@ -319,7 +321,7 @@ def main():
     if command == 'reset':
         if not reset_all_data():
             sys.exit(1)
-        print("\n✅ Data reset completed successfully!")
+        print("\n✅ Data reset completed successfully! Admin accounts preserved.")
         
     elif command == 'seed':
         if not create_sample_admin():
@@ -339,7 +341,7 @@ def main():
             sys.exit(1)
         if not create_sample_registrations():
             sys.exit(1)
-        print("\n✅ Data reset and seeding completed successfully!")
+        print("\n✅ Data reset and seeding completed successfully! Admin accounts preserved.")
         
     elif command == 'stats':
         if not show_database_stats():
