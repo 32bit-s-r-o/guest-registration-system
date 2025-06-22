@@ -7,7 +7,7 @@ This script allows you to reset all data and optionally seed with sample data.
 import os
 import sys
 import shutil
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from werkzeug.security import generate_password_hash
 from app import app, db, Admin, Trip, Registration, Guest
 
@@ -95,7 +95,8 @@ def create_sample_trips():
                 start_date=datetime.now().date() + timedelta(days=30),
                 end_date=datetime.now().date() + timedelta(days=37),
                 max_guests=6,
-                admin_id=admin.id
+                admin_id=admin.id,
+                airbnb_confirm_code='ABC123'
             )
             db.session.add(trip1)
             
@@ -105,7 +106,8 @@ def create_sample_trips():
                 start_date=datetime.now().date() + timedelta(days=14),
                 end_date=datetime.now().date() + timedelta(days=16),
                 max_guests=4,
-                admin_id=admin.id
+                admin_id=admin.id,
+                airbnb_confirm_code='XYZ789'
             )
             db.session.add(trip2)
             
@@ -115,15 +117,16 @@ def create_sample_trips():
                 start_date=datetime.now().date() + timedelta(days=60),
                 end_date=datetime.now().date() + timedelta(days=65),
                 max_guests=8,
-                admin_id=admin.id
+                admin_id=admin.id,
+                airbnb_confirm_code='DEF456'
             )
             db.session.add(trip3)
             
             db.session.commit()
             print("✅ Sample trips created successfully!")
-            print(f"   - {trip1.title} (ID: {trip1.id})")
-            print(f"   - {trip2.title} (ID: {trip2.id})")
-            print(f"   - {trip3.title} (ID: {trip3.id})")
+            print(f"   - {trip1.title} (ID: {trip1.id}, Code: {trip1.airbnb_confirm_code})")
+            print(f"   - {trip2.title} (ID: {trip2.id}, Code: {trip2.airbnb_confirm_code})")
+            print(f"   - {trip3.title} (ID: {trip3.id}, Code: {trip3.airbnb_confirm_code})")
             return True
             
     except Exception as e:
@@ -277,7 +280,12 @@ def show_database_stats():
                 print(f"\n📋 Sample Registration Links:")
                 trips = Trip.query.all()
                 for trip in trips:
-                    print(f"   - {trip.title}: http://localhost:5000/register/{trip.id}")
+                    print(f"   - {trip.title}:")
+                    print(f"     Regular: http://localhost:5000/register/{trip.id}")
+                    if trip.airbnb_confirm_code:
+                        print(f"     Confirmation Code: http://localhost:5000/register/confirm/{trip.airbnb_confirm_code}")
+                        print(f"     Code: {trip.airbnb_confirm_code}")
+                    print()
             
             return True
             
@@ -323,6 +331,49 @@ def copy_sample_image(image_filename):
     else:
         print(f"Warning: Sample image not found: {sample_image_path}")
         return None
+
+def seed_data():
+    """Seed the database with sample data."""
+    print("🌱 Seeding database with sample data...")
+    
+    # Create sample trips
+    trips_data = [
+        {
+            'title': 'Weekend Getaway',
+            'start_date': date.today() + timedelta(days=7),
+            'end_date': date.today() + timedelta(days=9),
+            'max_guests': 4,
+            'airbnb_confirm_code': 'ABC123'
+        },
+        {
+            'title': 'Summer Vacation',
+            'start_date': date.today() + timedelta(days=30),
+            'end_date': date.today() + timedelta(days=37),
+            'max_guests': 6,
+            'airbnb_confirm_code': 'XYZ789'
+        },
+        {
+            'title': 'Business Trip',
+            'start_date': date.today() + timedelta(days=14),
+            'end_date': date.today() + timedelta(days=16),
+            'max_guests': 2,
+            'airbnb_confirm_code': 'DEF456'
+        },
+        {
+            'title': 'Family Holiday',
+            'start_date': date.today() + timedelta(days=60),
+            'end_date': date.today() + timedelta(days=67),
+            'max_guests': 8,
+            'airbnb_confirm_code': 'GHI789'
+        },
+        {
+            'title': 'Romantic Weekend',
+            'start_date': date.today() + timedelta(days=21),
+            'end_date': date.today() + timedelta(days=23),
+            'max_guests': 2,
+            'airbnb_confirm_code': 'JKL012'
+        }
+    ]
 
 def main():
     """Main function to handle reset and seed operations."""

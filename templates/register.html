@@ -11,6 +11,9 @@
             <i class="fas fa-calendar"></i> {{ trip.start_date.strftime('%B %d, %Y') }} - {{ trip.end_date.strftime('%B
             %d, %Y') }}<br>
             <i class="fas fa-users"></i> Maximum {{ trip.max_guests }} guests
+            {% if trip.airbnb_confirm_code %}
+            <br><i class="fas fa-key"></i> Confirmation Code: <strong>{{ trip.airbnb_confirm_code }}</strong>
+            {% endif %}
         </p>
     </div>
 
@@ -176,6 +179,6 @@
         alert('Please fill out complete information for at least one guest.');
         return;
     }
-});
+    });
 </script>
 {% endblock %}

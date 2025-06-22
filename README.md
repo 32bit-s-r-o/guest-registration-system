@@ -199,8 +199,56 @@ The application includes powerful Airbnb calendar integration that automatically
 1. **Calendar Fetching**: System fetches your Airbnb calendar using the iCal URL
 2. **Reservation Parsing**: Extracts reservation details (dates, guest info, etc.)
 3. **Trip Creation**: Automatically creates registration forms for each reservation
-4. **Guest Information**: Populates guest names and counts when available
-5. **Updates**: Changes to reservations are automatically reflected in the system
+4. **Guest Information**: Populates trip details with guest names and counts
+5. **Confirmation Codes**: Extracts and stores Airbnb confirmation codes for easy access
+
+## Confirmation Code Registration
+
+The system supports Airbnb confirmation codes for streamlined guest registration.
+
+### Registration Flow
+
+Guests can register using two methods:
+
+1. **Confirmation Code Entry** (`/register`):
+   - Landing page with confirmation code form
+   - Guests enter their Airbnb confirmation code
+   - System validates and redirects to registration form
+
+2. **Direct Confirmation Code Link** (`/register/confirm/<code>`):
+   - Direct access using confirmation code in URL
+   - No need to enter code manually
+   - Perfect for sharing in emails or messages
+
+3. **Traditional Trip ID Link** (`/register/<trip_id>`):
+   - Direct access using trip ID
+   - Works for both Airbnb and manual trips
+
+### Confirmation Code Extraction
+
+The system automatically extracts confirmation codes from Airbnb calendar events using pattern matching:
+
+- **Patterns Supported**:
+  - "Confirmation code: ABC123"
+  - "Code: ABC123" 
+  - "ABC123" (standalone codes)
+- **Format**: 6+ character alphanumeric codes
+- **Case**: Automatically converted to uppercase
+
+### Admin Features
+
+- **View Confirmation Codes**: See codes in trip details
+- **Copy Links**: Easy copy buttons for both registration methods
+- **Direct Access**: Use confirmation codes to quickly access registrations
+- **Validation**: System validates codes before allowing registration
+
+### Benefits
+
+- **User-Friendly**: Guests don't need to remember trip IDs
+- **Professional**: Clean URLs with confirmation codes
+- **Flexible**: Multiple registration methods supported
+- **Secure**: Codes are validated against existing trips
+- **Convenient**: Easy sharing via email or messaging apps
 
 ### What Gets Synced
 

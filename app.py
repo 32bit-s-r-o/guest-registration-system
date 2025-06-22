@@ -89,6 +89,8 @@ class Trip(db.Model):
     airbnb_guest_count = db.Column(db.Integer)
     airbnb_synced_at = db.Column(db.DateTime)
     is_airbnb_synced = db.Column(db.Boolean, default=False)
+    # Airbnb confirmation code
+    airbnb_confirm_code = db.Column(db.String(50), unique=True)
 
 class Registration(db.Model):
     __tablename__ = f"{app.config['TABLE_PREFIX']}registration"
@@ -148,6 +150,7 @@ def fetch_airbnb_calendar(calendar_url):
                     'guest_name': guest_info.get('name', ''),
                     'guest_email': guest_info.get('email', ''),
                     'guest_count': guest_info.get('count', 1),
+                    'confirm_code': guest_info.get('confirm_code', ''),
                     'description': description
                 }
                 reservations.append(reservation)
@@ -162,7 +165,8 @@ def parse_airbnb_guest_info(summary, description):
     guest_info = {
         'name': '',
         'email': '',
-        'count': 1
+        'count': 1,
+        'confirm_code': ''
     }
     
     # Try to extract guest name from summary
@@ -197,6 +201,20 @@ def parse_airbnb_guest_info(summary, description):
             guest_info['count'] = int(match.group(1))
             break
     
+    # Try to extract confirmation code
+    # Common patterns: "Confirmation code: ABC123" or "Code: ABC123" or "ABC123"
+    confirm_patterns = [
+        r'confirmation\s+code:\s*([A-Z0-9]{6,})',
+        r'code:\s*([A-Z0-9]{6,})',
+        r'\b([A-Z0-9]{6,})\b'
+    ]
+    
+    for pattern in confirm_patterns:
+        match = re.search(pattern, summary + ' ' + description, re.IGNORECASE)
+        if match:
+            guest_info['confirm_code'] = match.group(1).upper()
+            break
+    
     return guest_info
 
 def sync_airbnb_reservations(admin_id):
@@ -225,6 +243,7 @@ def sync_airbnb_reservations(admin_id):
                 existing_trip.max_guests = reservation['guest_count']
                 existing_trip.airbnb_guest_name = reservation['guest_name']
                 existing_trip.airbnb_guest_email = reservation['guest_email']
+                existing_trip.airbnb_confirm_code = reservation['confirm_code']
                 existing_trip.airbnb_synced_at = datetime.utcnow()
                 updated_count += 1
             else:
@@ -238,6 +257,8 @@ def sync_airbnb_reservations(admin_id):
                     airbnb_reservation_id=reservation['id'],
                     airbnb_guest_name=reservation['guest_name'],
                     airbnb_guest_email=reservation['guest_email'],
+                    airbnb_guest_count=reservation['guest_count'],
+                    airbnb_confirm_code=reservation['confirm_code'],
                     airbnb_synced_at=datetime.utcnow(),
                     is_airbnb_synced=True
                 )
@@ -278,9 +299,44 @@ def uploaded_file(filename):
     """Serve uploaded files (only accessible to admins)"""
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
+@app.route('/register')
+def register_landing():
+    """Landing page for registration with confirmation code form."""
+    return render_template('register_landing.html')
+
+@app.route('/register', methods=['POST'])
+def submit_confirm_code():
+    """Handle confirmation code submission and redirect to registration form."""
+    confirm_code = request.form.get('confirm_code', '').strip().upper()
+    
+    if not confirm_code:
+        flash('Please enter a confirmation code', 'error')
+        return redirect(url_for('register_landing'))
+    
+    # Find trip by confirmation code
+    trip = Trip.query.filter_by(airbnb_confirm_code=confirm_code).first()
+    
+    if not trip:
+        flash('Invalid confirmation code. Please check your code and try again.', 'error')
+        return redirect(url_for('register_landing'))
+    
+    # Redirect to the registration form with trip ID
+    return redirect(url_for('register', trip_id=trip.id))
+
 @app.route('/register/<int:trip_id>')
 def register(trip_id):
     trip = Trip.query.get_or_404(trip_id)
+    return render_template('register.html', trip=trip)
+
+@app.route('/register/confirm/<confirm_code>')
+def register_by_confirm_code(confirm_code):
+    """Direct registration using confirmation code in URL."""
+    trip = Trip.query.filter_by(airbnb_confirm_code=confirm_code.upper()).first()
+    
+    if not trip:
+        flash('Invalid confirmation code. Please check your code and try again.', 'error')
+        return redirect(url_for('register_landing'))
+    
     return render_template('register.html', trip=trip)
 
 @app.route('/register/<int:trip_id>', methods=['POST'])
