@@ -947,12 +947,18 @@ def generate_invoice_pdf(invoice_id):
         .invoice-details span {
             margin: 0 15px;
         }
+        .row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
         .company-info {
             text-align: left;
-            margin-bottom: 15px;
+            width: 48%;
         }
         .client-info {
-            margin-bottom: 20px;
+            text-align: right;
+            width: 48%;
         }
         .invoice-table {
             width: 100%;
