@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Settings{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-cog"></i> Admin Settings</h1>
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <form method="POST" action="{{ url_for('admin_settings') }}">
+            <!-- Profile Settings -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-user"></i> Profile Settings</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="username"
+                                    value="{{ current_user.username }}" readonly>
+                                <div class="form-text">Username cannot be changed</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email Address</label>
+                                <input type="email" class="form-control" id="email" name="email"
+                                    value="{{ current_user.email }}" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="new_password" class="form-label">New Password</label>
+                                <input type="password" class="form-control" id="new_password" name="new_password"
+                                    minlength="6">
+                                <div class="form-text">Leave blank to keep current password</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="confirm_password" class="form-label">Confirm New Password</label>
+                                <input type="password" class="form-control" id="confirm_password" minlength="6">
+                                <div class="form-text">Must match new password</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="created_at" class="form-label">Account Created</label>
+                        <input type="text" class="form-control" id="created_at"
+                            value="{{ current_user.created_at.strftime('%Y-%m-%d %H:%M:%S') }}" readonly>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Airbnb Integration -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0"><i class="fab fa-airbnb"></i> Airbnb Calendar Integration</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info" role="alert">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Airbnb Calendar Sync:</strong> Automatically import reservations from your Airbnb
+                        calendar and create registration forms.
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="airbnb_listing_id" class="form-label">Airbnb Listing ID</label>
+                                <input type="text" class="form-control" id="airbnb_listing_id" name="airbnb_listing_id"
+                                    value="{{ current_user.airbnb_listing_id or '' }}" placeholder="e.g., 12345678">
+                                <div class="form-text">Your Airbnb listing ID (found in your listing URL)</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="airbnb_sync_enabled" class="form-label">Enable Sync</label>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="airbnb_sync_enabled"
+                                        name="airbnb_sync_enabled" {% if current_user.airbnb_sync_enabled %}checked{%
+                                        endif %}>
+                                    <label class="form-check-label" for="airbnb_sync_enabled">
+                                        Enable automatic Airbnb calendar sync
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="airbnb_calendar_url" class="form-label">Airbnb Calendar URL</label>
+                        <input type="url" class="form-control" id="airbnb_calendar_url" name="airbnb_calendar_url"
+                            value="{{ current_user.airbnb_calendar_url or '' }}"
+                            placeholder="https://www.airbnb.com/calendar/ical/YOUR_LISTING_ID.ics?s=YOUR_SECRET_KEY">
+                        <div class="form-text">
+                            <strong>How to get your calendar URL:</strong>
+                            <ol class="mt-2">
+                                <li>Go to your Airbnb listing</li>
+                                <li>Click "Calendar" tab</li>
+                                <li>Click "Export Calendar"</li>
+                                <li>Copy the iCal URL</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    {% if current_user.airbnb_last_sync %}
+                    <div class="mb-3">
+                        <label class="form-label">Last Sync</label>
+                        <input type="text" class="form-control"
+                            value="{{ current_user.airbnb_last_sync.strftime('%Y-%m-%d %H:%M:%S') }}" readonly>
+                    </div>
+                    {% endif %}
+
+                    <div class="alert alert-warning" role="alert">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Important:</strong> The calendar URL contains sensitive information. Keep it secure and
+                        don't share it publicly.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sync Information -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0"><i class="fas fa-sync"></i> Sync Information</h4>
+                </div>
+                <div class="card-body">
+                    <h5>How Airbnb Sync Works</h5>
+                    <ul>
+                        <li><strong>Automatic Import:</strong> When enabled, the system will fetch your Airbnb calendar
+                            regularly</li>
+                        <li><strong>Reservation Detection:</strong> New reservations are automatically converted to
+                            registration forms</li>
+                        <li><strong>Guest Information:</strong> Guest names and counts are extracted from calendar
+                            events</li>
+                        <li><strong>Updates:</strong> Changes to reservations (dates, guest count) are automatically
+                            reflected</li>
+                        <li><strong>Manual Sync:</strong> You can also trigger manual sync from the trips page</li>
+                    </ul>
+
+                    <h5>What Gets Synced</h5>
+                    <ul>
+                        <li>Reservation dates (check-in/check-out)</li>
+                        <li>Guest names (when available)</li>
+                        <li>Number of guests</li>
+                        <li>Reservation status</li>
+                    </ul>
+
+                    <h5>What Doesn't Get Synced</h5>
+                    <ul>
+                        <li>Guest contact information (for privacy)</li>
+                        <li>Payment information</li>
+                        <li>Messages and reviews</li>
+                        <li>House rules and policies</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Save Button -->
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-save"></i> Save Settings
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Password confirmation validation
+    document.getElementById('confirm_password').addEventListener('input', function () {
+        const newPassword = document.getElementById('new_password').value;
+        const confirmPassword = this.value;
+
+        if (newPassword && confirmPassword && newPassword !== confirmPassword) {
+            this.setCustomValidity('Passwords do not match');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+
+    document.getElementById('new_password').addEventListener('input', function () {
+        const confirmPassword = document.getElementById('confirm_password');
+        if (confirmPassword.value) {
+            confirmPassword.dispatchEvent(new Event('input'));
+        }
+    });
+
+    // Airbnb URL helper
+    document.getElementById('airbnb_listing_id').addEventListener('input', function () {
+        const listingId = this.value;
+        const calendarUrl = document.getElementById('airbnb_calendar_url');
+
+        if (listingId && !calendarUrl.value) {
+            calendarUrl.placeholder = `https://www.airbnb.com/calendar/ical/${listingId}.ics?s=YOUR_SECRET_KEY`;
+        }
+    });
+</script>
+{% endblock %}

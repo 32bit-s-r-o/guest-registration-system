@@ -157,6 +157,67 @@ When seeding data, the system creates:
 - **Sample Registrations**: Various registrations in pending, approved, and rejected states
 - **Sample Guests**: Multiple guests with different document types
 
+## Airbnb Calendar Integration
+
+The application includes powerful Airbnb calendar integration that automatically syncs reservations and creates registration forms.
+
+### Features
+
+- **Automatic Sync**: Import reservations directly from your Airbnb calendar
+- **Real-time Updates**: Changes to reservations are automatically reflected
+- **Guest Information**: Extract guest names and counts from calendar events
+- **Manual Sync**: Trigger sync manually from the trips page
+- **Secure**: Calendar URLs are stored securely and not shared
+
+### Setup Instructions
+
+1. **Get Your Airbnb Calendar URL**:
+   - Go to your Airbnb listing
+   - Click the "Calendar" tab
+   - Click "Export Calendar"
+   - Copy the iCal URL (format: `https://www.airbnb.com/calendar/ical/YOUR_LISTING_ID.ics?s=YOUR_SECRET_KEY`)
+
+2. **Configure in Admin Settings**:
+   - Login to admin panel
+   - Go to Settings page
+   - Enter your Airbnb Listing ID
+   - Paste your calendar URL
+   - Enable sync
+
+3. **Sync Reservations**:
+   - Use the "Sync Airbnb" button on the trips page
+   - Or enable automatic sync in settings
+
+### How It Works
+
+1. **Calendar Fetching**: System fetches your Airbnb calendar using the iCal URL
+2. **Reservation Parsing**: Extracts reservation details (dates, guest info, etc.)
+3. **Trip Creation**: Automatically creates registration forms for each reservation
+4. **Guest Information**: Populates guest names and counts when available
+5. **Updates**: Changes to reservations are automatically reflected in the system
+
+### What Gets Synced
+
+- ✅ Reservation dates (check-in/check-out)
+- ✅ Guest names (when available)
+- ✅ Number of guests
+- ✅ Reservation status
+- ✅ Reservation updates
+
+### What Doesn't Get Synced
+
+- ❌ Guest contact information (for privacy)
+- ❌ Payment information
+- ❌ Messages and reviews
+- ❌ House rules and policies
+
+### Privacy & Security
+
+- Calendar URLs are encrypted and stored securely
+- Only reservation data is imported (no personal details)
+- GDPR compliance maintained for all imported data
+- No access to Airbnb account credentials
+
 ## Usage Guide
 
 ### Admin Workflow
@@ -226,6 +287,7 @@ airbnb/
 │   └── admin/           # Admin templates
 │       ├── login.html   # Admin login
 │       ├── dashboard.html
+│       ├── settings.html
 │       ├── new_trip.html
 │       ├── trips.html
 │       ├── registrations.html
@@ -302,6 +364,9 @@ The application will create the following tables in your `ekom21` database:
 - `GET /admin/login` - Admin login page
 - `POST /admin/login` - Admin authentication
 - `GET /admin/dashboard` - Admin dashboard
+- `GET /admin/settings` - Admin settings page
+- `POST /admin/settings` - Update admin settings
+- `POST /admin/sync-airbnb` - Sync with Airbnb calendar
 - `GET /admin/trips` - Manage trips
 - `POST /admin/trips/new` - Create new trip
 - `GET /admin/registrations` - Review registrations

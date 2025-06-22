@@ -8,6 +8,10 @@ import os
 from datetime import datetime, timedelta
 import uuid
 from dotenv import load_dotenv
+import requests
+import icalendar
+from dateutil import parser
+import re
 
 load_dotenv()
 
@@ -41,6 +45,11 @@ class Admin(UserMixin, db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(120), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    # Airbnb settings
+    airbnb_listing_id = db.Column(db.String(100))
+    airbnb_calendar_url = db.Column(db.Text)
+    airbnb_sync_enabled = db.Column(db.Boolean, default=False)
+    airbnb_last_sync = db.Column(db.DateTime)
 
 class Trip(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -51,6 +60,13 @@ class Trip(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     admin_id = db.Column(db.Integer, db.ForeignKey('admin.id'), nullable=False)
     registrations = db.relationship('Registration', backref='trip', lazy=True)
+    # Airbnb sync fields
+    airbnb_reservation_id = db.Column(db.String(100), unique=True)
+    airbnb_guest_name = db.Column(db.String(200))
+    airbnb_guest_email = db.Column(db.String(200))
+    airbnb_guest_count = db.Column(db.Integer)
+    airbnb_synced_at = db.Column(db.DateTime)
+    is_airbnb_synced = db.Column(db.Boolean, default=False)
 
 class Registration(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -76,6 +92,146 @@ class Guest(db.Model):
 @login_manager.user_loader
 def load_user(user_id):
     return Admin.query.get(int(user_id))
+
+# Airbnb Calendar Sync Functions
+def fetch_airbnb_calendar(calendar_url):
+    """Fetch and parse Airbnb calendar data."""
+    try:
+        response = requests.get(calendar_url, timeout=30)
+        response.raise_for_status()
+        
+        cal = icalendar.Calendar.from_ical(response.content)
+        reservations = []
+        
+        for component in cal.walk():
+            if component.name == "VEVENT":
+                # Extract reservation details from event
+                summary = str(component.get('summary', ''))
+                description = str(component.get('description', ''))
+                start_date = component.get('dtstart').dt
+                end_date = component.get('dtend').dt
+                
+                # Parse guest information from summary/description
+                guest_info = parse_airbnb_guest_info(summary, description)
+                
+                reservation = {
+                    'id': str(component.get('uid', '')),
+                    'title': summary,
+                    'start_date': start_date,
+                    'end_date': end_date,
+                    'guest_name': guest_info.get('name', ''),
+                    'guest_email': guest_info.get('email', ''),
+                    'guest_count': guest_info.get('count', 1),
+                    'description': description
+                }
+                reservations.append(reservation)
+        
+        return reservations
+    except Exception as e:
+        print(f"Error fetching Airbnb calendar: {e}")
+        return []
+
+def parse_airbnb_guest_info(summary, description):
+    """Parse guest information from Airbnb calendar event."""
+    guest_info = {
+        'name': '',
+        'email': '',
+        'count': 1
+    }
+    
+    # Try to extract guest name from summary
+    # Common patterns: "Guest Name - Airbnb" or "Guest Name (X guests)"
+    name_patterns = [
+        r'^(.+?)\s*-\s*Airbnb',
+        r'^(.+?)\s*\(\d+\s*guests?\)',
+        r'^(.+?)\s*-\s*\d+\s*guests?'
+    ]
+    
+    for pattern in name_patterns:
+        match = re.search(pattern, summary, re.IGNORECASE)
+        if match:
+            guest_info['name'] = match.group(1).strip()
+            break
+    
+    # Try to extract email from description
+    email_pattern = r'[\w\.-]+@[\w\.-]+\.\w+'
+    email_match = re.search(email_pattern, description)
+    if email_match:
+        guest_info['email'] = email_match.group(0)
+    
+    # Try to extract guest count
+    count_patterns = [
+        r'(\d+)\s*guests?',
+        r'(\d+)\s*people'
+    ]
+    
+    for pattern in count_patterns:
+        match = re.search(pattern, summary + ' ' + description, re.IGNORECASE)
+        if match:
+            guest_info['count'] = int(match.group(1))
+            break
+    
+    return guest_info
+
+def sync_airbnb_reservations(admin_id):
+    """Sync Airbnb reservations with local trips."""
+    admin = Admin.query.get(admin_id)
+    if not admin or not admin.airbnb_calendar_url or not admin.airbnb_sync_enabled:
+        return {'success': False, 'message': 'Airbnb sync not configured'}
+    
+    try:
+        reservations = fetch_airbnb_calendar(admin.airbnb_calendar_url)
+        synced_count = 0
+        updated_count = 0
+        
+        for reservation in reservations:
+            # Check if trip already exists
+            existing_trip = Trip.query.filter_by(
+                airbnb_reservation_id=reservation['id'],
+                admin_id=admin_id
+            ).first()
+            
+            if existing_trip:
+                # Update existing trip
+                existing_trip.title = reservation['title']
+                existing_trip.start_date = reservation['start_date']
+                existing_trip.end_date = reservation['end_date']
+                existing_trip.max_guests = reservation['guest_count']
+                existing_trip.airbnb_guest_name = reservation['guest_name']
+                existing_trip.airbnb_guest_email = reservation['guest_email']
+                existing_trip.airbnb_synced_at = datetime.utcnow()
+                updated_count += 1
+            else:
+                # Create new trip
+                new_trip = Trip(
+                    title=reservation['title'],
+                    start_date=reservation['start_date'],
+                    end_date=reservation['end_date'],
+                    max_guests=reservation['guest_count'],
+                    admin_id=admin_id,
+                    airbnb_reservation_id=reservation['id'],
+                    airbnb_guest_name=reservation['guest_name'],
+                    airbnb_guest_email=reservation['guest_email'],
+                    airbnb_synced_at=datetime.utcnow(),
+                    is_airbnb_synced=True
+                )
+                db.session.add(new_trip)
+                synced_count += 1
+        
+        # Update admin sync timestamp
+        admin.airbnb_last_sync = datetime.utcnow()
+        db.session.commit()
+        
+        return {
+            'success': True,
+            'message': f'Synced {synced_count} new reservations, updated {updated_count} existing',
+            'synced': synced_count,
+            'updated': updated_count
+        }
+        
+    except Exception as e:
+        db.session.rollback()
+        return {'success': False, 'message': f'Error syncing: {str(e)}'}
 
 # Routes
 @app.route('/')
@@ -226,6 +382,43 @@ def admin_dashboard():
     trips = Trip.query.filter_by(admin_id=current_user.id).all()
     pending_registrations = Registration.query.filter_by(status='pending').count()
     return render_template('admin/dashboard.html', trips=trips, pending_registrations=pending_registrations)
+
+@app.route('/admin/settings', methods=['GET', 'POST'])
+@login_required
+def admin_settings():
+    """Admin settings page for configuration."""
+    if request.method == 'POST':
+        # Update admin profile
+        current_user.email = request.form.get('email')
+        
+        # Update Airbnb settings
+        current_user.airbnb_listing_id = request.form.get('airbnb_listing_id')
+        current_user.airbnb_calendar_url = request.form.get('airbnb_calendar_url')
+        current_user.airbnb_sync_enabled = request.form.get('airbnb_sync_enabled') == 'on'
+        
+        # Update password if provided
+        new_password = request.form.get('new_password')
+        if new_password:
+            current_user.password_hash = generate_password_hash(new_password)
+        
+        db.session.commit()
+        flash('Settings updated successfully!', 'success')
+        return redirect(url_for('admin_settings'))
+    
+    return render_template('admin/settings.html')
+
+@app.route('/admin/sync-airbnb', methods=['POST'])
+@login_required
+def sync_airbnb():
+    """Sync with Airbnb calendar."""
+    result = sync_airbnb_reservations(current_user.id)
+    
+    if result['success']:
+        flash(f"Airbnb sync successful: {result['message']}", 'success')
+    else:
+        flash(f"Airbnb sync failed: {result['message']}", 'error')
+    
+    return redirect(url_for('admin_trips'))
 
 @app.route('/admin/trips')
 @login_required
