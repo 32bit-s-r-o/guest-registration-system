@@ -320,26 +320,29 @@ def submit_confirm_code():
         flash('Invalid confirmation code. Please check your code and try again.', 'error')
         return redirect(url_for('register_landing'))
     
-    # Redirect to the registration form with trip ID
-    return redirect(url_for('register', trip_id=trip.id))
+    # Redirect to the registration form with confirmation code
+    return redirect(url_for('register_by_code', confirm_code=confirm_code))
 
-@app.route('/register/<int:trip_id>')
+@app.route('/register/id/<int:trip_id>')
 def register(trip_id):
+    """Registration using trip ID."""
     trip = Trip.query.get_or_404(trip_id)
     return render_template('register.html', trip=trip)
 
-@app.route('/register/confirm/<confirm_code>')
-def register_by_confirm_code(confirm_code):
-    """Direct registration using confirmation code in URL."""
+@app.route('/register/<confirm_code>')
+def register_by_code(confirm_code):
+    """Registration using confirmation code in URL."""
+    # Try to find by confirmation code
     trip = Trip.query.filter_by(airbnb_confirm_code=confirm_code.upper()).first()
     
-    if not trip:
-        flash('Invalid confirmation code. Please check your code and try again.', 'error')
-        return redirect(url_for('register_landing'))
+    if trip:
+        return render_template('register.html', trip=trip)
     
-    return render_template('register.html', trip=trip)
+    # If not found by confirmation code, redirect to landing page
+    flash('Invalid confirmation code. Please check your code and try again.', 'error')
+    return redirect(url_for('register_landing'))
 
-@app.route('/register/<int:trip_id>', methods=['POST'])
+@app.route('/register/id/<int:trip_id>', methods=['POST'])
 def submit_registration(trip_id):
     trip = Trip.query.get_or_404(trip_id)
     
@@ -1086,7 +1089,7 @@ def send_approval_email(registration):
 
 def send_rejection_email(registration):
     try:
-        update_link = url_for('register', trip_id=registration.trip_id, _external=True)
+        update_link = url_for('register', trip_id=registration.trip_id, _external=True).replace('/register/', '/register/id/')
         msg = Message(
             'Registration Update Required',
             sender=app.config['MAIL_USERNAME'],

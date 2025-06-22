@@ -281,9 +281,9 @@ def show_database_stats():
                 trips = Trip.query.all()
                 for trip in trips:
                     print(f"   - {trip.title}:")
-                    print(f"     Regular: http://localhost:5000/register/{trip.id}")
+                    print(f"     Trip ID: http://localhost:5001/register/id/{trip.id}")
                     if trip.airbnb_confirm_code:
-                        print(f"     Confirmation Code: http://localhost:5000/register/confirm/{trip.airbnb_confirm_code}")
+                        print(f"     Confirmation Code: http://localhost:5001/register/{trip.airbnb_confirm_code}")
                         print(f"     Code: {trip.airbnb_confirm_code}")
                     print()
             

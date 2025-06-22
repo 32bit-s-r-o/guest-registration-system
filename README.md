@@ -215,12 +215,12 @@ Guests can register using two methods:
    - Guests enter their Airbnb confirmation code
    - System validates and redirects to registration form
 
-2. **Direct Confirmation Code Link** (`/register/confirm/<code>`):
+2. **Direct Confirmation Code Link** (`/register/<code>`):
    - Direct access using confirmation code in URL
    - No need to enter code manually
    - Perfect for sharing in emails or messages
 
-3. **Traditional Trip ID Link** (`/register/<trip_id>`):
+3. **Traditional Trip ID Link** (`/register/id/<trip_id>`):
    - Direct access using trip ID
    - Works for both Airbnb and manual trips
 

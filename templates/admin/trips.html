@@ -156,7 +156,7 @@
                         <strong>Confirmation Code Link:</strong><br>
                         <div class="input-group mb-2">
                             <input type="text" class="form-control"
-                                value="{{ url_for('register_by_confirm_code', confirm_code=trip.airbnb_confirm_code, _external=True) }}"
+                                value="{{ url_for('register_by_code', confirm_code=trip.airbnb_confirm_code, _external=True) }}"
                                 readonly>
                             <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard(this)">
                                 <i class="fas fa-copy"></i>
