@@ -40,8 +40,8 @@
                 {% endif %}
                 {% else %}
                 <p><strong>Address:</strong> [Your Company Address]</p>
-                <p><strong>Email:</strong> privacy@guestregistration.com</p>
-                <p><strong>Phone:</strong> +1 (555) 123-4567</p>
+                <p><strong>Email:</strong> [Your Contact Email]</p>
+                <p><strong>Phone:</strong> [Your Contact Phone]</p>
                 {% endif %}
             </div>
         </div>
@@ -173,7 +173,7 @@
                             {% if admin_contact and admin_contact.email %}
                             <a href="mailto:{{ admin_contact.email }}">{{ admin_contact.email }}</a>
                             {% else %}
-                            privacy@guestregistration.com
+                            [Your Contact Email]
                             {% endif %}
                         </strong>
                         with your request. We will respond within 30 days.
@@ -228,6 +228,30 @@
             <div class="card-body">
                 <p>For any questions about this privacy policy or to exercise your rights, please contact us:</p>
 
+                {% if admin_contact and (admin_contact.email or admin_contact.contact_phone) %}
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Data Protection Contact</h5>
+                        {% if admin_contact.email %}
+                        <p><i class="fas fa-envelope"></i> <a href="mailto:{{ admin_contact.email }}">{{
+                                admin_contact.email }}</a></p>
+                        {% endif %}
+                        {% if admin_contact.contact_phone %}
+                        <p><i class="fas fa-phone"></i> <a href="tel:{{ admin_contact.contact_phone }}">{{
+                                admin_contact.contact_phone }}</a></p>
+                        {% endif %}
+                        <p><i class="fas fa-clock"></i> Response within 30 days</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Company Information</h5>
+                        <p><strong>{{ admin_contact.company_name if admin_contact.company_name else 'Guest Registration
+                                System' }}</strong></p>
+                        {% if admin_contact.contact_address %}
+                        <p><i class="fas fa-map-marker-alt"></i> {{ admin_contact.contact_address | nl2br }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% else %}
                 <div class="row">
                     <div class="col-md-6">
                         <h5>Data Protection Officer</h5>
@@ -240,6 +264,7 @@
                         <p><i class="fas fa-clock"></i> Response within 30 days</p>
                     </div>
                 </div>
+                {% endif %}
 
                 <div class="alert alert-info mt-3" role="alert">
                     <h6><i class="fas fa-info-circle"></i> Supervisory Authority</h6>
