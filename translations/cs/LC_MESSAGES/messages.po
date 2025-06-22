@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-06-23 01:09+0200\n"
+"POT-Creation-Date: 2025-06-23 01:21+0200\n"
 "PO-Revision-Date: 2025-06-23 01:07+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: cs\n"
@@ -18,119 +18,132 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: app.py:383
+#: app.py:396
 #, python-format
 msgid "Thank you for your message, %(name)s! We will get back to you soon."
-msgstr ""
+msgstr "Děkujeme za vaši zprávu, %(name)s! Budeme vás kontaktovat brzy."
 
-#: app.py:410
+#: app.py:423
 msgid "Please enter a confirmation code"
-msgstr ""
+msgstr "Prosím zadejte potvrzovací kód"
 
-#: app.py:416 app.py:432
+#: app.py:429 app.py:445
 msgid "Invalid confirmation code. Please check your code and try again."
-msgstr ""
+msgstr "Neplatný potvrzovací kód. Prosím zkontrolujte svůj kód a zkuste to znovu."
 
-#: app.py:584
+#: app.py:597
 msgid ""
 "Registration submitted successfully! You will receive an email once it is"
 " reviewed."
-msgstr ""
+msgstr "Registrace byla úspěšně odeslána! Obdržíte email po jejím přezkoumání."
 
-#: app.py:603
+#: app.py:616
 msgid "Invalid username or password"
-msgstr ""
+msgstr "Neplatné uživatelské jméno nebo heslo"
 
-#: app.py:650
+#: app.py:663
 msgid "Settings updated successfully!"
-msgstr ""
+msgstr "Nastavení bylo úspěšně aktualizováno!"
 
-#: app.py:662
+#: app.py:675
 #, python-format
 msgid "Airbnb sync successful: %(message)s"
-msgstr ""
+msgstr "Synchronizace s Airbnb úspěšná: %(message)s"
 
-#: app.py:664
+#: app.py:677
 #, python-format
 msgid "Airbnb sync failed: %(message)s"
-msgstr ""
+msgstr "Synchronizace s Airbnb selhala: %(message)s"
 
-#: app.py:687
+#: app.py:700
 msgid "Trip created successfully!"
-msgstr ""
+msgstr "Výlet byl úspěšně vytvořen!"
 
-#: app.py:725
+#: app.py:738
 msgid "Registration approved and email sent to user"
-msgstr ""
+msgstr "Registrace schválena a email odeslán uživateli"
 
-#: app.py:741
+#: app.py:754
 msgid "Registration rejected and email sent to user"
-msgstr ""
+msgstr "Registrace zamítnuta a email odeslán uživateli"
 
-#: app.py:809
+#: app.py:822
 msgid "Invoice created successfully!"
-msgstr ""
+msgstr "Faktura byla úspěšně vytvořena!"
 
-#: app.py:874
+#: app.py:887
 msgid "Invoice updated successfully!"
-msgstr ""
+msgstr "Faktura byla úspěšně aktualizována!"
 
-#: app.py:896
+#: app.py:909
 msgid "Invoice deleted successfully!"
-msgstr ""
+msgstr "Faktura byla úspěšně smazána!"
 
-#: app.py:912
+#: app.py:925
 #, python-format
 msgid "Invoice status changed from %(old_status)s to %(new_status)s successfully!"
-msgstr ""
+msgstr "Stav faktury byl úspěšně změněn z %(old_status)s na %(new_status)s!"
 
-#: app.py:914
+#: app.py:927
 msgid "Invalid status provided."
-msgstr ""
+msgstr "Poskytnut neplatný stav."
 
-#: app.py:1080
+#: app.py:1093
 msgid "All data has been reset successfully! Admin accounts have been preserved."
 msgstr ""
+"Všechna data byla úspěšně resetována! Administrátorské účty byly "
+"zachovány."
 
-#: app.py:1085
+#: app.py:1098
 #, python-format
 msgid ""
 "Error resetting data: %(error)s. Please use the command line tool: python"
 " quick_reset.py --confirm"
 msgstr ""
+"Chyba při resetování dat: %(error)s. Použijte prosím příkazový řádek: "
+"python quick_reset.py --confirm"
 
-#: app.py:1430
+#: app.py:1443
 msgid ""
 "Sample data has been seeded successfully! Created 5 trips, 7 "
 "registrations (including 1 single-person pending), 3 invoices with "
 "realistic data, and updated admin contact information."
 msgstr ""
+"Ukázková data byla úspěšně načtena! Vytvořeno 5 výletů, 7 registrací "
+"(včetně 1 čekající jednotlivce), 3 faktury s realistickými daty a "
+"aktualizovány kontaktní informace administrátora."
 
-#: app.py:1433
+#: app.py:1446
 #, python-format
 msgid "Error seeding data: %(error)s"
-msgstr ""
+msgstr "Chyba při načítání dat: %(error)s"
 
-#: app.py:1655
+#: app.py:1668
 msgid ""
 "Database has been reset and seeded with sample data successfully! Admin "
 "accounts have been preserved. Created 5 trips and 6 registrations with "
 "various statuses. Sample document images have been copied to uploads "
 "directory."
 msgstr ""
+"Databáze byla úspěšně resetována a načtena ukázkovými daty! "
+"Administrátorské účty byly zachovány. Vytvořeno 5 výletů a 6 registrací s"
+" různými stavy. Ukázkové obrázky dokumentů byly zkopírovány do složky "
+"uploads."
 
-#: app.py:1660
+#: app.py:1673
 #, python-format
 msgid ""
 "Error during reset and seed: %(error)s. Please use the command line tool:"
 " python quick_reset.py --reset-seed"
 msgstr ""
+"Chyba během resetování a načítání: %(error)s. Použijte prosím příkazový "
+"řádek: python quick_reset.py --reset-seed"
 
-#: app.py:1667
+#: app.py:1680
 msgid "Your registration has been approved!"
-msgstr ""
+msgstr "Vaše registrace byla schválena!"
 
-#: app.py:1671
+#: app.py:1684
 #, python-format
 msgid ""
 "\n"
@@ -147,12 +160,25 @@ msgid ""
 "        The Admin Team\n"
 "        "
 msgstr ""
+"\n"
+"        Vážený hoste,\n"
+"        \n"
+"        Vaše registrace pro %(trip_title)s byla schválena!\n"
+"        \n"
+"        Vaše osobní údaje byly zpracovány a všechny nahrané dokumenty "
+"byly bezpečně smazány v souladu s nařízením GDPR.\n"
+"        \n"
+"        Děkujeme za využití naší služby.\n"
+"        \n"
+"        S pozdravem,\n"
+"        Administrátorský tým\n"
+"        "
 
-#: app.py:1691
+#: app.py:1704
 msgid "Registration Update Required"
-msgstr ""
+msgstr "Vyžadována aktualizace registrace"
 
-#: app.py:1695
+#: app.py:1708
 #, python-format
 msgid ""
 "\n"
@@ -170,47 +196,62 @@ msgid ""
 "        The Admin Team\n"
 "        "
 msgstr ""
+"\n"
+"        Vážený hoste,\n"
+"        \n"
+"        Vaše registrace pro %(trip_title)s vyžaduje aktualizace.\n"
+"        \n"
+"        Komentář administrátora: %(admin_comment)s\n"
+"        \n"
+"        Prosím aktualizujte své informace pomocí tohoto odkazu: "
+"%(update_link)s\n"
+"        \n"
+"        Děkujeme za pochopení.\n"
+"        \n"
+"        S pozdravem,\n"
+"        Administrátorský tým\n"
+"        "
 
 #: templates/base.html:69
 msgid "Home"
-msgstr ""
+msgstr "Domů"
 
 #: templates/base.html:72
 msgid "About"
-msgstr ""
+msgstr "O nás"
 
 #: templates/base.html:75
 msgid "Contact"
-msgstr ""
+msgstr "Kontakt"
 
 #: templates/base.html:78
 msgid "GDPR"
-msgstr ""
+msgstr "GDPR"
 
 #: templates/base.html:84
 msgid "Dashboard"
-msgstr ""
+msgstr "Nástěnka"
 
 #: templates/base.html:87
 msgid "Logout"
-msgstr ""
+msgstr "Odhlásit"
 
 #: templates/admin/login.html:3 templates/admin/login.html:12
 #: templates/base.html:91
 msgid "Admin Login"
-msgstr ""
+msgstr "Přihlášení administrátora"
 
 #: templates/confirm.html:3
 msgid "Confirm Registration"
-msgstr ""
+msgstr "Potvrdit registraci"
 
 #: templates/confirm.html:12
 msgid "Confirm Your Registration"
-msgstr ""
+msgstr "Potvrďte svou registraci"
 
 #: templates/confirm.html:17
 msgid "Please review your information before submitting"
-msgstr ""
+msgstr "Prosím zkontrolujte své informace před odesláním"
 
 #: templates/confirm.html:19
 msgid ""
@@ -218,168 +259,174 @@ msgid ""
 "                            You will receive an email notification with "
 "the result."
 msgstr ""
+"Po odeslání bude vaše registrace přezkoumána administrátorem. Obdržíte "
+"emailové oznámení s výsledkem."
 
 #: templates/confirm.html:26
 msgid "Trip Information"
-msgstr ""
+msgstr "Informace o výletu"
 
 #: templates/confirm.html:31
 msgid "Trip Title"
-msgstr ""
+msgstr "Název výletu"
 
 #: templates/confirm.html:32
 msgid "Start Date"
-msgstr ""
+msgstr "Datum začátku"
 
 #: templates/confirm.html:34
 msgid "End Date"
-msgstr ""
+msgstr "Datum konce"
 
 #: templates/confirm.html:37
 msgid "Maximum Guests"
-msgstr ""
+msgstr "Maximální počet hostů"
 
 #: templates/confirm.html:39 templates/register.html:15
 msgid "Confirmation Code"
-msgstr ""
+msgstr "Potvrzovací kód"
 
 #: templates/confirm.html:49 templates/register.html:45
 msgid "Contact Information"
-msgstr ""
+msgstr "Kontaktní informace"
 
 #: templates/confirm.html:52 templates/register.html:47
 msgid "Email Address"
-msgstr ""
+msgstr "Emailová adresa"
 
 #: templates/confirm.html:59 templates/register.html:93
 msgid "Guest Information"
-msgstr ""
+msgstr "Informace o hostech"
 
 #: templates/confirm.html:60
 msgid "guest(s)"
-msgstr ""
+msgstr "host(é)"
 
 #: templates/confirm.html:65 templates/register.html:120
 msgid "Guest"
-msgstr ""
+msgstr "Host"
 
 #: templates/confirm.html:68
 msgid "Name"
-msgstr ""
+msgstr "Jméno"
 
 #: templates/confirm.html:70 templates/register.html:138
 msgid "Document Type"
-msgstr ""
+msgstr "Typ dokumentu"
 
 #: templates/confirm.html:71 templates/register.html:149
 msgid "Document Number"
-msgstr ""
+msgstr "Číslo dokumentu"
 
 #: templates/confirm.html:74
 msgid "GDPR Consent"
-msgstr ""
+msgstr "Souhlas s GDPR"
 
 #: templates/confirm.html:76
 msgid "Yes"
-msgstr ""
+msgstr "Ano"
 
 #: templates/confirm.html:78
 msgid "No"
-msgstr ""
+msgstr "Ne"
 
 #: templates/confirm.html:91 templates/register.html:57
 msgid "Invoice Request"
-msgstr ""
+msgstr "Požadavek na fakturu"
 
 #: templates/confirm.html:96 templates/register.html:70
 msgid "Client Name"
-msgstr ""
+msgstr "Jméno klienta"
 
 #: templates/confirm.html:98 templates/register.html:77
 msgid "VAT Number"
-msgstr ""
+msgstr "DIČ"
 
 #: templates/confirm.html:103 templates/register.html:84
 msgid "Billing Address"
-msgstr ""
+msgstr "Fakturační adresa"
 
 #: templates/confirm.html:116
 msgid "Go Back"
-msgstr ""
+msgstr "Zpět"
 
 #: templates/confirm.html:119
 msgid "Submit Registration"
-msgstr ""
+msgstr "Odeslat registraci"
 
 #: templates/index.html:3
 msgid "Guest Registration System"
-msgstr ""
+msgstr "Systém registrace hostů"
 
 #: templates/index.html:9 templates/register_landing.html:17
 msgid "Welcome to Guest Registration"
-msgstr ""
+msgstr "Vítejte v systému registrace hostů"
 
 #: templates/index.html:11
 msgid ""
 "Secure and GDPR-compliant guest registration system for your trips and "
 "accommodations."
 msgstr ""
+"Bezpečný a GDPR kompatibilní systém registrace hostů pro vaše výlety a "
+"ubytování."
 
 #: templates/index.html:19
 msgid "Secure & Compliant"
-msgstr ""
+msgstr "Bezpečné a kompatibilní"
 
 #: templates/index.html:20
 msgid ""
 "Full GDPR compliance with automatic document deletion after\n"
 "                                approval."
-msgstr ""
+msgstr "Plná GDPR kompatibilita s automatickým mazáním dokumentů po schválení."
 
 #: templates/index.html:29
 msgid "Easy to Use"
-msgstr ""
+msgstr "Snadné použití"
 
 #: templates/index.html:30
 msgid "Simple registration process with mobile-friendly interface."
-msgstr ""
+msgstr "Jednoduchý registrační proces s mobilně přívětivým rozhraním."
 
 #: templates/index.html:39
 msgid "Email Notifications"
-msgstr ""
+msgstr "Emailová oznámení"
 
 #: templates/index.html:40
 msgid ""
 "Receive email updates about your registration status and any\n"
 "                                required actions."
 msgstr ""
+"Obdržíte emailové aktualizace o stavu vaší registrace a případných "
+"požadovaných akcích."
 
 #: templates/index.html:48
 msgid "How it works:"
-msgstr ""
+msgstr "Jak to funguje:"
 
 #: templates/index.html:50
 msgid "Fill out the registration form with guest information"
-msgstr ""
+msgstr "Vyplňte registrační formulář s informacemi o hostech"
 
 #: templates/index.html:51
 msgid "Upload required identification documents"
-msgstr ""
+msgstr "Nahrajte požadované identifikační dokumenty"
 
 #: templates/index.html:52
 msgid "Review and confirm your information"
-msgstr ""
+msgstr "Zkontrolujte a potvrďte své informace"
 
 #: templates/index.html:53
 msgid "Submit for admin approval"
-msgstr ""
+msgstr "Odešlete ke schválení administrátorem"
 
 #: templates/index.html:54
 msgid "Receive email notification with the result"
-msgstr ""
+msgstr "Obdržíte emailové oznámení s výsledkem"
 
 #: templates/index.html:59
 msgid "Available Trips"
-msgstr ""
+msgstr "Dostupné výlety"
 
 #: templates/index.html:60
 msgid ""
@@ -387,151 +434,153 @@ msgid ""
 "specific\n"
 "                    trip."
 msgstr ""
+"Kontaktujte organizátora výletu pro získání registračního odkazu pro váš "
+"konkrétní výlet."
 
 #: templates/index.html:65
 msgid "Start Registration"
-msgstr ""
+msgstr "Začít registraci"
 
 #: templates/index.html:67
 msgid "Have your Airbnb confirmation code ready!"
-msgstr ""
+msgstr "Mějte připravený svůj Airbnb potvrzovací kód!"
 
 #: templates/register.html:3
 msgid "Register"
-msgstr ""
+msgstr "Registrovat"
 
 #: templates/register.html:8 templates/register_landing.html:3
 #: templates/register_landing.html:12
 msgid "Guest Registration"
-msgstr ""
+msgstr "Registrace hostů"
 
 #: templates/register.html:13
 msgid "Maximum"
-msgstr ""
+msgstr "Maximum"
 
 #: templates/admin/dashboard.html:79 templates/register.html:13
 msgid "guests"
-msgstr ""
+msgstr "hostů"
 
 #: templates/register.html:21
 msgid "Important Information"
-msgstr ""
+msgstr "Důležité informace"
 
 #: templates/register.html:23
 msgid "All personal data is handled according to GDPR regulations"
-msgstr ""
+msgstr "Všechna osobní data jsou zpracovávána podle nařízení GDPR"
 
 #: templates/register.html:24
 msgid "Uploaded documents will be automatically deleted after approval"
-msgstr ""
+msgstr "Nahrané dokumenty budou automaticky smazány po schválení"
 
 #: templates/register.html:25
 msgid "One email address is required for the entire group"
-msgstr ""
+msgstr "Jedna emailová adresa je vyžadována pro celou skupinu"
 
 #: templates/register.html:26
 msgid "Each guest must provide valid identification"
-msgstr ""
+msgstr "Každý host musí poskytnout platnou identifikaci"
 
 #: templates/register.html:49
 msgid "Enter email address for the group"
-msgstr ""
+msgstr "Zadejte emailovou adresu pro skupinu"
 
 #: templates/register.html:50
 msgid "This email will be used for all communications about this registration."
-msgstr ""
+msgstr "Tento email bude použit pro všechnu komunikaci ohledně této registrace."
 
 #: templates/register.html:62
 msgid "I would like to request an invoice for this registration"
-msgstr ""
+msgstr "Chtěl bych požádat o fakturu pro tuto registraci"
 
 #: templates/register.html:72
 msgid "Full name for invoice"
-msgstr ""
+msgstr "Celé jméno pro fakturu"
 
 #: templates/register.html:79
 msgid "VAT number (optional)"
-msgstr ""
+msgstr "DIČ (volitelné)"
 
 #: templates/register.html:86
 msgid "Enter billing address"
-msgstr ""
+msgstr "Zadejte fakturační adresu"
 
 #: templates/register.html:98
 msgid "Add Another Guest"
-msgstr ""
+msgstr "Přidat dalšího hosta"
 
 #: templates/register.html:104
 msgid "Continue to Review"
-msgstr ""
+msgstr "Pokračovat k přezkoumání"
 
 #: templates/register.html:124
 msgid "First Name"
-msgstr ""
+msgstr "Jméno"
 
 #: templates/register.html:130
 msgid "Last Name"
-msgstr ""
+msgstr "Příjmení"
 
 #: templates/register.html:140
 msgid "Select document type"
-msgstr ""
+msgstr "Vyberte typ dokumentu"
 
 #: templates/register.html:141
 msgid "Passport"
-msgstr ""
+msgstr "Pas"
 
 #: templates/register.html:142
 msgid "Driving License"
-msgstr ""
+msgstr "Řidičský průkaz"
 
 #: templates/register.html:143
 msgid "Citizen ID"
-msgstr ""
+msgstr "Občanský průkaz"
 
 #: templates/register.html:155
 msgid "Document Image"
-msgstr ""
+msgstr "Obrázek dokumentu"
 
 #: templates/register.html:157
 msgid "Upload a clear photo of the document"
-msgstr ""
+msgstr "Nahrajte jasnou fotografii dokumentu"
 
 #: templates/register.html:163
 msgid ""
 "I consent to the processing of my personal data according to GDPR "
 "regulations"
-msgstr ""
+msgstr "Souhlasím se zpracováním mých osobních údajů podle nařízení GDPR"
 
 #: templates/register.html:168
 msgid "Remove Guest"
-msgstr ""
+msgstr "Odebrat hosta"
 
 #: templates/register_landing.html:19
 msgid ""
 "Please enter your Airbnb confirmation code to proceed with your "
 "registration."
-msgstr ""
+msgstr "Prosím zadejte svůj Airbnb potvrzovací kód pro pokračování v registraci."
 
 #: templates/register_landing.html:38
 msgid "Airbnb Confirmation Code"
-msgstr ""
+msgstr "Airbnb potvrzovací kód"
 
 #: templates/register_landing.html:41
 msgid "Enter your confirmation code"
-msgstr ""
+msgstr "Zadejte svůj potvrzovací kód"
 
 #: templates/register_landing.html:45
 msgid "This is the confirmation code from your Airbnb reservation email."
-msgstr ""
+msgstr "Toto je potvrzovací kód z vašeho Airbnb rezervačního emailu."
 
 #: templates/register_landing.html:51
 msgid "Continue to Registration"
-msgstr ""
+msgstr "Pokračovat k registraci"
 
 #: templates/register_landing.html:59
 msgid "Need Help?"
-msgstr ""
+msgstr "Potřebujete pomoc?"
 
 #: templates/register_landing.html:61
 msgid ""
@@ -539,18 +588,20 @@ msgid ""
 "reservation email\n"
 "                            or contact your host for assistance."
 msgstr ""
+"Pokud nemůžete najít svůj potvrzovací kód, zkontrolujte prosím svůj "
+"Airbnb rezervační email nebo kontaktujte svého hostitele pro pomoc."
 
 #: templates/register_landing.html:65
 msgid "About This Service"
-msgstr ""
+msgstr "O této službě"
 
 #: templates/success.html:3
 msgid "Registration Submitted"
-msgstr ""
+msgstr "Registrace odeslána"
 
 #: templates/success.html:14
 msgid "Registration Submitted Successfully!"
-msgstr ""
+msgstr "Registrace byla úspěšně odeslána!"
 
 #: templates/success.html:17
 msgid ""
@@ -558,18 +609,20 @@ msgid ""
 "been received and is\n"
 "                    now pending admin approval."
 msgstr ""
+"Děkujeme za odeslání vaší registrace hostů. Vaše informace byly přijaty a"
+" nyní čekají na schválení administrátorem."
 
 #: templates/success.html:22
 msgid "What happens next?"
-msgstr ""
+msgstr "Co se stane dál?"
 
 #: templates/success.html:24
 msgid "An administrator will review your registration within 24-48 hours"
-msgstr ""
+msgstr "Administrátor přezkoumá vaši registraci do 24-48 hodin"
 
 #: templates/success.html:25
 msgid "You will receive an email notification with the approval status"
-msgstr ""
+msgstr "Obdržíte emailové oznámení se stavem schválení"
 
 #: templates/success.html:26
 msgid ""
@@ -577,16 +630,20 @@ msgid ""
 "GDPR\n"
 "                            compliance"
 msgstr ""
+"Pokud bude schválena, vaše nahrané dokumenty budou automaticky smazány "
+"pro GDPR kompatibilitu"
 
 #: templates/success.html:28
 msgid ""
 "If any corrections are needed, you'll receive a link to update your "
 "information"
 msgstr ""
+"Pokud budou potřeba nějaké opravy, obdržíte odkaz pro aktualizaci vašich "
+"informací"
 
 #: templates/success.html:34
 msgid "Data Protection"
-msgstr ""
+msgstr "Ochrana dat"
 
 #: templates/success.html:36
 msgid ""
@@ -595,68 +652,71 @@ msgid ""
 "                        be securely deleted after approval to ensure your"
 " privacy."
 msgstr ""
+"Vaše osobní údaje jsou chráněny podle nařízení GDPR. Všechny nahrané "
+"dokumenty budou bezpečně smazány po schválení pro zajištění vašeho "
+"soukromí."
 
 #: templates/admin/dashboard.html:3 templates/admin/dashboard.html:9
 msgid "Admin Dashboard"
-msgstr ""
+msgstr "Administrátorská nástěnka"
 
 #: templates/admin/dashboard.html:19
 msgid "Total Trips"
-msgstr ""
+msgstr "Celkem výletů"
 
 #: templates/admin/dashboard.html:34
 msgid "Pending Registrations"
-msgstr ""
+msgstr "Čekající registrace"
 
 #: templates/admin/dashboard.html:49 templates/admin/dashboard.html:101
 msgid "Quick Actions"
-msgstr ""
+msgstr "Rychlé akce"
 
 #: templates/admin/dashboard.html:50
 msgid "Manage your system"
-msgstr ""
+msgstr "Spravujte svůj systém"
 
 #: templates/admin/dashboard.html:65
 msgid "Recent Trips"
-msgstr ""
+msgstr "Poslední výlety"
 
 #: templates/admin/dashboard.html:84
 msgid "No trips created yet."
-msgstr ""
+msgstr "Zatím nebyly vytvořeny žádné výlety."
 
 #: templates/admin/dashboard.html:88
 msgid "View All Trips"
-msgstr ""
+msgstr "Zobrazit všechny výlety"
 
 #: templates/admin/dashboard.html:91
 msgid "New Trip"
-msgstr ""
+msgstr "Nový výlet"
 
 #: templates/admin/dashboard.html:108
 msgid "Review Registrations"
-msgstr ""
+msgstr "Přezkoumat registrace"
 
 #: templates/admin/dashboard.html:114
 msgid "Manage Invoices"
-msgstr ""
+msgstr "Spravovat faktury"
 
 #: templates/admin/dashboard.html:120
 msgid "Settings"
-msgstr ""
+msgstr "Nastavení"
 
 #: templates/admin/dashboard.html:126
 msgid "Data Management"
-msgstr ""
+msgstr "Správa dat"
 
 #: templates/admin/login.html:30
 msgid "Username"
-msgstr ""
+msgstr "Uživatelské jméno"
 
 #: templates/admin/login.html:34
 msgid "Password"
-msgstr ""
+msgstr "Heslo"
 
 #: templates/admin/login.html:39
 msgid "Login"
-msgstr ""
+msgstr "Přihlásit"
 

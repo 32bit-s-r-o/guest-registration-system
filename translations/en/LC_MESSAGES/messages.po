@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-06-23 01:09+0200\n"
+"POT-Creation-Date: 2025-06-23 01:21+0200\n"
 "PO-Revision-Date: 2025-06-23 01:07+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -18,100 +18,100 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: app.py:383
+#: app.py:396
 #, python-format
 msgid "Thank you for your message, %(name)s! We will get back to you soon."
 msgstr ""
 
-#: app.py:410
+#: app.py:423
 msgid "Please enter a confirmation code"
 msgstr ""
 
-#: app.py:416 app.py:432
+#: app.py:429 app.py:445
 msgid "Invalid confirmation code. Please check your code and try again."
 msgstr ""
 
-#: app.py:584
+#: app.py:597
 msgid ""
 "Registration submitted successfully! You will receive an email once it is"
 " reviewed."
 msgstr ""
 
-#: app.py:603
+#: app.py:616
 msgid "Invalid username or password"
 msgstr ""
 
-#: app.py:650
+#: app.py:663
 msgid "Settings updated successfully!"
 msgstr ""
 
-#: app.py:662
+#: app.py:675
 #, python-format
 msgid "Airbnb sync successful: %(message)s"
 msgstr ""
 
-#: app.py:664
+#: app.py:677
 #, python-format
 msgid "Airbnb sync failed: %(message)s"
 msgstr ""
 
-#: app.py:687
+#: app.py:700
 msgid "Trip created successfully!"
 msgstr ""
 
-#: app.py:725
+#: app.py:738
 msgid "Registration approved and email sent to user"
 msgstr ""
 
-#: app.py:741
+#: app.py:754
 msgid "Registration rejected and email sent to user"
 msgstr ""
 
-#: app.py:809
+#: app.py:822
 msgid "Invoice created successfully!"
 msgstr ""
 
-#: app.py:874
+#: app.py:887
 msgid "Invoice updated successfully!"
 msgstr ""
 
-#: app.py:896
+#: app.py:909
 msgid "Invoice deleted successfully!"
 msgstr ""
 
-#: app.py:912
+#: app.py:925
 #, python-format
 msgid "Invoice status changed from %(old_status)s to %(new_status)s successfully!"
 msgstr ""
 
-#: app.py:914
+#: app.py:927
 msgid "Invalid status provided."
 msgstr ""
 
-#: app.py:1080
+#: app.py:1093
 msgid "All data has been reset successfully! Admin accounts have been preserved."
 msgstr ""
 
-#: app.py:1085
+#: app.py:1098
 #, python-format
 msgid ""
 "Error resetting data: %(error)s. Please use the command line tool: python"
 " quick_reset.py --confirm"
 msgstr ""
 
-#: app.py:1430
+#: app.py:1443
 msgid ""
 "Sample data has been seeded successfully! Created 5 trips, 7 "
 "registrations (including 1 single-person pending), 3 invoices with "
 "realistic data, and updated admin contact information."
 msgstr ""
 
-#: app.py:1433
+#: app.py:1446
 #, python-format
 msgid "Error seeding data: %(error)s"
 msgstr ""
 
-#: app.py:1655
+#: app.py:1668
 msgid ""
 "Database has been reset and seeded with sample data successfully! Admin "
 "accounts have been preserved. Created 5 trips and 6 registrations with "
@@ -119,18 +119,18 @@ msgid ""
 "directory."
 msgstr ""
 
-#: app.py:1660
+#: app.py:1673
 #, python-format
 msgid ""
 "Error during reset and seed: %(error)s. Please use the command line tool:"
 " python quick_reset.py --reset-seed"
 msgstr ""
 
-#: app.py:1667
+#: app.py:1680
 msgid "Your registration has been approved!"
 msgstr ""
 
-#: app.py:1671
+#: app.py:1684
 #, python-format
 msgid ""
 "\n"
@@ -148,11 +148,11 @@ msgid ""
 "        "
 msgstr ""
 
-#: app.py:1691
+#: app.py:1704
 msgid "Registration Update Required"
 msgstr ""
 
-#: app.py:1695
+#: app.py:1708
 #, python-format
 msgid ""
 "\n"
