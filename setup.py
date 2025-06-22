@@ -40,7 +40,9 @@ def test_database_connection():
     try:
         with app.app_context():
             # Test connection by executing a simple query
-            db.engine.execute("SELECT 1")
+            with db.engine.connect() as connection:
+                result = connection.execute(db.text("SELECT 1"))
+                result.fetchone()
             print("✅ Database connection successful!")
             
             # Show database info
