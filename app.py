@@ -73,11 +73,17 @@ class Admin(UserMixin, db.Model):
     airbnb_last_sync = db.Column(db.DateTime)
     # Contact information
     company_name = db.Column(db.String(200))
+    company_ico = db.Column(db.String(50))  # Company identification number
+    company_vat = db.Column(db.String(50))  # VAT number
     contact_name = db.Column(db.String(200))
     contact_phone = db.Column(db.String(50))
     contact_address = db.Column(db.Text)
     contact_website = db.Column(db.String(200))
     contact_description = db.Column(db.Text)
+    # Additional custom lines (for future use)
+    custom_line_1 = db.Column(db.String(200))
+    custom_line_2 = db.Column(db.String(200))
+    custom_line_3 = db.Column(db.String(200))
 
 class Trip(db.Model):
     __tablename__ = f"{app.config['TABLE_PREFIX']}trip"
@@ -518,18 +524,21 @@ def admin_settings():
         # Update admin profile
         current_user.email = request.form.get('email')
         current_user.company_name = request.form.get('company_name')
-        
-        # Update Airbnb settings
-        current_user.airbnb_listing_id = request.form.get('airbnb_listing_id')
-        current_user.airbnb_calendar_url = request.form.get('airbnb_calendar_url')
-        current_user.airbnb_sync_enabled = request.form.get('airbnb_sync_enabled') == 'on'
-        
-        # Update contact information
+        current_user.company_ico = request.form.get('company_ico')
+        current_user.company_vat = request.form.get('company_vat')
         current_user.contact_name = request.form.get('contact_name')
         current_user.contact_phone = request.form.get('contact_phone')
         current_user.contact_address = request.form.get('contact_address')
         current_user.contact_website = request.form.get('contact_website')
         current_user.contact_description = request.form.get('contact_description')
+        current_user.custom_line_1 = request.form.get('custom_line_1')
+        current_user.custom_line_2 = request.form.get('custom_line_2')
+        current_user.custom_line_3 = request.form.get('custom_line_3')
+        
+        # Update Airbnb settings
+        current_user.airbnb_listing_id = request.form.get('airbnb_listing_id')
+        current_user.airbnb_calendar_url = request.form.get('airbnb_calendar_url')
+        current_user.airbnb_sync_enabled = request.form.get('airbnb_sync_enabled') == 'on'
         
         # Update password if provided
         new_password = request.form.get('new_password')

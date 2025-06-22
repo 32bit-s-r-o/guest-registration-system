@@ -170,6 +170,25 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
+                                <label for="company_ico" class="form-label">Company ICO</label>
+                                <input type="text" class="form-control" id="company_ico" name="company_ico"
+                                    value="{{ current_user.company_ico or '' }}" placeholder="e.g., 12345678">
+                                <div class="form-text">Company identification number (optional)</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="company_vat" class="form-label">VAT Number</label>
+                                <input type="text" class="form-control" id="company_vat" name="company_vat"
+                                    value="{{ current_user.company_vat or '' }}" placeholder="e.g., CZ12345678">
+                                <div class="form-text">VAT identification number (optional)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
                                 <label for="contact_phone" class="form-label">Phone Number</label>
                                 <input type="tel" class="form-control" id="contact_phone" name="contact_phone"
                                     value="{{ current_user.contact_phone or '' }}"
@@ -204,6 +223,40 @@
                                     rows="3"
                                     placeholder="Brief description about your property or business">{{ current_user.contact_description or '' }}</textarea>
                                 <div class="form-text">A brief description for contact pages</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Custom Lines Section -->
+                    <div class="alert alert-info" role="alert">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Custom Lines:</strong> Additional information fields for future use. These are not
+                        displayed on public pages yet.
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="custom_line_1" class="form-label">Custom Line 1</label>
+                                <input type="text" class="form-control" id="custom_line_1" name="custom_line_1"
+                                    value="{{ current_user.custom_line_1 or '' }}" placeholder="Custom information">
+                                <div class="form-text">Additional information field</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="custom_line_2" class="form-label">Custom Line 2</label>
+                                <input type="text" class="form-control" id="custom_line_2" name="custom_line_2"
+                                    value="{{ current_user.custom_line_2 or '' }}" placeholder="Custom information">
+                                <div class="form-text">Additional information field</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="custom_line_3" class="form-label">Custom Line 3</label>
+                                <input type="text" class="form-control" id="custom_line_3" name="custom_line_3"
+                                    value="{{ current_user.custom_line_3 or '' }}" placeholder="Custom information">
+                                <div class="form-text">Additional information field</div>
                             </div>
                         </div>
                     </div>

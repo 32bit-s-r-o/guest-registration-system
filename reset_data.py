@@ -65,12 +65,18 @@ def create_sample_admin():
                 email='admin@example.com',
                 password_hash=generate_password_hash('admin123'),
                 company_name='Guest Registration System',
+                company_ico='12345678',
+                company_vat='CZ12345678',
                 # Sample contact information
                 contact_name='John Smith',
                 contact_phone='+1 (555) 123-4567',
                 contact_address='123 Main Street\nAnytown, ST 12345\nUnited States',
                 contact_website='https://example.com',
-                contact_description='Professional vacation rental management with over 10 years of experience providing exceptional guest experiences.'
+                contact_description='Professional vacation rental management with over 10 years of experience providing exceptional guest experiences.',
+                # Custom lines
+                custom_line_1='Business Hours: Mon-Fri 9AM-5PM',
+                custom_line_2='Emergency Contact: +1 (555) 999-8888',
+                custom_line_3='License: VR-12345'
             )
             db.session.add(admin)
             db.session.commit()
