@@ -155,7 +155,7 @@
 {% block scripts %}
 <script>
     let itemCount = 0;
-    const existingItems = {{ invoice.items | tojson }};
+    const existingItems = {{ items_data | tojson }};
 
     function addInvoiceItem(description = '', quantity = 1, unitPrice = 0, vatRate = 0) {
         const container = document.getElementById('invoiceItems');

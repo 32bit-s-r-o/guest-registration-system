@@ -871,7 +871,17 @@ def edit_invoice(invoice_id):
         flash('Invoice updated successfully!', 'success')
         return redirect(url_for('view_invoice', invoice_id=invoice.id))
     
-    return render_template('admin/edit_invoice.html', invoice=invoice)
+    # Convert invoice items to dictionaries for JSON serialization
+    items_data = []
+    for item in invoice.items:
+        items_data.append({
+            'description': item.description,
+            'quantity': float(item.quantity),
+            'unit_price': float(item.unit_price),
+            'vat_rate': float(item.vat_rate)
+        })
+    
+    return render_template('admin/edit_invoice.html', invoice=invoice, items_data=items_data)
 
 @app.route('/admin/invoices/<int:invoice_id>/delete', methods=['POST'])
 @login_required
@@ -898,7 +908,7 @@ def generate_invoice_pdf(invoice_id):
         @page { 
             size: A4; 
             margin: 2cm;
-            @top-center { content: "Invoice {{ invoice.invoice_number }}"; }
+            @top-center { content: "Invoice"; }
             @bottom-center { content: "Page " counter(page) " of " counter(pages); }
         }
         body { 
