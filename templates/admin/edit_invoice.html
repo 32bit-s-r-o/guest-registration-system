@@ -161,6 +161,7 @@
         const container = document.getElementById('invoiceItems');
         const itemDiv = document.createElement('div');
         itemDiv.className = 'invoice-item border rounded p-3 mb-3';
+        itemDiv.setAttribute('data-item-index', itemCount);
         itemDiv.innerHTML = `
         <div class="row">
             <div class="col-md-5">
@@ -171,17 +172,17 @@
             <div class="col-md-2">
                 <label class="form-label">Quantity</label>
                 <input type="number" class="form-control item-quantity" name="item_quantity_${itemCount}" 
-                       value="${quantity}" min="0.01" step="0.01" onchange="calculateItemTotal(${itemCount})">
+                       value="${quantity}" min="0.01" step="0.01" onchange="calculateItemTotal(this)">
             </div>
             <div class="col-md-2">
                 <label class="form-label">Unit Price *</label>
                 <input type="number" class="form-control item-price" name="item_unit_price_${itemCount}" 
-                       value="${unitPrice}" min="0" step="0.01" required onchange="calculateItemTotal(${itemCount})">
+                       value="${unitPrice}" min="0" step="0.01" required onchange="calculateItemTotal(this)">
             </div>
             <div class="col-md-2">
                 <label class="form-label">VAT %</label>
                 <input type="number" class="form-control item-vat" name="item_vat_rate_${itemCount}" 
-                       value="${vatRate}" min="0" max="100" step="0.01" onchange="calculateItemTotal(${itemCount})">
+                       value="${vatRate}" min="0" max="100" step="0.01" onchange="calculateItemTotal(this)">
             </div>
             <div class="col-md-1">
                 <label class="form-label">&nbsp;</label>
@@ -204,7 +205,7 @@
         updateItemCount();
 
         // Calculate totals for this item
-        setTimeout(() => calculateItemTotal(itemCount - 1), 100);
+        setTimeout(() => calculateItemTotal(itemDiv.querySelector('.item-quantity')), 100);
     }
 
     function removeItem(button) {
@@ -212,17 +213,17 @@
         calculateTotals();
     }
 
-    function calculateItemTotal(index) {
-        const item = document.querySelector(`[name="item_quantity_${index}"]`).closest('.invoice-item');
-        const quantity = parseFloat(item.querySelector('.item-quantity').value) || 0;
-        const price = parseFloat(item.querySelector('.item-price').value) || 0;
-        const vatRate = parseFloat(item.querySelector('.item-vat').value) || 0;
+    function calculateItemTotal(inputElement) {
+        const itemDiv = inputElement.closest('.invoice-item');
+        const quantity = parseFloat(itemDiv.querySelector('.item-quantity').value) || 0;
+        const price = parseFloat(itemDiv.querySelector('.item-price').value) || 0;
+        const vatRate = parseFloat(itemDiv.querySelector('.item-vat').value) || 0;
 
         const lineTotal = quantity * price;
         const vatAmount = lineTotal * (vatRate / 100);
 
-        item.querySelector('.item-line-total').textContent = lineTotal.toFixed(2);
-        item.querySelector('.item-vat-amount').textContent = vatAmount.toFixed(2);
+        itemDiv.querySelector('.item-line-total').textContent = lineTotal.toFixed(2);
+        itemDiv.querySelector('.item-vat-amount').textContent = vatAmount.toFixed(2);
 
         calculateTotals();
     }
@@ -251,6 +252,12 @@
     }
 
     function updateItemCount() {
+        // Remove existing item_count input if it exists
+        const existingInput = document.querySelector('input[name="item_count"]');
+        if (existingInput) {
+            existingInput.remove();
+        }
+
         const input = document.createElement('input');
         input.type = 'hidden';
         input.name = 'item_count';
