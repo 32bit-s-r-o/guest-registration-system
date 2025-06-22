@@ -40,6 +40,16 @@
                         </div>
                     </div>
 
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="client_vat_number" class="form-label">VAT Number (if applicable)</label>
+                                <input type="text" class="form-control" id="client_vat_number" name="client_vat_number"
+                                    value="{{ invoice.client_vat_number or '' }}">
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="mb-3">
                         <label for="client_address" class="form-label">Client Address</label>
                         <textarea class="form-control" id="client_address" name="client_address"

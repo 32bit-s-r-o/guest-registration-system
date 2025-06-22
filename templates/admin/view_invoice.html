@@ -51,6 +51,9 @@
                         {% if invoice.client_email %}
                         <p><strong>Email:</strong> {{ invoice.client_email }}</p>
                         {% endif %}
+                        {% if invoice.client_vat_number %}
+                        <p><strong>VAT Number:</strong> {{ invoice.client_vat_number }}</p>
+                        {% endif %}
                         {% if invoice.client_address %}
                         <p><strong>Address:</strong><br>{{ invoice.client_address | nl2br }}</p>
                         {% endif %}

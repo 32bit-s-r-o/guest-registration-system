@@ -140,6 +140,7 @@ class Invoice(db.Model):
     registration_id = db.Column(db.Integer, db.ForeignKey(f'{app.config["TABLE_PREFIX"]}registration.id'))
     client_name = db.Column(db.String(200), nullable=False)
     client_email = db.Column(db.String(200))
+    client_vat_number = db.Column(db.String(50))
     client_address = db.Column(db.Text)
     issue_date = db.Column(db.Date, nullable=False, default=datetime.utcnow().date)
     due_date = db.Column(db.Date)
@@ -540,6 +541,7 @@ def submit_for_approval():
             registration_id=registration.id,
             client_name=client_name,
             client_email=data['email'],
+            client_vat_number=data['invoice_data']['vat_number'],
             client_address=data['invoice_data']['address'],
             issue_date=datetime.utcnow().date(),
             currency=data['invoice_data']['currency'],
@@ -754,6 +756,7 @@ def new_invoice():
             registration_id=request.form.get('registration_id'),
             client_name=request.form.get('client_name'),
             client_email=request.form.get('client_email'),
+            client_vat_number=request.form.get('client_vat_number'),
             client_address=request.form.get('client_address'),
             issue_date=datetime.strptime(request.form.get('issue_date'), '%Y-%m-%d').date(),
             due_date=datetime.strptime(request.form.get('due_date'), '%Y-%m-%d').date() if request.form.get('due_date') else None,
@@ -818,6 +821,7 @@ def edit_invoice(invoice_id):
         # Update invoice details
         invoice.client_name = request.form.get('client_name')
         invoice.client_email = request.form.get('client_email')
+        invoice.client_vat_number = request.form.get('client_vat_number')
         invoice.client_address = request.form.get('client_address')
         invoice.issue_date = datetime.strptime(request.form.get('issue_date'), '%Y-%m-%d').date()
         invoice.due_date = datetime.strptime(request.form.get('due_date'), '%Y-%m-%d').date() if request.form.get('due_date') else None
