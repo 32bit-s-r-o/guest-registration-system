@@ -15,6 +15,7 @@ import re
 import threading
 import time
 import shutil
+from markupsafe import Markup
 
 load_dotenv()
 
@@ -70,6 +71,13 @@ class Admin(UserMixin, db.Model):
     airbnb_calendar_url = db.Column(db.Text)
     airbnb_sync_enabled = db.Column(db.Boolean, default=False)
     airbnb_last_sync = db.Column(db.DateTime)
+    # Contact information
+    company_name = db.Column(db.String(200))
+    contact_name = db.Column(db.String(200))
+    contact_phone = db.Column(db.String(50))
+    contact_address = db.Column(db.Text)
+    contact_website = db.Column(db.String(200))
+    contact_description = db.Column(db.Text)
 
 class Trip(db.Model):
     __tablename__ = f"{app.config['TABLE_PREFIX']}trip"
@@ -280,6 +288,14 @@ def sync_airbnb_reservations(admin_id):
         db.session.rollback()
         return {'success': False, 'message': f'Error syncing: {str(e)}'}
 
+# Custom Jinja2 filters
+@app.template_filter('nl2br')
+def nl2br_filter(text):
+    """Convert newlines to HTML line breaks."""
+    if text:
+        return Markup(text.replace('\n', '<br>'))
+    return text
+
 # Routes
 @app.route('/')
 def index():
@@ -289,9 +305,30 @@ def index():
 def about():
     return render_template('about.html')
 
+@app.route('/contact', methods=['GET', 'POST'])
+def contact():
+    """Contact page with admin contact information."""
+    # Get the first admin's contact information
+    admin_contact = Admin.query.first()
+    
+    if request.method == 'POST':
+        # Handle contact form submission
+        name = request.form.get('name')
+        email = request.form.get('email')
+        subject = request.form.get('subject')
+        message = request.form.get('message')
+        
+        # For now, just show a success message
+        # In a real application, you would send an email here
+        flash(f'Thank you for your message, {name}! We will get back to you soon.', 'success')
+        return redirect(url_for('contact'))
+    
+    return render_template('contact.html', admin_contact=admin_contact)
+
 @app.route('/gdpr')
 def gdpr():
-    return render_template('gdpr.html')
+    admin_contact = Admin.query.first()
+    return render_template('gdpr.html', admin_contact=admin_contact)
 
 @app.route('/uploads/<filename>')
 @login_required
@@ -480,11 +517,19 @@ def admin_settings():
     if request.method == 'POST':
         # Update admin profile
         current_user.email = request.form.get('email')
+        current_user.company_name = request.form.get('company_name')
         
         # Update Airbnb settings
         current_user.airbnb_listing_id = request.form.get('airbnb_listing_id')
         current_user.airbnb_calendar_url = request.form.get('airbnb_calendar_url')
         current_user.airbnb_sync_enabled = request.form.get('airbnb_sync_enabled') == 'on'
+        
+        # Update contact information
+        current_user.contact_name = request.form.get('contact_name')
+        current_user.contact_phone = request.form.get('contact_phone')
+        current_user.contact_address = request.form.get('contact_address')
+        current_user.contact_website = request.form.get('contact_website')
+        current_user.contact_description = request.form.get('contact_description')
         
         # Update password if provided
         new_password = request.form.get('new_password')

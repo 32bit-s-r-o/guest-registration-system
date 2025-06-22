@@ -135,6 +135,87 @@
                 </div>
             </div>
 
+            <!-- Contact Information -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0"><i class="fas fa-address-book"></i> Contact Information</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info" role="alert">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Contact Information:</strong> This information can be displayed on contact pages or used
+                        in communications with guests.
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="company_name" class="form-label">Company Name</label>
+                                <input type="text" class="form-control" id="company_name" name="company_name"
+                                    value="{{ current_user.company_name or '' }}"
+                                    placeholder="e.g., Guest Registration System">
+                                <div class="form-text">The company or organization name shown on public pages</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="contact_name" class="form-label">Contact Name</label>
+                                <input type="text" class="form-control" id="contact_name" name="contact_name"
+                                    value="{{ current_user.contact_name or '' }}" placeholder="e.g., John Smith">
+                                <div class="form-text">The name to display for contact purposes</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="contact_phone" class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" id="contact_phone" name="contact_phone"
+                                    value="{{ current_user.contact_phone or '' }}"
+                                    placeholder="e.g., +1 (555) 123-4567">
+                                <div class="form-text">Contact phone number for guests</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="contact_address" class="form-label">Address</label>
+                                <textarea class="form-control" id="contact_address" name="contact_address" rows="3"
+                                    placeholder="Enter your full address">{{ current_user.contact_address or '' }}</textarea>
+                                <div class="form-text">Your business or property address</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="contact_website" class="form-label">Website</label>
+                                <input type="url" class="form-control" id="contact_website" name="contact_website"
+                                    value="{{ current_user.contact_website or '' }}"
+                                    placeholder="https://yourwebsite.com">
+                                <div class="form-text">Your website URL (optional)</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="contact_description" class="form-label">Description</label>
+                                <textarea class="form-control" id="contact_description" name="contact_description"
+                                    rows="3"
+                                    placeholder="Brief description about your property or business">{{ current_user.contact_description or '' }}</textarea>
+                                <div class="form-text">A brief description for contact pages</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-success" role="alert">
+                        <i class="fas fa-check-circle"></i>
+                        <strong>Usage:</strong> This contact information can be used to create contact pages, display in
+                        guest communications, or integrate with other parts of your website.
+                    </div>
+                </div>
+            </div>
+
             <!-- Sync Information -->
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-info text-white">

@@ -11,6 +11,7 @@ A secure, GDPR-compliant guest registration system built with Flask and PostgreS
 - GDPR-compliant document handling (automatic deletion after approval)
 - Admin dashboard with statistics and management tools
 - **Data management tools for reset and seeding**
+- **Contact information management for guest communications**
 
 ### For Guests
 - Simple registration form with document upload
@@ -201,6 +202,45 @@ The application includes powerful Airbnb calendar integration that automatically
 3. **Trip Creation**: Automatically creates registration forms for each reservation
 4. **Guest Information**: Populates trip details with guest names and counts
 5. **Confirmation Codes**: Extracts and stores Airbnb confirmation codes for easy access
+
+## Contact Information Management
+
+The admin settings include comprehensive contact information management for guest communications and contact pages.
+
+### Contact Information Fields
+
+Admins can configure the following contact details in the Settings page:
+
+- **Contact Name**: The name to display for contact purposes
+- **Phone Number**: Contact phone number for guests
+- **Address**: Business or property address
+- **Website**: Your website URL (optional)
+- **Description**: Brief description about your property or business
+
+### Usage
+
+The contact information is used in:
+
+1. **Contact Page**: Public contact page at `/contact` displaying all contact details
+2. **Guest Communications**: Can be included in email notifications
+3. **Admin Settings**: Centralized management of all contact information
+4. **Future Integration**: Ready for integration with other parts of your website
+
+### Setting Up Contact Information
+
+1. **Login to Admin Panel**: `http://localhost:5000/admin/login`
+2. **Go to Settings**: Click "Settings" in the admin dashboard
+3. **Fill Contact Information**: Enter your contact details in the "Contact Information" section
+4. **Save Settings**: Click "Save Settings" to update
+
+### Contact Page
+
+The public contact page (`/contact`) automatically displays:
+- Contact person name and phone number
+- Email address and website links
+- Full address with proper formatting
+- Contact form for guest inquiries
+- About section with your description
 
 ## Confirmation Code Registration
 

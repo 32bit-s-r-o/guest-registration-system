@@ -63,7 +63,14 @@ def create_sample_admin():
             admin = Admin(
                 username='admin',
                 email='admin@example.com',
-                password_hash=generate_password_hash('admin123')
+                password_hash=generate_password_hash('admin123'),
+                company_name='Guest Registration System',
+                # Sample contact information
+                contact_name='John Smith',
+                contact_phone='+1 (555) 123-4567',
+                contact_address='123 Main Street\nAnytown, ST 12345\nUnited States',
+                contact_website='https://example.com',
+                contact_description='Professional vacation rental management with over 10 years of experience providing exceptional guest experiences.'
             )
             db.session.add(admin)
             db.session.commit()
@@ -72,6 +79,7 @@ def create_sample_admin():
             print("   Username: admin")
             print("   Password: admin123")
             print("   Email: admin@example.com")
+            print("   Contact: John Smith (+1 (555) 123-4567)")
             return True
             
     except Exception as e:

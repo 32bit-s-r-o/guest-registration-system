@@ -24,10 +24,25 @@
                 <h3><i class="fas fa-user-shield"></i> Data Controller</h3>
             </div>
             <div class="card-body">
-                <p><strong>Company:</strong> Guest Registration System</p>
+                <p><strong>Company:</strong> {{ (admin_contact.company_name if admin_contact and
+                    admin_contact.company_name else 'Guest Registration System') }}</p>
+                {% if admin_contact and (admin_contact.contact_address or admin_contact.email or
+                admin_contact.contact_phone) %}
+                {% if admin_contact.contact_address %}
+                <p><strong>Address:</strong> <span>{{ admin_contact.contact_address | nl2br }}</span></p>
+                {% endif %}
+                {% if admin_contact.email %}
+                <p><strong>Email:</strong> <a href="mailto:{{ admin_contact.email }}">{{ admin_contact.email }}</a></p>
+                {% endif %}
+                {% if admin_contact.contact_phone %}
+                <p><strong>Phone:</strong> <a href="tel:{{ admin_contact.contact_phone }}">{{
+                        admin_contact.contact_phone }}</a></p>
+                {% endif %}
+                {% else %}
                 <p><strong>Address:</strong> [Your Company Address]</p>
                 <p><strong>Email:</strong> privacy@guestregistration.com</p>
                 <p><strong>Phone:</strong> +1 (555) 123-4567</p>
+                {% endif %}
             </div>
         </div>
 
@@ -154,7 +169,13 @@
                     <h6><i class="fas fa-exclamation-triangle"></i> How to Exercise Your Rights</h6>
                     <p class="mb-0">
                         To exercise any of these rights, please contact us at
-                        <strong>privacy@guestregistration.com</strong>
+                        <strong>
+                            {% if admin_contact and admin_contact.email %}
+                            <a href="mailto:{{ admin_contact.email }}">{{ admin_contact.email }}</a>
+                            {% else %}
+                            privacy@guestregistration.com
+                            {% endif %}
+                        </strong>
                         with your request. We will respond within 30 days.
                     </p>
                 </div>
