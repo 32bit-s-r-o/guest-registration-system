@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+
+{% block title %}View Registration #{{ registration.id }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-eye"></i> Registration Details</h1>
+            <div>
+                <a href="{{ url_for('admin_registrations') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Registrations
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <!-- Registration Overview -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-info-circle"></i> Registration Overview
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><strong>Registration ID:</strong></h6>
+                        <p class="text-primary">#{{ registration.id }}</p>
+
+                        <h6><strong>Trip:</strong></h6>
+                        <p class="text-primary">{{ registration.trip.title }}</p>
+
+                        <h6><strong>Contact Email:</strong></h6>
+                        <p>{{ registration.email }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><strong>Status:</strong></h6>
+                        <span class="badge bg-warning text-dark">Pending Review</span>
+
+                        <h6><strong>Submitted:</strong></h6>
+                        <p>{{ registration.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+
+                        <h6><strong>Number of Guests:</strong></h6>
+                        <p class="badge bg-info">{{ registration.guests|length }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Guest Details -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-users"></i> Guest Information
+                </h4>
+            </div>
+            <div class="card-body">
+                {% for guest in registration.guests %}
+                <div class="guest-detail mb-4 p-3 border rounded">
+                    <h5 class="text-primary">Guest {{ loop.index }}: {{ guest.first_name }} {{ guest.last_name }}</h5>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><strong>Personal Information:</strong></h6>
+                            <ul class="list-unstyled">
+                                <li><strong>First Name:</strong> {{ guest.first_name }}</li>
+                                <li><strong>Last Name:</strong> {{ guest.last_name }}</li>
+                                <li><strong>Document Type:</strong> {{ guest.document_type|title }}</li>
+                                <li><strong>Document Number:</strong> {{ guest.document_number }}</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><strong>Compliance:</strong></h6>
+                            <ul class="list-unstyled">
+                                <li>
+                                    <strong>GDPR Consent:</strong>
+                                    <span class="badge bg-{{ 'success' if guest.gdpr_consent else 'danger' }}">
+                                        {{ 'Yes' if guest.gdpr_consent else 'No' }}
+                                    </span>
+                                </li>
+                                <li>
+                                    <strong>Document Uploaded:</strong>
+                                    {% if guest.document_image %}
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check"></i> Yes
+                                    </span>
+                                    {% else %}
+                                    <span class="badge bg-danger">
+                                        <i class="fas fa-times"></i> No
+                                    </span>
+                                    {% endif %}
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    {% if guest.document_image %}
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6><strong>Uploaded Document:</strong></h6>
+                            <div class="document-preview-container">
+                                <img src="{{ url_for('uploaded_file', filename=guest.document_image) }}"
+                                    class="img-fluid border rounded" style="max-width: 300px; max-height: 200px;"
+                                    alt="Document for {{ guest.first_name }} {{ guest.last_name }}">
+                                <div class="mt-2">
+                                    <small class="text-muted">File: {{ guest.document_image }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Trip Information -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-plane"></i> Trip Information
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><strong>Trip Title:</strong></h6>
+                        <p class="text-primary">{{ registration.trip.title }}</p>
+
+                        <h6><strong>Start Date:</strong></h6>
+                        <p>{{ registration.trip.start_date.strftime('%B %d, %Y') }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><strong>End Date:</strong></h6>
+                        <p>{{ registration.trip.end_date.strftime('%B %d, %Y') }}</p>
+
+                        <h6><strong>Maximum Guests:</strong></h6>
+                        <p class="badge bg-primary">{{ registration.trip.max_guests }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-warning text-dark">
+                <h4 class="mb-0">
+                    <i class="fas fa-cogs"></i> Actions
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info" role="alert">
+                    <h6><i class="fas fa-info-circle"></i> Important Notes:</h6>
+                    <ul class="mb-0">
+                        <li>All uploaded documents will be automatically deleted upon approval for GDPR compliance</li>
+                        <li>If you reject the registration, provide a clear reason that will be sent to the user</li>
+                        <li>The user will receive an email notification with the result of your review</li>
+                    </ul>
+                </div>
+
+                <div class="d-flex justify-content-center gap-3">
+                    <button type="button" class="btn btn-success btn-lg" data-bs-toggle="modal"
+                        data-bs-target="#approveModal">
+                        <i class="fas fa-check"></i> Approve Registration
+                    </button>
+                    <button type="button" class="btn btn-danger btn-lg" data-bs-toggle="modal"
+                        data-bs-target="#rejectModal">
+                        <i class="fas fa-times"></i> Reject Registration
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Approve Modal -->
+<div class="modal fade" id="approveModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-check"></i> Approve Registration
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to approve this registration?</p>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Note:</strong> Upon approval:
+                    <ul class="mb-0 mt-2">
+                        <li>All uploaded documents will be automatically deleted</li>
+                        <li>An approval email will be sent to {{ registration.email }}</li>
+                        <li>The registration status will be updated to "Approved"</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="{{ url_for('approve_registration', registration_id=registration.id) }}"
+                    style="display: inline;">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check"></i> Approve Registration
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-times"></i> Reject Registration
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Please provide a reason for rejection. This will be sent to the user via email.</p>
+                <form method="POST" action="{{ url_for('reject_registration', registration_id=registration.id) }}">
+                    <div class="mb-3">
+                        <label for="comment" class="form-label">Rejection Reason *</label>
+                        <textarea class="form-control" id="comment" name="comment" rows="4" required
+                            placeholder="Please explain what needs to be corrected or why the registration is being rejected..."></textarea>
+                    </div>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Note:</strong> A rejection email with your comment will be sent to {{ registration.email
+                        }}
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-times"></i> Reject Registration
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

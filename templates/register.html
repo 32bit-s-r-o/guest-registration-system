@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}Register - {{ trip.title }}{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="text-center mb-4">
+        <h2>Guest Registration</h2>
+        <h4 class="text-primary">{{ trip.title }}</h4>
+        <p class="text-muted">
+            <i class="fas fa-calendar"></i> {{ trip.start_date.strftime('%B %d, %Y') }} - {{ trip.end_date.strftime('%B
+            %d, %Y') }}<br>
+            <i class="fas fa-users"></i> Maximum {{ trip.max_guests }} guests
+        </p>
+    </div>
+
+    <div class="alert alert-warning" role="alert">
+        <h5><i class="fas fa-exclamation-triangle"></i> Important Information</h5>
+        <ul class="mb-0">
+            <li>All personal data is handled according to GDPR regulations</li>
+            <li>Uploaded documents will be automatically deleted after approval</li>
+            <li>One email address is required for the entire group</li>
+            <li>Each guest must provide valid identification</li>
+        </ul>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" id="registrationForm">
+        <!-- Contact Email -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-envelope"></i> Contact Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <label for="email" class="form-label">Email Address *</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                        <div class="form-text">This email will be used for all communications regarding this
+                            registration.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Guest Information -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-users"></i> Guest Information</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">Please fill out information for each guest (up to {{ trip.max_guests }}
+                    guests):</p>
+
+                {% for i in range(trip.max_guests) %}
+                <div class="guest-form" id="guest-{{ i }}">
+                    <h6 class="mb-3">Guest {{ i + 1 }}</h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="first_name_{{ i }}" class="form-label">First Name *</label>
+                            <input type="text" class="form-control" id="first_name_{{ i }}" name="first_name_{{ i }}"
+                                required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="last_name_{{ i }}" class="form-label">Last Name *</label>
+                            <input type="text" class="form-control" id="last_name_{{ i }}" name="last_name_{{ i }}"
+                                required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="document_type_{{ i }}" class="form-label">Document Type *</label>
+                            <select class="form-select" id="document_type_{{ i }}" name="document_type_{{ i }}"
+                                required>
+                                <option value="">Select document type</option>
+                                <option value="passport">Passport</option>
+                                <option value="driving_license">Driving License</option>
+                                <option value="citizen_id">Citizen ID</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="document_number_{{ i }}" class="form-label">Document Number *</label>
+                            <input type="text" class="form-control" id="document_number_{{ i }}"
+                                name="document_number_{{ i }}" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="document_image_{{ i }}" class="form-label">Document Image *</label>
+                            <input type="file" class="form-control" id="document_image_{{ i }}" name="document_images"
+                                accept="image/*" required>
+                            <div class="form-text">Upload a clear photo of the document (JPG, PNG, max 16MB)</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="gdpr_consent_{{ i }}"
+                                    name="gdpr_consent_{{ i }}" required>
+                                <label class="form-check-label" for="gdpr_consent_{{ i }}">
+                                    I consent to the processing of my personal data according to the <a
+                                        href="{{ url_for('gdpr') }}" target="_blank">GDPR policy</a> *
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div id="preview_{{ i }}" class="mt-2" style="display: none;">
+                                <img id="preview_img_{{ i }}" class="document-preview" alt="Document preview">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fas fa-arrow-right"></i> Continue to Review
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // File preview functionality
+    document.querySelectorAll('input[type="file"]').forEach(function (input, index) {
+        input.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            const preview = document.getElementById(`preview_${index}`);
+            const previewImg = document.getElementById(`preview_img_${index}`);
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    previewImg.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                preview.style.display = 'none';
+            }
+        });
+    });
+
+    // Form validation
+    document.getElementById('registrationForm').addEventListener('submit', function (e) {
+        const email = document.getElementById('email').value;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!emailRegex.test(email)) {
+            e.preventDefault();
+            alert('Please enter a valid email address.');
+            return;
+        }
+
+        // Check if at least one guest has all required fields
+        let hasValidGuest = false;
+        for (let i = 0; i < {{ trip.max_guests }}; i++) {
+        const firstName = document.getElementById(`first_name_${i}`).value.trim();
+        const lastName = document.getElementById(`last_name_${i}`).value.trim();
+        const documentType = document.getElementById(`document_type_${i}`).value;
+        const documentNumber = document.getElementById(`document_number_${i}`).value.trim();
+        const documentImage = document.getElementById(`document_image_${i}`).files[0];
+        const gdprConsent = document.getElementById(`gdpr_consent_${i}`).checked;
+
+        if (firstName && lastName && documentType && documentNumber && documentImage && gdprConsent) {
+            hasValidGuest = true;
+            break;
+        }
+    }
+
+    if (!hasValidGuest) {
+        e.preventDefault();
+        alert('Please fill out complete information for at least one guest.');
+        return;
+    }
+});
+</script>
+{% endblock %}

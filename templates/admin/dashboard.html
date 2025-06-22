@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-tachometer-alt"></i> Admin Dashboard</h1>
+            <div>
+                <span class="text-muted">Welcome, {{ current_user.username }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title text-muted">Total Trips</h6>
+                        <h3 class="mb-0">{{ trips|length }}</h3>
+                    </div>
+                    <div class="text-primary">
+                        <i class="fas fa-plane fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title text-muted">Pending Registrations</h6>
+                        <h3 class="mb-0">{{ pending_registrations }}</h3>
+                    </div>
+                    <div class="text-warning">
+                        <i class="fas fa-clock fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title text-muted">Active Admin</h6>
+                        <h3 class="mb-0">{{ current_user.username }}</h3>
+                    </div>
+                    <div class="text-success">
+                        <i class="fas fa-user-shield fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-plus"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('new_trip') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-plus"></i> Create New Trip
+                    </a>
+                    <a href="{{ url_for('admin_registrations') }}" class="btn btn-outline-warning">
+                        <i class="fas fa-list"></i> Review Pending Registrations
+                    </a>
+                    <a href="{{ url_for('admin_trips') }}" class="btn btn-outline-info">
+                        <i class="fas fa-plane"></i> Manage Trips
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-chart-line"></i> Recent Activity</h5>
+            </div>
+            <div class="card-body">
+                {% if pending_registrations > 0 %}
+                <div class="alert alert-warning" role="alert">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>{{ pending_registrations }}</strong> registration(s) awaiting review
+                </div>
+                {% else %}
+                <div class="alert alert-success" role="alert">
+                    <i class="fas fa-check-circle"></i>
+                    No pending registrations
+                </div>
+                {% endif %}
+
+                <div class="mt-3">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle"></i>
+                        Check the registrations page to review and approve guest submissions.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Trips -->
+<div class="row">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-plane"></i> Your Trips</h5>
+            </div>
+            <div class="card-body">
+                {% if trips %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Trip Title</th>
+                                <th>Dates</th>
+                                <th>Max Guests</th>
+                                <th>Registrations</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for trip in trips %}
+                            <tr>
+                                <td>
+                                    <strong>{{ trip.title }}</strong>
+                                    <br>
+                                    <small class="text-muted">Created: {{ trip.created_at.strftime('%Y-%m-%d')
+                                        }}</small>
+                                </td>
+                                <td>
+                                    {{ trip.start_date.strftime('%Y-%m-%d') }}<br>
+                                    <small class="text-muted">to {{ trip.end_date.strftime('%Y-%m-%d') }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary">{{ trip.max_guests }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">{{ trip.registrations|length }}</span>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('register', trip_id=trip.id) }}"
+                                        class="btn btn-sm btn-outline-primary" target="_blank">
+                                        <i class="fas fa-external-link-alt"></i> View Form
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-plane fa-3x text-muted mb-3"></i>
+                    <h5>No trips created yet</h5>
+                    <p class="text-muted">Create your first trip to start collecting guest registrations.</p>
+                    <a href="{{ url_for('new_trip') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Create First Trip
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

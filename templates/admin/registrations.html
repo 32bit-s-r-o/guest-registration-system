@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}Review Registrations{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-list"></i> Review Registrations</h1>
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if registrations %}
+<div class="row g-4">
+    {% for registration in registrations %}
+    <div class="col-lg-8 mx-auto">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-warning text-dark">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clock"></i> Registration #{{ registration.id }}
+                    </h5>
+                    <span class="badge bg-warning text-dark">Pending Review</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Trip:</strong><br>
+                        <span class="text-primary">{{ registration.trip.title }}</span>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Contact Email:</strong><br>
+                        <span>{{ registration.email }}</span>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Submitted:</strong><br>
+                        <span>{{ registration.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Number of Guests:</strong><br>
+                        <span class="badge bg-info">{{ registration.guests|length }}</span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <strong>Guest Information:</strong>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Document Type</th>
+                                    <th>Document Number</th>
+                                    <th>GDPR Consent</th>
+                                    <th>Document Uploaded</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for guest in registration.guests %}
+                                <tr>
+                                    <td>{{ guest.first_name }} {{ guest.last_name }}</td>
+                                    <td>{{ guest.document_type|title }}</td>
+                                    <td>{{ guest.document_number }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if guest.gdpr_consent else 'danger' }}">
+                                            {{ 'Yes' if guest.gdpr_consent else 'No' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if guest.document_image %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check"></i> Yes
+                                        </span>
+                                        {% else %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-times"></i> No
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a href="{{ url_for('view_registration', registration_id=registration.id) }}" class="btn btn-info">
+                        <i class="fas fa-eye"></i> View Details
+                    </a>
+                    <div>
+                        <button type="button" class="btn btn-success me-2" data-bs-toggle="modal"
+                            data-bs-target="#approveModal{{ registration.id }}">
+                            <i class="fas fa-check"></i> Approve
+                        </button>
+                        <button type="button" class="btn btn-danger" data-bs-toggle="modal"
+                            data-bs-target="#rejectModal{{ registration.id }}">
+                            <i class="fas fa-times"></i> Reject
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Approve Modal -->
+    <div class="modal fade" id="approveModal{{ registration.id }}" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-check"></i> Approve Registration
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to approve this registration?</p>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Note:</strong> Upon approval, all uploaded documents will be automatically deleted for
+                        GDPR compliance.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form method="POST" action="{{ url_for('approve_registration', registration_id=registration.id) }}"
+                        style="display: inline;">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-check"></i> Approve Registration
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reject Modal -->
+    <div class="modal fade" id="rejectModal{{ registration.id }}" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-times"></i> Reject Registration
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Please provide a reason for rejection. This will be sent to the user via email.</p>
+                    <form method="POST" action="{{ url_for('reject_registration', registration_id=registration.id) }}">
+                        <div class="mb-3">
+                            <label for="comment{{ registration.id }}" class="form-label">Rejection Reason *</label>
+                            <textarea class="form-control" id="comment{{ registration.id }}" name="comment" rows="3"
+                                required placeholder="Please explain what needs to be corrected..."></textarea>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-times"></i> Reject Registration
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="row">
+    <div class="col-12">
+        <div class="card border-0 shadow">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-check-circle fa-4x text-success mb-4"></i>
+                <h3>No Pending Registrations</h3>
+                <p class="text-muted mb-4">
+                    All registrations have been reviewed. Check back later for new submissions.
+                </p>
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-primary">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

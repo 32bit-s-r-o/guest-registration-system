@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Registration Submitted{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto text-center">
+        <div class="card border-0 shadow">
+            <div class="card-body p-5">
+                <div class="mb-4">
+                    <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                </div>
+
+                <h2 class="mb-4">Registration Submitted Successfully!</h2>
+
+                <p class="lead mb-4">
+                    Thank you for submitting your guest registration. Your information has been received and is now
+                    pending admin approval.
+                </p>
+
+                <div class="alert alert-info" role="alert">
+                    <h5><i class="fas fa-envelope"></i> What happens next?</h5>
+                    <ul class="text-start mb-0">
+                        <li>An administrator will review your registration within 24-48 hours</li>
+                        <li>You will receive an email notification with the approval status</li>
+                        <li>If approved, your uploaded documents will be automatically deleted for GDPR compliance</li>
+                        <li>If any corrections are needed, you'll receive a link to update your information</li>
+                    </ul>
+                </div>
+
+                <div class="alert alert-warning" role="alert">
+                    <h5><i class="fas fa-shield-alt"></i> Data Protection</h5>
+                    <p class="mb-0">
+                        Your personal data is protected according to GDPR regulations. All uploaded documents will be
+                        securely deleted after approval to ensure your privacy.
+                    </p>
+                </div>
+
+                <div class="mt-4">
+                    <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-home"></i> Return to Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

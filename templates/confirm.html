@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Confirm Registration{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="text-center mb-4">
+        <h2>Confirm Your Registration</h2>
+        <h4 class="text-primary">{{ trip.title }}</h4>
+        <p class="text-muted">
+            <i class="fas fa-calendar"></i> {{ trip.start_date.strftime('%B %d, %Y') }} - {{ trip.end_date.strftime('%B
+            %d, %Y') }}
+        </p>
+    </div>
+
+    <div class="alert alert-info" role="alert">
+        <h5><i class="fas fa-info-circle"></i> Please review your information</h5>
+        <p class="mb-0">Please carefully review all the information below before submitting. Once submitted, you will
+            receive an email confirmation and your registration will be sent for approval.</p>
+    </div>
+
+    <!-- Contact Information -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5><i class="fas fa-envelope"></i> Contact Information</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <strong>Email Address:</strong><br>
+                    {{ data.email }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Guest Information -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5><i class="fas fa-users"></i> Guest Information</h5>
+        </div>
+        <div class="card-body">
+            {% for guest in data.guests %}
+            <div class="guest-form">
+                <h6>Guest {{ loop.index }}</h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Name:</strong><br>
+                        {{ guest.first_name }} {{ guest.last_name }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Document:</strong><br>
+                        {{ guest.document_type|title }} - {{ guest.document_number }}
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-md-6">
+                        <strong>GDPR Consent:</strong><br>
+                        <span class="badge bg-{{ 'success' if guest.gdpr_consent else 'danger' }}">
+                            {{ 'Yes' if guest.gdpr_consent else 'No' }}
+                        </span>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Document Uploaded:</strong><br>
+                        <span class="badge bg-success">
+                            <i class="fas fa-check"></i> Yes
+                        </span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Important Notice -->
+    <div class="alert alert-warning" role="alert">
+        <h5><i class="fas fa-exclamation-triangle"></i> Important Notice</h5>
+        <ul class="mb-0">
+            <li>By submitting this registration, you confirm that all information provided is accurate and complete.
+            </li>
+            <li>Your uploaded documents will be automatically deleted after approval for GDPR compliance.</li>
+            <li>You will receive an email notification once your registration has been reviewed.</li>
+            <li>If any information is incorrect, you may be asked to resubmit with corrections.</li>
+        </ul>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+        <a href="{{ url_for('register', trip_id=trip.id) }}" class="btn btn-secondary btn-lg">
+            <i class="fas fa-arrow-left"></i> Go Back and Edit
+        </a>
+        <form method="POST" action="{{ url_for('submit_for_approval') }}" style="display: inline;">
+            <button type="submit" class="btn btn-success btn-lg">
+                <i class="fas fa-check"></i> Submit for Approval
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

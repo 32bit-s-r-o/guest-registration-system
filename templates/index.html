@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Guest Registration System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto text-center">
+        <h1 class="display-4 mb-4">Welcome to Guest Registration System</h1>
+        <p class="lead mb-5">
+            Secure and GDPR-compliant guest registration for your trips.
+            Our system ensures your personal data is handled with the utmost care and security.
+        </p>
+
+        <div class="row g-4 mb-5">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-shield-alt fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title">Secure & Private</h5>
+                        <p class="card-text">Your personal data is encrypted and handled according to GDPR regulations.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-clock fa-3x text-success mb-3"></i>
+                        <h5 class="card-title">Quick & Easy</h5>
+                        <p class="card-text">Simple registration process with instant confirmation and status updates.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-envelope fa-3x text-info mb-3"></i>
+                        <h5 class="card-title">Email Notifications</h5>
+                        <p class="card-text">Receive email updates about your registration status and any required
+                            actions.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info" role="alert">
+            <h5><i class="fas fa-info-circle"></i> How it works:</h5>
+            <ol class="mb-0">
+                <li>Fill out the registration form with guest information</li>
+                <li>Upload required identification documents</li>
+                <li>Review and confirm your information</li>
+                <li>Submit for admin approval</li>
+                <li>Receive email notification with the result</li>
+            </ol>
+        </div>
+
+        <div class="mt-5">
+            <h3>Available Trips</h3>
+            <p class="text-muted">Contact your trip organizer to get the registration link for your specific trip.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

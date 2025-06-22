@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Trips{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-plane"></i> Manage Trips</h1>
+            <a href="{{ url_for('new_trip') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Create New Trip
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if trips %}
+<div class="row g-4">
+    {% for trip in trips %}
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">{{ trip.title }}</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <strong>Start Date:</strong><br>
+                        <span class="text-primary">{{ trip.start_date.strftime('%B %d, %Y') }}</span>
+                    </div>
+                    <div class="col-6">
+                        <strong>End Date:</strong><br>
+                        <span class="text-primary">{{ trip.end_date.strftime('%B %d, %Y') }}</span>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <strong>Max Guests:</strong><br>
+                        <span class="badge bg-primary">{{ trip.max_guests }}</span>
+                    </div>
+                    <div class="col-6">
+                        <strong>Registrations:</strong><br>
+                        <span class="badge bg-info">{{ trip.registrations|length }}</span>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <strong>Status:</strong><br>
+                        {% set pending_count = trip.registrations|selectattr('status', 'equalto', 'pending')|list|length
+                        %}
+                        {% set approved_count = trip.registrations|selectattr('status', 'equalto',
+                        'approved')|list|length %}
+                        {% set rejected_count = trip.registrations|selectattr('status', 'equalto',
+                        'rejected')|list|length %}
+
+                        <span class="badge bg-warning me-1">{{ pending_count }} Pending</span>
+                        <span class="badge bg-success me-1">{{ approved_count }} Approved</span>
+                        <span class="badge bg-danger">{{ rejected_count }} Rejected</span>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <strong>Registration Link:</strong><br>
+                        <div class="input-group mb-2">
+                            <input type="text" class="form-control"
+                                value="{{ url_for('register', trip_id=trip.id, _external=True) }}" readonly>
+                            <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard(this)">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                        <small class="text-muted">Share this link with your guests</small>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-light">
+                <div class="d-flex justify-content-between">
+                    <small class="text-muted">
+                        Created: {{ trip.created_at.strftime('%Y-%m-%d %H:%M') }}
+                    </small>
+                    <div>
+                        <a href="{{ url_for('register', trip_id=trip.id) }}" class="btn btn-sm btn-outline-primary"
+                            target="_blank">
+                            <i class="fas fa-external-link-alt"></i> View Form
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="row">
+    <div class="col-12">
+        <div class="card border-0 shadow">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-plane fa-4x text-muted mb-4"></i>
+                <h3>No Trips Created Yet</h3>
+                <p class="text-muted mb-4">
+                    You haven't created any trips yet. Create your first trip to start collecting guest registrations.
+                </p>
+                <a href="{{ url_for('new_trip') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plus"></i> Create Your First Trip
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Statistics Summary -->
+{% if trips %}
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Trip Statistics</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <h4 class="text-primary">{{ trips|length }}</h4>
+                        <p class="text-muted">Total Trips</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h4 class="text-info">{{ trips|sum(attribute='registrations|length') }}</h4>
+                        <p class="text-muted">Total Registrations</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h4 class="text-warning">{{ trips|sum(attribute='registrations|selectattr("status", "equalto",
+                            "pending")|list|length') }}</h4>
+                        <p class="text-muted">Pending Reviews</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h4 class="text-success">{{ trips|sum(attribute='registrations|selectattr("status", "equalto",
+                            "approved")|list|length') }}</h4>
+                        <p class="text-muted">Approved</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function copyToClipboard(button) {
+        const input = button.parentElement.querySelector('input');
+        input.select();
+        input.setSelectionRange(0, 99999); // For mobile devices
+
+        try {
+            document.execCommand('copy');
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-check"></i>';
+            button.classList.remove('btn-outline-secondary');
+            button.classList.add('btn-success');
+
+            setTimeout(() => {
+                button.innerHTML = originalText;
+                button.classList.remove('btn-success');
+                button.classList.add('btn-outline-secondary');
+            }, 2000);
+        } catch (err) {
+            console.error('Failed to copy: ', err);
+        }
+    }
+</script>
+{% endblock %}
