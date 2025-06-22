@@ -22,6 +22,9 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
+# Table prefix configuration
+app.config['TABLE_PREFIX'] = os.getenv('TABLE_PREFIX', 'guest_reg_')
+
 # Email configuration
 app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
 app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', 587))
@@ -38,8 +41,10 @@ login_manager.login_view = 'admin_login'
 # Ensure upload directory exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-# Database Models
+# Database Models with table prefix support
 class Admin(UserMixin, db.Model):
+    __tablename__ = f"{app.config['TABLE_PREFIX']}admin"
+    
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -52,13 +57,15 @@ class Admin(UserMixin, db.Model):
     airbnb_last_sync = db.Column(db.DateTime)
 
 class Trip(db.Model):
+    __tablename__ = f"{app.config['TABLE_PREFIX']}trip"
+    
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     start_date = db.Column(db.Date, nullable=False)
     end_date = db.Column(db.Date, nullable=False)
     max_guests = db.Column(db.Integer, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    admin_id = db.Column(db.Integer, db.ForeignKey('admin.id'), nullable=False)
+    admin_id = db.Column(db.Integer, db.ForeignKey(f'{app.config["TABLE_PREFIX"]}admin.id'), nullable=False)
     registrations = db.relationship('Registration', backref='trip', lazy=True)
     # Airbnb sync fields
     airbnb_reservation_id = db.Column(db.String(100), unique=True)
@@ -69,8 +76,10 @@ class Trip(db.Model):
     is_airbnb_synced = db.Column(db.Boolean, default=False)
 
 class Registration(db.Model):
+    __tablename__ = f"{app.config['TABLE_PREFIX']}registration"
+    
     id = db.Column(db.Integer, primary_key=True)
-    trip_id = db.Column(db.Integer, db.ForeignKey('trip.id'), nullable=False)
+    trip_id = db.Column(db.Integer, db.ForeignKey(f'{app.config["TABLE_PREFIX"]}trip.id'), nullable=False)
     email = db.Column(db.String(120), nullable=False)
     status = db.Column(db.String(20), default='pending')  # pending, approved, rejected
     admin_comment = db.Column(db.Text)
@@ -79,8 +88,10 @@ class Registration(db.Model):
     guests = db.relationship('Guest', backref='registration', lazy=True, cascade='all, delete-orphan')
 
 class Guest(db.Model):
+    __tablename__ = f"{app.config['TABLE_PREFIX']}guest"
+    
     id = db.Column(db.Integer, primary_key=True)
-    registration_id = db.Column(db.Integer, db.ForeignKey('registration.id'), nullable=False)
+    registration_id = db.Column(db.Integer, db.ForeignKey(f'{app.config["TABLE_PREFIX"]}registration.id'), nullable=False)
     first_name = db.Column(db.String(100), nullable=False)
     last_name = db.Column(db.String(100), nullable=False)
     document_type = db.Column(db.String(50), nullable=False)  # passport, driving_license, citizen_id
@@ -521,7 +532,12 @@ def data_management():
         'rejected': rejected_count
     }
     
-    return render_template('admin/data_management.html', stats=stats)
+    # Get configuration info
+    config = {
+        'TABLE_PREFIX': app.config.get('TABLE_PREFIX', 'guest_reg_')
+    }
+    
+    return render_template('admin/data_management.html', stats=stats, config=config)
 
 @app.route('/admin/reset-data', methods=['POST'])
 @login_required

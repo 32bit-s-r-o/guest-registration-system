@@ -50,6 +50,35 @@
     </div>
 </div>
 
+<!-- Database Configuration Info -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-database"></i> Database Configuration</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Table Prefix</h6>
+                        <code class="bg-light p-2 rounded">{{ config.TABLE_PREFIX }}</code>
+                        <small class="text-muted d-block mt-1">All tables use this prefix</small>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Database Tables</h6>
+                        <ul class="list-unstyled">
+                            <li><code>{{ config.TABLE_PREFIX }}admin</code></li>
+                            <li><code>{{ config.TABLE_PREFIX }}trip</code></li>
+                            <li><code>{{ config.TABLE_PREFIX }}registration</code></li>
+                            <li><code>{{ config.TABLE_PREFIX }}guest</code></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Registration Status -->
 <div class="row g-4 mb-4">
     <div class="col-md-4">

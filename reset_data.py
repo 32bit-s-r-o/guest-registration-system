@@ -10,19 +10,34 @@ from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash
 from app import app, db, Admin, Trip, Registration, Guest
 
+def get_table_names():
+    """Get the actual table names with prefix."""
+    prefix = app.config.get('TABLE_PREFIX', 'guest_reg_')
+    return {
+        'admin': f"{prefix}admin",
+        'trip': f"{prefix}trip", 
+        'registration': f"{prefix}registration",
+        'guest': f"{prefix}guest"
+    }
+
 def reset_all_data():
     """Reset all data in the database."""
     print("\n=== Resetting All Data ===")
     
     try:
         with app.app_context():
+            # Get table names for display
+            tables = get_table_names()
+            
             # Drop all tables
             db.drop_all()
             print("✅ All tables dropped successfully")
+            print(f"   Tables removed: {', '.join(tables.values())}")
             
             # Recreate all tables
             db.create_all()
             print("✅ All tables recreated successfully")
+            print(f"   Tables created: {', '.join(tables.values())}")
             
             return True
     except Exception as e:
@@ -225,6 +240,10 @@ def show_database_stats():
     
     try:
         with app.app_context():
+            # Get table names for display
+            tables = get_table_names()
+            prefix = app.config.get('TABLE_PREFIX', 'guest_reg_')
+            
             admin_count = Admin.query.count()
             trip_count = Trip.query.count()
             registration_count = Registration.query.count()
@@ -235,6 +254,8 @@ def show_database_stats():
             rejected_count = Registration.query.filter_by(status='rejected').count()
             
             print(f"📊 Current Database Status:")
+            print(f"   Table Prefix: {prefix}")
+            print(f"   Tables: {', '.join(tables.values())}")
             print(f"   - Admins: {admin_count}")
             print(f"   - Trips: {trip_count}")
             print(f"   - Registrations: {registration_count}")
@@ -255,6 +276,30 @@ def show_database_stats():
         print(f"❌ Error getting database stats: {e}")
         return False
 
+def show_table_info():
+    """Show information about table structure."""
+    print("\n=== Table Structure Information ===")
+    
+    try:
+        with app.app_context():
+            tables = get_table_names()
+            prefix = app.config.get('TABLE_PREFIX', 'guest_reg_')
+            
+            print(f"📋 Database Tables (Prefix: '{prefix}'):")
+            for table_type, table_name in tables.items():
+                print(f"   - {table_type}: {table_name}")
+            
+            print(f"\n🔗 Foreign Key Relationships:")
+            print(f"   - {tables['trip']}.admin_id → {tables['admin']}.id")
+            print(f"   - {tables['registration']}.trip_id → {tables['trip']}.id")
+            print(f"   - {tables['guest']}.registration_id → {tables['registration']}.id")
+            
+            return True
+            
+    except Exception as e:
+        print(f"❌ Error getting table info: {e}")
+        return False
+
 def main():
     """Main function to handle reset and seed operations."""
     print("🔄 Guest Registration System - Data Reset & Seed Tool")
@@ -266,6 +311,7 @@ def main():
         print("  python reset_data.py seed           # Seed with sample data")
         print("  python reset_data.py reset-seed     # Reset and seed")
         print("  python reset_data.py stats          # Show database statistics")
+        print("  python reset_data.py tables         # Show table structure")
         sys.exit(1)
     
     command = sys.argv[1].lower()
@@ -299,9 +345,13 @@ def main():
         if not show_database_stats():
             sys.exit(1)
         
+    elif command == 'tables':
+        if not show_table_info():
+            sys.exit(1)
+        
     else:
         print(f"❌ Unknown command: {command}")
-        print("Available commands: reset, seed, reset-seed, stats")
+        print("Available commands: reset, seed, reset-seed, stats, tables")
         sys.exit(1)
     
     if command in ['seed', 'reset-seed']:

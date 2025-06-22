@@ -88,6 +88,12 @@ SECRET_KEY=your-super-secret-key-change-this-in-production
 # Database Configuration (already configured for your setup)
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/ekom21
 
+# Table Prefix Configuration
+# This prefix will be added to all database table names
+# Default: guest_reg_ (creates tables like guest_reg_admin, guest_reg_trip, etc.)
+# You can change this to avoid conflicts with existing tables
+TABLE_PREFIX=guest_reg_
+
 # Email Configuration (for notifications)
 MAIL_SERVER=smtp.gmail.com
 MAIL_PORT=587
@@ -309,6 +315,47 @@ The application will create the following tables in your `ekom21` database:
 - **Registration**: Guest registration records (trip_id, email, status, admin_comment)
 - **Guest**: Individual guest information (name, documents, GDPR consent)
 
+### Table Prefix Configuration
+
+The application uses a configurable table prefix to avoid conflicts with existing database tables. By default, all tables are created with the `guest_reg_` prefix:
+
+- `guest_reg_admin` - Admin users
+- `guest_reg_trip` - Trips
+- `guest_reg_registration` - Registrations  
+- `guest_reg_guest` - Guests
+
+#### Customizing Table Prefix
+
+You can change the table prefix by setting the `TABLE_PREFIX` environment variable:
+
+```env
+# Use a different prefix
+TABLE_PREFIX=myapp_
+
+# This will create tables like:
+# myapp_admin, myapp_trip, myapp_registration, myapp_guest
+```
+
+#### Benefits of Table Prefixing
+
+- **Avoid Conflicts**: Prevents naming conflicts with existing tables
+- **Multi-Tenant**: Run multiple instances in the same database
+- **Organization**: Clearly identify application tables
+- **Migration Safety**: Easy to identify and manage application data
+
+#### Viewing Table Structure
+
+Use the reset script to view your current table structure:
+
+```bash
+python reset_data.py tables
+```
+
+This will show:
+- Current table prefix
+- All table names
+- Foreign key relationships
+
 ### GDPR Compliance Features
 
 - Document images automatically deleted after approval
@@ -325,6 +372,7 @@ The application will create the following tables in your `ekom21` database:
 |----------|-------------|----------|---------|
 | `SECRET_KEY` | Flask secret key for sessions | Yes | - |
 | `DATABASE_URL` | PostgreSQL connection string | Yes | postgresql://postgres:postgres@localhost:5432/ekom21 |
+| `TABLE_PREFIX` | Database table prefix | No | guest_reg_ |
 | `MAIL_SERVER` | SMTP server for emails | No | smtp.gmail.com |
 | `MAIL_PORT` | SMTP port | No | 587 |
 | `MAIL_USERNAME` | Email username | Yes | - |
