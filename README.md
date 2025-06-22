@@ -447,7 +447,7 @@ This will show:
    - Ensure file format is JPG or PNG
 
 4. **Admin Login Problems**
-   - Run `python setup.py` to create admin user
+   - Run `  ` to create admin user
    - Check username/password
    - Verify database tables exist
 
