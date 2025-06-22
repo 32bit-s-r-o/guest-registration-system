@@ -10,7 +10,14 @@
 <body>
     <div class="header">
         <h1>INVOICE</h1>
-        <h2>{{ invoice.invoice_number }}</h2>
+        <div class="invoice-details">
+            <span><strong>#{{ invoice.invoice_number }}</strong></span>
+            <span>Date: {{ invoice.issue_date.strftime('%Y-%m-%d') }}</span>
+            {% if invoice.due_date %}
+            <span>Due: {{ invoice.due_date.strftime('%Y-%m-%d') }}</span>
+            {% endif %}
+            <span>Status: {{ invoice.status|title }}</span>
+        </div>
     </div>
 
     <div class="row">
@@ -37,30 +44,19 @@
             {% endif %}
         </div>
 
-        <div class="invoice-info">
-            <h3>Invoice Details:</h3>
-            <p><strong>Invoice Number:</strong> {{ invoice.invoice_number }}</p>
-            <p><strong>Issue Date:</strong> {{ invoice.issue_date.strftime('%Y-%m-%d') }}</p>
-            {% if invoice.due_date %}
-            <p><strong>Due Date:</strong> {{ invoice.due_date.strftime('%Y-%m-%d') }}</p>
+        <div class="client-info">
+            <h3>Bill To:</h3>
+            <p><strong>{{ invoice.client_name }}</strong></p>
+            {% if invoice.client_email %}
+            <p>Email: {{ invoice.client_email }}</p>
             {% endif %}
-            <p><strong>Status:</strong> {{ invoice.status|title }}</p>
-            <p><strong>Currency:</strong> {{ invoice.currency }}</p>
+            {% if invoice.client_vat_number %}
+            <p>VAT Number: {{ invoice.client_vat_number }}</p>
+            {% endif %}
+            {% if invoice.client_address %}
+            <p>{{ invoice.client_address | nl2br }}</p>
+            {% endif %}
         </div>
-    </div>
-
-    <div class="client-info">
-        <h3>Bill To:</h3>
-        <p><strong>{{ invoice.client_name }}</strong></p>
-        {% if invoice.client_email %}
-        <p>Email: {{ invoice.client_email }}</p>
-        {% endif %}
-        {% if invoice.client_vat_number %}
-        <p>VAT Number: {{ invoice.client_vat_number }}</p>
-        {% endif %}
-        {% if invoice.client_address %}
-        <p>{{ invoice.client_address | nl2br }}</p>
-        {% endif %}
     </div>
 
     <table class="invoice-table">

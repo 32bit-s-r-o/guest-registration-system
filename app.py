@@ -926,42 +926,45 @@ def generate_invoice_pdf(invoice_id):
     css = CSS(string='''
         @page { 
             size: A4; 
-            margin: 2cm;
-            @top-center { content: "Invoice"; }
-            @bottom-center { content: "Page " counter(page) " of " counter(pages); }
+            margin: 1.5cm;
         }
         body { 
             font-family: Arial, sans-serif; 
-            font-size: 12px;
-            line-height: 1.4;
+            font-size: 10px;
+            line-height: 1.2;
         }
         .header { 
             text-align: center; 
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             border-bottom: 2px solid #333;
-            padding-bottom: 20px;
+            padding-bottom: 15px;
+        }
+        .invoice-details {
+            margin-top: 10px;
+            font-size: 9px;
+            color: #666;
+        }
+        .invoice-details span {
+            margin: 0 15px;
         }
         .company-info {
             text-align: left;
-            margin-bottom: 20px;
-        }
-        .invoice-info {
-            text-align: right;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         .client-info {
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
         .invoice-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
         .invoice-table th,
         .invoice-table td {
             border: 1px solid #ddd;
-            padding: 8px;
+            padding: 6px;
             text-align: left;
+            font-size: 9px;
         }
         .invoice-table th {
             background-color: #f8f9fa;
@@ -974,10 +977,11 @@ def generate_invoice_pdf(invoice_id):
             background-color: #f8f9fa;
         }
         .notes {
-            margin-top: 30px;
-            padding: 15px;
+            margin-top: 20px;
+            padding: 10px;
             background-color: #f8f9fa;
             border-left: 4px solid #007bff;
+            font-size: 9px;
         }
     ''', font_config=font_config)
     
