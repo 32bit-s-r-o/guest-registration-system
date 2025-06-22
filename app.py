@@ -893,6 +893,25 @@ def delete_invoice(invoice_id):
     flash('Invoice deleted successfully!', 'success')
     return redirect(url_for('admin_invoices'))
 
+@app.route('/admin/invoices/<int:invoice_id>/change-status', methods=['POST'])
+@login_required
+def change_invoice_status(invoice_id):
+    """Change invoice status."""
+    invoice = Invoice.query.filter_by(id=invoice_id, admin_id=current_user.id).first_or_404()
+    
+    new_status = request.form.get('status')
+    if new_status in ['draft', 'sent', 'paid', 'overdue']:
+        old_status = invoice.status
+        invoice.status = new_status
+        invoice.updated_at = datetime.utcnow()
+        db.session.commit()
+        
+        flash(f'Invoice status changed from {old_status.title()} to {new_status.title()} successfully!', 'success')
+    else:
+        flash('Invalid status provided.', 'error')
+    
+    return redirect(url_for('view_invoice', invoice_id=invoice.id))
+
 @app.route('/admin/invoices/<int:invoice_id>/pdf')
 @login_required
 def generate_invoice_pdf(invoice_id):

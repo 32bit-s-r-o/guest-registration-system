@@ -7,7 +7,14 @@
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1><i class="fas fa-file-invoice"></i> Invoices</h1>
-            <div>
+            <div class="d-flex gap-2">
+                <select class="form-select" id="statusFilter" style="width: auto;">
+                    <option value="">All Statuses</option>
+                    <option value="draft">Draft</option>
+                    <option value="sent">Sent</option>
+                    <option value="paid">Paid</option>
+                    <option value="overdue">Overdue</option>
+                </select>
                 <a href="{{ url_for('new_invoice') }}" class="btn btn-primary">
                     <i class="fas fa-plus"></i> New Invoice
                 </a>
@@ -83,6 +90,31 @@
                                             class="btn btn-sm btn-outline-warning">
                                             <i class="fas fa-edit"></i> Edit
                                         </a>
+                                        <div class="btn-group" role="group">
+                                            <button type="button"
+                                                class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                                                data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="fas fa-cog"></i> Status
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="#"
+                                                        onclick="changeStatus({{ invoice.id }}, 'draft')">
+                                                        <i class="fas fa-edit text-secondary"></i> Draft
+                                                    </a></li>
+                                                <li><a class="dropdown-item" href="#"
+                                                        onclick="changeStatus({{ invoice.id }}, 'sent')">
+                                                        <i class="fas fa-paper-plane text-info"></i> Sent
+                                                    </a></li>
+                                                <li><a class="dropdown-item" href="#"
+                                                        onclick="changeStatus({{ invoice.id }}, 'paid')">
+                                                        <i class="fas fa-check text-success"></i> Paid
+                                                    </a></li>
+                                                <li><a class="dropdown-item" href="#"
+                                                        onclick="changeStatus({{ invoice.id }}, 'overdue')">
+                                                        <i class="fas fa-exclamation-triangle text-danger"></i> Overdue
+                                                    </a></li>
+                                            </ul>
+                                        </div>
                                         <button type="button" class="btn btn-sm btn-outline-danger"
                                             onclick="confirmDelete({{ invoice.id }})">
                                             <i class="fas fa-trash"></i> Delete
@@ -138,6 +170,56 @@
         const form = document.getElementById('deleteForm');
         form.action = `/admin/invoices/${invoiceId}/delete`;
         modal.show();
+    }
+
+    function changeStatus(invoiceId, newStatus) {
+        if (confirm(`Are you sure you want to change the invoice status to "${newStatus}"?`)) {
+            // Create a form and submit it
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/admin/invoices/${invoiceId}/change-status`;
+
+            const statusInput = document.createElement('input');
+            statusInput.type = 'hidden';
+            statusInput.name = 'status';
+            statusInput.value = newStatus;
+
+            form.appendChild(statusInput);
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+
+    // Status filter functionality
+    document.addEventListener('DOMContentLoaded', function () {
+        const statusFilter = document.getElementById('statusFilter');
+        if (statusFilter) {
+            statusFilter.addEventListener('change', function () {
+                const selectedStatus = this.value;
+                const rows = document.querySelectorAll('tbody tr');
+
+                rows.forEach(row => {
+                    const statusBadge = row.querySelector('.badge');
+                    if (statusBadge) {
+                        const rowStatus = getStatusFromBadge(statusBadge);
+                        if (selectedStatus === '' || rowStatus === selectedStatus) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    }
+                });
+            });
+        }
+    });
+
+    function getStatusFromBadge(badge) {
+        const text = badge.textContent.trim().toLowerCase();
+        if (text.includes('draft')) return 'draft';
+        if (text.includes('sent')) return 'sent';
+        if (text.includes('paid')) return 'paid';
+        if (text.includes('overdue')) return 'overdue';
+        return '';
     }
 </script>
 {% endblock %}
