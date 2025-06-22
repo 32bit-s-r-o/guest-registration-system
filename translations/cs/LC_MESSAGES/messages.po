@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-06-23 01:21+0200\n"
+"POT-Creation-Date: 2025-06-23 01:31+0200\n"
 "PO-Revision-Date: 2025-06-23 01:07+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: cs\n"
@@ -306,7 +306,7 @@ msgstr "host(é)"
 msgid "Guest"
 msgstr "Host"
 
-#: templates/confirm.html:68
+#: templates/admin/view_invoice.html:54 templates/confirm.html:68
 msgid "Name"
 msgstr "Jméno"
 
@@ -334,11 +334,13 @@ msgstr "Ne"
 msgid "Invoice Request"
 msgstr "Požadavek na fakturu"
 
+#: templates/admin/edit_invoice.html:29 templates/admin/new_invoice.html:29
 #: templates/confirm.html:96 templates/register.html:70
 msgid "Client Name"
 msgstr "Jméno klienta"
 
-#: templates/confirm.html:98 templates/register.html:77
+#: templates/admin/view_invoice.html:59 templates/confirm.html:98
+#: templates/register.html:77
 msgid "VAT Number"
 msgstr "DIČ"
 
@@ -708,6 +710,260 @@ msgstr "Nastavení"
 msgid "Data Management"
 msgstr "Správa dat"
 
+#: templates/admin/edit_invoice.html:3 templates/admin/edit_invoice.html:9
+#: templates/admin/view_invoice.html:12
+#, fuzzy
+msgid "Edit Invoice"
+msgstr "Upravit fakturu"
+
+#: templates/admin/edit_invoice.html:11
+#, fuzzy
+msgid "Back to Invoice"
+msgstr "Zpět k faktuře"
+
+#: templates/admin/edit_invoice.html:23 templates/admin/new_invoice.html:23
+#: templates/admin/view_invoice.html:28
+#, fuzzy
+msgid "Invoice Details"
+msgstr "Detaily faktury"
+
+#: templates/admin/edit_invoice.html:36 templates/admin/new_invoice.html:35
+#, fuzzy
+msgid "Client Email"
+msgstr "Email klienta"
+
+#: templates/admin/edit_invoice.html:46 templates/admin/new_invoice.html:44
+#, fuzzy
+msgid "VAT Number (if applicable)"
+msgstr "DIČ (pokud je k dispozici)"
+
+#: templates/admin/edit_invoice.html:55 templates/admin/new_invoice.html:52
+#, fuzzy
+msgid "Client Address"
+msgstr "Adresa klienta"
+
+#: templates/admin/edit_invoice.html:63 templates/admin/invoices.html:43
+#: templates/admin/new_invoice.html:59 templates/admin/view_invoice.html:68
+#, fuzzy
+msgid "Issue Date"
+msgstr "Datum vystavení"
+
+#: templates/admin/edit_invoice.html:70 templates/admin/invoices.html:44
+#: templates/admin/new_invoice.html:66 templates/admin/view_invoice.html:70
+#, fuzzy
+msgid "Due Date"
+msgstr "Datum splatnosti"
+
+#: templates/admin/edit_invoice.html:77 templates/admin/new_invoice.html:72
+#: templates/admin/view_invoice.html:72
+msgid "Currency"
+msgstr "Měna"
+
+#: templates/admin/edit_invoice.html:93 templates/admin/new_invoice.html:88
+#: templates/admin/view_invoice.html:81
+#, fuzzy
+msgid "Invoice Items"
+msgstr "Položky faktury"
+
+#: templates/admin/edit_invoice.html:102 templates/admin/new_invoice.html:97
+msgid "Add Item"
+msgstr "Přidat položku"
+
+#: templates/admin/edit_invoice.html:111 templates/admin/new_invoice.html:106
+#: templates/admin/view_invoice.html:126
+msgid "Notes"
+msgstr "Poznámky"
+
+#: templates/admin/edit_invoice.html:115 templates/admin/new_invoice.html:110
+msgid "Additional notes or terms..."
+msgstr "Dodatečné poznámky nebo podmínky..."
+
+#: templates/admin/edit_invoice.html:124 templates/admin/new_invoice.html:119
+#: templates/admin/view_invoice.html:139
+msgid "Summary"
+msgstr "Souhrn"
+
+#: templates/admin/edit_invoice.html:128 templates/admin/new_invoice.html:123
+#: templates/admin/view_invoice.html:143
+msgid "Subtotal"
+msgstr "Mezisoučet"
+
+#: templates/admin/edit_invoice.html:132 templates/admin/new_invoice.html:127
+#: templates/admin/view_invoice.html:147
+msgid "VAT Total"
+msgstr "Celkem DPH"
+
+#: templates/admin/edit_invoice.html:137 templates/admin/new_invoice.html:132
+#: templates/admin/view_invoice.html:152
+#, fuzzy
+msgid "Total"
+msgstr "Celkem"
+
+#: templates/admin/edit_invoice.html:146
+#, fuzzy
+msgid "Update Invoice"
+msgstr "Aktualizovat fakturu"
+
+#: templates/admin/edit_invoice.html:149 templates/admin/invoices.html:166
+#: templates/admin/new_invoice.html:143 templates/admin/view_invoice.html:223
+msgid "Cancel"
+msgstr "Zrušit"
+
+#: templates/admin/edit_invoice.html:170 templates/admin/new_invoice.html:163
+#: templates/admin/view_invoice.html:89
+msgid "Description"
+msgstr "Popis"
+
+#: templates/admin/edit_invoice.html:175 templates/admin/new_invoice.html:167
+#: templates/admin/view_invoice.html:90
+msgid "Quantity"
+msgstr "Množství"
+
+#: templates/admin/edit_invoice.html:180 templates/admin/new_invoice.html:172
+#: templates/admin/view_invoice.html:91
+msgid "Unit Price"
+msgstr "Jednotková cena"
+
+#: templates/admin/edit_invoice.html:185 templates/admin/new_invoice.html:177
+#: templates/admin/view_invoice.html:92
+msgid "VAT %"
+msgstr "DPH %%"
+
+#: templates/admin/edit_invoice.html:198 templates/admin/new_invoice.html:190
+#: templates/admin/view_invoice.html:93
+msgid "Line Total"
+msgstr "Řádek celkem"
+
+#: templates/admin/edit_invoice.html:201 templates/admin/new_invoice.html:193
+#: templates/admin/view_invoice.html:94
+msgid "VAT Amount"
+msgstr "Částka DPH"
+
+#: templates/admin/edit_invoice.html:204 templates/admin/new_invoice.html:196
+#: templates/admin/view_invoice.html:95
+msgid "Total with VAT"
+msgstr "Celkem s DPH"
+
+#: templates/admin/invoices.html:3 templates/admin/invoices.html:9
+#, fuzzy
+msgid "Invoices"
+msgstr "Faktury"
+
+#: templates/admin/invoices.html:12
+msgid "All Statuses"
+msgstr "Všechny stavy"
+
+#: templates/admin/invoices.html:13 templates/admin/invoices.html:72
+#: templates/admin/invoices.html:111 templates/admin/view_invoice.html:32
+#: templates/admin/view_invoice.html:170
+msgid "Draft"
+msgstr "Koncept"
+
+#: templates/admin/invoices.html:14 templates/admin/invoices.html:76
+#: templates/admin/invoices.html:115 templates/admin/view_invoice.html:36
+#: templates/admin/view_invoice.html:171
+msgid "Sent"
+msgstr "Odesláno"
+
+#: templates/admin/invoices.html:15 templates/admin/invoices.html:80
+#: templates/admin/invoices.html:119 templates/admin/view_invoice.html:40
+#: templates/admin/view_invoice.html:172
+msgid "Paid"
+msgstr "Zaplaceno"
+
+#: templates/admin/invoices.html:16 templates/admin/invoices.html:84
+#: templates/admin/invoices.html:124 templates/admin/view_invoice.html:44
+#: templates/admin/view_invoice.html:173
+msgid "Overdue"
+msgstr "Po splatnosti"
+
+#: templates/admin/invoices.html:19 templates/admin/new_invoice.html:3
+#: templates/admin/new_invoice.html:9
+#, fuzzy
+msgid "New Invoice"
+msgstr "Nová faktura"
+
+#: templates/admin/invoices.html:22
+#, fuzzy
+msgid "Back to Dashboard"
+msgstr "Zpět na nástěnku"
+
+#: templates/admin/invoices.html:33
+#, fuzzy
+msgid "Invoice List"
+msgstr "Seznam faktur"
+
+#: templates/admin/invoices.html:41
+#, fuzzy
+msgid "Invoice #"
+msgstr "Faktura #"
+
+#: templates/admin/invoices.html:42
+#, fuzzy
+msgid "Client"
+msgstr "Klient"
+
+#: templates/admin/invoices.html:45
+#, fuzzy
+msgid "Total Amount"
+msgstr "Celková částka"
+
+#: templates/admin/invoices.html:46 templates/admin/invoices.html:106
+msgid "Status"
+msgstr "Stav"
+
+#: templates/admin/invoices.html:47 templates/admin/view_invoice.html:162
+#, fuzzy
+msgid "Actions"
+msgstr "Akce"
+
+#: templates/admin/invoices.html:92
+msgid "View"
+msgstr "Zobrazit"
+
+#: templates/admin/invoices.html:96
+msgid "PDF"
+msgstr "PDF"
+
+#: templates/admin/invoices.html:100
+msgid "Edit"
+msgstr "Upravit"
+
+#: templates/admin/invoices.html:130
+msgid "Delete"
+msgstr "Smazat"
+
+#: templates/admin/invoices.html:142
+#, fuzzy
+msgid "No Invoices Yet"
+msgstr "Zatím žádné faktury"
+
+#: templates/admin/invoices.html:143
+msgid "Create your first invoice to get started."
+msgstr "Vytvořte svou první fakturu pro začátek."
+
+#: templates/admin/invoices.html:145
+#, fuzzy
+msgid "Create First Invoice"
+msgstr "Vytvořit první fakturu"
+
+#: templates/admin/invoices.html:159 templates/admin/view_invoice.html:216
+#, fuzzy
+msgid "Confirm Delete"
+msgstr "Potvrdit smazání"
+
+#: templates/admin/invoices.html:163 templates/admin/view_invoice.html:220
+msgid ""
+"Are you sure you want to delete this invoice? This action cannot be "
+"undone."
+msgstr "Opravdu chcete smazat tuto fakturu? Tuto akci nelze vrátit zpět."
+
+#: templates/admin/invoices.html:169 templates/admin/view_invoice.html:191
+#: templates/admin/view_invoice.html:226
+#, fuzzy
+msgid "Delete Invoice"
+msgstr "Smazat fakturu"
+
 #: templates/admin/login.html:30
 msgid "Username"
 msgstr "Uživatelské jméno"
@@ -719,4 +975,85 @@ msgstr "Heslo"
 #: templates/admin/login.html:39
 msgid "Login"
 msgstr "Přihlásit"
+
+#: templates/admin/new_invoice.html:11 templates/admin/view_invoice.html:15
+#, fuzzy
+msgid "Back to Invoices"
+msgstr "Zpět k fakturám"
+
+#: templates/admin/new_invoice.html:140
+#, fuzzy
+msgid "Create Invoice"
+msgstr "Vytvořit fakturu"
+
+#: templates/admin/view_invoice.html:3 templates/admin/view_invoice.html:9
+#, fuzzy
+msgid "Invoice"
+msgstr "Faktura"
+
+#: templates/admin/view_invoice.html:53
+#, fuzzy
+msgid "Client Information"
+msgstr "Informace o klientovi"
+
+#: templates/admin/view_invoice.html:56
+msgid "Email"
+msgstr "Email"
+
+#: templates/admin/view_invoice.html:62
+#, fuzzy
+msgid "Address"
+msgstr "Adresa"
+
+#: templates/admin/view_invoice.html:66
+#, fuzzy
+msgid "Invoice Information"
+msgstr "Informace o faktuře"
+
+#: templates/admin/view_invoice.html:67
+#, fuzzy
+msgid "Invoice Number"
+msgstr "Číslo faktury"
+
+#: templates/admin/view_invoice.html:116
+msgid "No items found for this invoice."
+msgstr "Pro tuto fakturu nebyly nalezeny žádné položky."
+
+#: templates/admin/view_invoice.html:167
+msgid "Change Status"
+msgstr "Změnit stav"
+
+#: templates/admin/view_invoice.html:177
+msgid "Update"
+msgstr "Aktualizovat"
+
+#: templates/admin/view_invoice.html:185
+msgid "Download PDF"
+msgstr "Stáhnout PDF"
+
+#: templates/admin/view_invoice.html:188
+#, fuzzy
+msgid "Print Invoice"
+msgstr "Vytisknout fakturu"
+
+#: templates/admin/view_invoice.html:200
+msgid "Invoice Info"
+msgstr "Informace o faktuře"
+
+#: templates/admin/view_invoice.html:203
+msgid "Created"
+msgstr "Vytvořeno"
+
+#: templates/admin/view_invoice.html:204
+#, fuzzy
+msgid "Last Updated"
+msgstr "Naposledy aktualizováno"
+
+#: templates/admin/view_invoice.html:205
+msgid "Items Count"
+msgstr "Počet položek"
+
+#: templates/admin/view_invoice.html:250 templates/admin/view_invoice.html:255
+msgid "Error updating status"
+msgstr "Chyba při aktualizaci stavu"
 

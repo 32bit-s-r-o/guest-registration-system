@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-06-23 01:21+0200\n"
+"POT-Creation-Date: 2025-06-23 01:31+0200\n"
 "PO-Revision-Date: 2025-06-23 01:07+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -263,7 +263,7 @@ msgstr ""
 msgid "Guest"
 msgstr ""
 
-#: templates/confirm.html:68
+#: templates/admin/view_invoice.html:54 templates/confirm.html:68
 msgid "Name"
 msgstr ""
 
@@ -291,11 +291,13 @@ msgstr ""
 msgid "Invoice Request"
 msgstr ""
 
+#: templates/admin/edit_invoice.html:29 templates/admin/new_invoice.html:29
 #: templates/confirm.html:96 templates/register.html:70
 msgid "Client Name"
 msgstr ""
 
-#: templates/confirm.html:98 templates/register.html:77
+#: templates/admin/view_invoice.html:59 templates/confirm.html:98
+#: templates/register.html:77
 msgid "VAT Number"
 msgstr ""
 
@@ -648,6 +650,237 @@ msgstr ""
 msgid "Data Management"
 msgstr ""
 
+#: templates/admin/edit_invoice.html:3 templates/admin/edit_invoice.html:9
+#: templates/admin/view_invoice.html:12
+msgid "Edit Invoice"
+msgstr ""
+
+#: templates/admin/edit_invoice.html:11
+msgid "Back to Invoice"
+msgstr ""
+
+#: templates/admin/edit_invoice.html:23 templates/admin/new_invoice.html:23
+#: templates/admin/view_invoice.html:28
+msgid "Invoice Details"
+msgstr ""
+
+#: templates/admin/edit_invoice.html:36 templates/admin/new_invoice.html:35
+msgid "Client Email"
+msgstr ""
+
+#: templates/admin/edit_invoice.html:46 templates/admin/new_invoice.html:44
+msgid "VAT Number (if applicable)"
+msgstr ""
+
+#: templates/admin/edit_invoice.html:55 templates/admin/new_invoice.html:52
+msgid "Client Address"
+msgstr ""
+
+#: templates/admin/edit_invoice.html:63 templates/admin/invoices.html:43
+#: templates/admin/new_invoice.html:59 templates/admin/view_invoice.html:68
+msgid "Issue Date"
+msgstr ""
+
+#: templates/admin/edit_invoice.html:70 templates/admin/invoices.html:44
+#: templates/admin/new_invoice.html:66 templates/admin/view_invoice.html:70
+msgid "Due Date"
+msgstr ""
+
+#: templates/admin/edit_invoice.html:77 templates/admin/new_invoice.html:72
+#: templates/admin/view_invoice.html:72
+msgid "Currency"
+msgstr ""
+
+#: templates/admin/edit_invoice.html:93 templates/admin/new_invoice.html:88
+#: templates/admin/view_invoice.html:81
+msgid "Invoice Items"
+msgstr ""
+
+#: templates/admin/edit_invoice.html:102 templates/admin/new_invoice.html:97
+msgid "Add Item"
+msgstr ""
+
+#: templates/admin/edit_invoice.html:111 templates/admin/new_invoice.html:106
+#: templates/admin/view_invoice.html:126
+msgid "Notes"
+msgstr ""
+
+#: templates/admin/edit_invoice.html:115 templates/admin/new_invoice.html:110
+msgid "Additional notes or terms..."
+msgstr ""
+
+#: templates/admin/edit_invoice.html:124 templates/admin/new_invoice.html:119
+#: templates/admin/view_invoice.html:139
+msgid "Summary"
+msgstr ""
+
+#: templates/admin/edit_invoice.html:128 templates/admin/new_invoice.html:123
+#: templates/admin/view_invoice.html:143
+msgid "Subtotal"
+msgstr ""
+
+#: templates/admin/edit_invoice.html:132 templates/admin/new_invoice.html:127
+#: templates/admin/view_invoice.html:147
+msgid "VAT Total"
+msgstr ""
+
+#: templates/admin/edit_invoice.html:137 templates/admin/new_invoice.html:132
+#: templates/admin/view_invoice.html:152
+msgid "Total"
+msgstr ""
+
+#: templates/admin/edit_invoice.html:146
+msgid "Update Invoice"
+msgstr ""
+
+#: templates/admin/edit_invoice.html:149 templates/admin/invoices.html:166
+#: templates/admin/new_invoice.html:143 templates/admin/view_invoice.html:223
+msgid "Cancel"
+msgstr ""
+
+#: templates/admin/edit_invoice.html:170 templates/admin/new_invoice.html:163
+#: templates/admin/view_invoice.html:89
+msgid "Description"
+msgstr ""
+
+#: templates/admin/edit_invoice.html:175 templates/admin/new_invoice.html:167
+#: templates/admin/view_invoice.html:90
+msgid "Quantity"
+msgstr ""
+
+#: templates/admin/edit_invoice.html:180 templates/admin/new_invoice.html:172
+#: templates/admin/view_invoice.html:91
+msgid "Unit Price"
+msgstr ""
+
+#: templates/admin/edit_invoice.html:185 templates/admin/new_invoice.html:177
+#: templates/admin/view_invoice.html:92
+msgid "VAT %"
+msgstr ""
+
+#: templates/admin/edit_invoice.html:198 templates/admin/new_invoice.html:190
+#: templates/admin/view_invoice.html:93
+msgid "Line Total"
+msgstr ""
+
+#: templates/admin/edit_invoice.html:201 templates/admin/new_invoice.html:193
+#: templates/admin/view_invoice.html:94
+msgid "VAT Amount"
+msgstr ""
+
+#: templates/admin/edit_invoice.html:204 templates/admin/new_invoice.html:196
+#: templates/admin/view_invoice.html:95
+msgid "Total with VAT"
+msgstr ""
+
+#: templates/admin/invoices.html:3 templates/admin/invoices.html:9
+msgid "Invoices"
+msgstr ""
+
+#: templates/admin/invoices.html:12
+msgid "All Statuses"
+msgstr ""
+
+#: templates/admin/invoices.html:13 templates/admin/invoices.html:72
+#: templates/admin/invoices.html:111 templates/admin/view_invoice.html:32
+#: templates/admin/view_invoice.html:170
+msgid "Draft"
+msgstr ""
+
+#: templates/admin/invoices.html:14 templates/admin/invoices.html:76
+#: templates/admin/invoices.html:115 templates/admin/view_invoice.html:36
+#: templates/admin/view_invoice.html:171
+msgid "Sent"
+msgstr ""
+
+#: templates/admin/invoices.html:15 templates/admin/invoices.html:80
+#: templates/admin/invoices.html:119 templates/admin/view_invoice.html:40
+#: templates/admin/view_invoice.html:172
+msgid "Paid"
+msgstr ""
+
+#: templates/admin/invoices.html:16 templates/admin/invoices.html:84
+#: templates/admin/invoices.html:124 templates/admin/view_invoice.html:44
+#: templates/admin/view_invoice.html:173
+msgid "Overdue"
+msgstr ""
+
+#: templates/admin/invoices.html:19 templates/admin/new_invoice.html:3
+#: templates/admin/new_invoice.html:9
+msgid "New Invoice"
+msgstr ""
+
+#: templates/admin/invoices.html:22
+msgid "Back to Dashboard"
+msgstr ""
+
+#: templates/admin/invoices.html:33
+msgid "Invoice List"
+msgstr ""
+
+#: templates/admin/invoices.html:41
+msgid "Invoice #"
+msgstr ""
+
+#: templates/admin/invoices.html:42
+msgid "Client"
+msgstr ""
+
+#: templates/admin/invoices.html:45
+msgid "Total Amount"
+msgstr ""
+
+#: templates/admin/invoices.html:46 templates/admin/invoices.html:106
+msgid "Status"
+msgstr ""
+
+#: templates/admin/invoices.html:47 templates/admin/view_invoice.html:162
+msgid "Actions"
+msgstr ""
+
+#: templates/admin/invoices.html:92
+msgid "View"
+msgstr ""
+
+#: templates/admin/invoices.html:96
+msgid "PDF"
+msgstr ""
+
+#: templates/admin/invoices.html:100
+msgid "Edit"
+msgstr ""
+
+#: templates/admin/invoices.html:130
+msgid "Delete"
+msgstr ""
+
+#: templates/admin/invoices.html:142
+msgid "No Invoices Yet"
+msgstr ""
+
+#: templates/admin/invoices.html:143
+msgid "Create your first invoice to get started."
+msgstr ""
+
+#: templates/admin/invoices.html:145
+msgid "Create First Invoice"
+msgstr ""
+
+#: templates/admin/invoices.html:159 templates/admin/view_invoice.html:216
+msgid "Confirm Delete"
+msgstr ""
+
+#: templates/admin/invoices.html:163 templates/admin/view_invoice.html:220
+msgid ""
+"Are you sure you want to delete this invoice? This action cannot be "
+"undone."
+msgstr ""
+
+#: templates/admin/invoices.html:169 templates/admin/view_invoice.html:191
+#: templates/admin/view_invoice.html:226
+msgid "Delete Invoice"
+msgstr ""
+
 #: templates/admin/login.html:30
 msgid "Username"
 msgstr ""
@@ -658,5 +891,77 @@ msgstr ""
 
 #: templates/admin/login.html:39
 msgid "Login"
+msgstr ""
+
+#: templates/admin/new_invoice.html:11 templates/admin/view_invoice.html:15
+msgid "Back to Invoices"
+msgstr ""
+
+#: templates/admin/new_invoice.html:140
+msgid "Create Invoice"
+msgstr ""
+
+#: templates/admin/view_invoice.html:3 templates/admin/view_invoice.html:9
+msgid "Invoice"
+msgstr ""
+
+#: templates/admin/view_invoice.html:53
+msgid "Client Information"
+msgstr ""
+
+#: templates/admin/view_invoice.html:56
+msgid "Email"
+msgstr ""
+
+#: templates/admin/view_invoice.html:62
+msgid "Address"
+msgstr ""
+
+#: templates/admin/view_invoice.html:66
+msgid "Invoice Information"
+msgstr ""
+
+#: templates/admin/view_invoice.html:67
+msgid "Invoice Number"
+msgstr ""
+
+#: templates/admin/view_invoice.html:116
+msgid "No items found for this invoice."
+msgstr ""
+
+#: templates/admin/view_invoice.html:167
+msgid "Change Status"
+msgstr ""
+
+#: templates/admin/view_invoice.html:177
+msgid "Update"
+msgstr ""
+
+#: templates/admin/view_invoice.html:185
+msgid "Download PDF"
+msgstr ""
+
+#: templates/admin/view_invoice.html:188
+msgid "Print Invoice"
+msgstr ""
+
+#: templates/admin/view_invoice.html:200
+msgid "Invoice Info"
+msgstr ""
+
+#: templates/admin/view_invoice.html:203
+msgid "Created"
+msgstr ""
+
+#: templates/admin/view_invoice.html:204
+msgid "Last Updated"
+msgstr ""
+
+#: templates/admin/view_invoice.html:205
+msgid "Items Count"
+msgstr ""
+
+#: templates/admin/view_invoice.html:250 templates/admin/view_invoice.html:255
+msgid "Error updating status"
 msgstr ""
 
