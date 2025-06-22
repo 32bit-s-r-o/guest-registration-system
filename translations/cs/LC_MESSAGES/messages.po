@@ -1,0 +1,662 @@
+# Czech translations for PROJECT.
+# Copyright (C) 2025 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2025-06-23 01:09+0200\n"
+"PO-Revision-Date: 2025-06-23 01:07+0200\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: cs\n"
+"Language-Team: cs <LL@li.org>\n"
+"Plural-Forms: nplurals=3; plural=((n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: app.py:383
+#, python-format
+msgid "Thank you for your message, %(name)s! We will get back to you soon."
+msgstr ""
+
+#: app.py:410
+msgid "Please enter a confirmation code"
+msgstr ""
+
+#: app.py:416 app.py:432
+msgid "Invalid confirmation code. Please check your code and try again."
+msgstr ""
+
+#: app.py:584
+msgid ""
+"Registration submitted successfully! You will receive an email once it is"
+" reviewed."
+msgstr ""
+
+#: app.py:603
+msgid "Invalid username or password"
+msgstr ""
+
+#: app.py:650
+msgid "Settings updated successfully!"
+msgstr ""
+
+#: app.py:662
+#, python-format
+msgid "Airbnb sync successful: %(message)s"
+msgstr ""
+
+#: app.py:664
+#, python-format
+msgid "Airbnb sync failed: %(message)s"
+msgstr ""
+
+#: app.py:687
+msgid "Trip created successfully!"
+msgstr ""
+
+#: app.py:725
+msgid "Registration approved and email sent to user"
+msgstr ""
+
+#: app.py:741
+msgid "Registration rejected and email sent to user"
+msgstr ""
+
+#: app.py:809
+msgid "Invoice created successfully!"
+msgstr ""
+
+#: app.py:874
+msgid "Invoice updated successfully!"
+msgstr ""
+
+#: app.py:896
+msgid "Invoice deleted successfully!"
+msgstr ""
+
+#: app.py:912
+#, python-format
+msgid "Invoice status changed from %(old_status)s to %(new_status)s successfully!"
+msgstr ""
+
+#: app.py:914
+msgid "Invalid status provided."
+msgstr ""
+
+#: app.py:1080
+msgid "All data has been reset successfully! Admin accounts have been preserved."
+msgstr ""
+
+#: app.py:1085
+#, python-format
+msgid ""
+"Error resetting data: %(error)s. Please use the command line tool: python"
+" quick_reset.py --confirm"
+msgstr ""
+
+#: app.py:1430
+msgid ""
+"Sample data has been seeded successfully! Created 5 trips, 7 "
+"registrations (including 1 single-person pending), 3 invoices with "
+"realistic data, and updated admin contact information."
+msgstr ""
+
+#: app.py:1433
+#, python-format
+msgid "Error seeding data: %(error)s"
+msgstr ""
+
+#: app.py:1655
+msgid ""
+"Database has been reset and seeded with sample data successfully! Admin "
+"accounts have been preserved. Created 5 trips and 6 registrations with "
+"various statuses. Sample document images have been copied to uploads "
+"directory."
+msgstr ""
+
+#: app.py:1660
+#, python-format
+msgid ""
+"Error during reset and seed: %(error)s. Please use the command line tool:"
+" python quick_reset.py --reset-seed"
+msgstr ""
+
+#: app.py:1667
+msgid "Your registration has been approved!"
+msgstr ""
+
+#: app.py:1671
+#, python-format
+msgid ""
+"\n"
+"        Dear Guest,\n"
+"        \n"
+"        Your registration for %(trip_title)s has been approved!\n"
+"        \n"
+"        Your personal data has been processed and all uploaded documents "
+"have been securely deleted in compliance with GDPR regulations.\n"
+"        \n"
+"        Thank you for choosing our service.\n"
+"        \n"
+"        Best regards,\n"
+"        The Admin Team\n"
+"        "
+msgstr ""
+
+#: app.py:1691
+msgid "Registration Update Required"
+msgstr ""
+
+#: app.py:1695
+#, python-format
+msgid ""
+"\n"
+"        Dear Guest,\n"
+"        \n"
+"        Your registration for %(trip_title)s requires updates.\n"
+"        \n"
+"        Admin Comment: %(admin_comment)s\n"
+"        \n"
+"        Please update your information using this link: %(update_link)s\n"
+"        \n"
+"        Thank you for your understanding.\n"
+"        \n"
+"        Best regards,\n"
+"        The Admin Team\n"
+"        "
+msgstr ""
+
+#: templates/base.html:69
+msgid "Home"
+msgstr ""
+
+#: templates/base.html:72
+msgid "About"
+msgstr ""
+
+#: templates/base.html:75
+msgid "Contact"
+msgstr ""
+
+#: templates/base.html:78
+msgid "GDPR"
+msgstr ""
+
+#: templates/base.html:84
+msgid "Dashboard"
+msgstr ""
+
+#: templates/base.html:87
+msgid "Logout"
+msgstr ""
+
+#: templates/admin/login.html:3 templates/admin/login.html:12
+#: templates/base.html:91
+msgid "Admin Login"
+msgstr ""
+
+#: templates/confirm.html:3
+msgid "Confirm Registration"
+msgstr ""
+
+#: templates/confirm.html:12
+msgid "Confirm Your Registration"
+msgstr ""
+
+#: templates/confirm.html:17
+msgid "Please review your information before submitting"
+msgstr ""
+
+#: templates/confirm.html:19
+msgid ""
+"Once submitted, your registration will be reviewed by an administrator.\n"
+"                            You will receive an email notification with "
+"the result."
+msgstr ""
+
+#: templates/confirm.html:26
+msgid "Trip Information"
+msgstr ""
+
+#: templates/confirm.html:31
+msgid "Trip Title"
+msgstr ""
+
+#: templates/confirm.html:32
+msgid "Start Date"
+msgstr ""
+
+#: templates/confirm.html:34
+msgid "End Date"
+msgstr ""
+
+#: templates/confirm.html:37
+msgid "Maximum Guests"
+msgstr ""
+
+#: templates/confirm.html:39 templates/register.html:15
+msgid "Confirmation Code"
+msgstr ""
+
+#: templates/confirm.html:49 templates/register.html:45
+msgid "Contact Information"
+msgstr ""
+
+#: templates/confirm.html:52 templates/register.html:47
+msgid "Email Address"
+msgstr ""
+
+#: templates/confirm.html:59 templates/register.html:93
+msgid "Guest Information"
+msgstr ""
+
+#: templates/confirm.html:60
+msgid "guest(s)"
+msgstr ""
+
+#: templates/confirm.html:65 templates/register.html:120
+msgid "Guest"
+msgstr ""
+
+#: templates/confirm.html:68
+msgid "Name"
+msgstr ""
+
+#: templates/confirm.html:70 templates/register.html:138
+msgid "Document Type"
+msgstr ""
+
+#: templates/confirm.html:71 templates/register.html:149
+msgid "Document Number"
+msgstr ""
+
+#: templates/confirm.html:74
+msgid "GDPR Consent"
+msgstr ""
+
+#: templates/confirm.html:76
+msgid "Yes"
+msgstr ""
+
+#: templates/confirm.html:78
+msgid "No"
+msgstr ""
+
+#: templates/confirm.html:91 templates/register.html:57
+msgid "Invoice Request"
+msgstr ""
+
+#: templates/confirm.html:96 templates/register.html:70
+msgid "Client Name"
+msgstr ""
+
+#: templates/confirm.html:98 templates/register.html:77
+msgid "VAT Number"
+msgstr ""
+
+#: templates/confirm.html:103 templates/register.html:84
+msgid "Billing Address"
+msgstr ""
+
+#: templates/confirm.html:116
+msgid "Go Back"
+msgstr ""
+
+#: templates/confirm.html:119
+msgid "Submit Registration"
+msgstr ""
+
+#: templates/index.html:3
+msgid "Guest Registration System"
+msgstr ""
+
+#: templates/index.html:9 templates/register_landing.html:17
+msgid "Welcome to Guest Registration"
+msgstr ""
+
+#: templates/index.html:11
+msgid ""
+"Secure and GDPR-compliant guest registration system for your trips and "
+"accommodations."
+msgstr ""
+
+#: templates/index.html:19
+msgid "Secure & Compliant"
+msgstr ""
+
+#: templates/index.html:20
+msgid ""
+"Full GDPR compliance with automatic document deletion after\n"
+"                                approval."
+msgstr ""
+
+#: templates/index.html:29
+msgid "Easy to Use"
+msgstr ""
+
+#: templates/index.html:30
+msgid "Simple registration process with mobile-friendly interface."
+msgstr ""
+
+#: templates/index.html:39
+msgid "Email Notifications"
+msgstr ""
+
+#: templates/index.html:40
+msgid ""
+"Receive email updates about your registration status and any\n"
+"                                required actions."
+msgstr ""
+
+#: templates/index.html:48
+msgid "How it works:"
+msgstr ""
+
+#: templates/index.html:50
+msgid "Fill out the registration form with guest information"
+msgstr ""
+
+#: templates/index.html:51
+msgid "Upload required identification documents"
+msgstr ""
+
+#: templates/index.html:52
+msgid "Review and confirm your information"
+msgstr ""
+
+#: templates/index.html:53
+msgid "Submit for admin approval"
+msgstr ""
+
+#: templates/index.html:54
+msgid "Receive email notification with the result"
+msgstr ""
+
+#: templates/index.html:59
+msgid "Available Trips"
+msgstr ""
+
+#: templates/index.html:60
+msgid ""
+"Contact your trip organizer to get the registration link for your "
+"specific\n"
+"                    trip."
+msgstr ""
+
+#: templates/index.html:65
+msgid "Start Registration"
+msgstr ""
+
+#: templates/index.html:67
+msgid "Have your Airbnb confirmation code ready!"
+msgstr ""
+
+#: templates/register.html:3
+msgid "Register"
+msgstr ""
+
+#: templates/register.html:8 templates/register_landing.html:3
+#: templates/register_landing.html:12
+msgid "Guest Registration"
+msgstr ""
+
+#: templates/register.html:13
+msgid "Maximum"
+msgstr ""
+
+#: templates/admin/dashboard.html:79 templates/register.html:13
+msgid "guests"
+msgstr ""
+
+#: templates/register.html:21
+msgid "Important Information"
+msgstr ""
+
+#: templates/register.html:23
+msgid "All personal data is handled according to GDPR regulations"
+msgstr ""
+
+#: templates/register.html:24
+msgid "Uploaded documents will be automatically deleted after approval"
+msgstr ""
+
+#: templates/register.html:25
+msgid "One email address is required for the entire group"
+msgstr ""
+
+#: templates/register.html:26
+msgid "Each guest must provide valid identification"
+msgstr ""
+
+#: templates/register.html:49
+msgid "Enter email address for the group"
+msgstr ""
+
+#: templates/register.html:50
+msgid "This email will be used for all communications about this registration."
+msgstr ""
+
+#: templates/register.html:62
+msgid "I would like to request an invoice for this registration"
+msgstr ""
+
+#: templates/register.html:72
+msgid "Full name for invoice"
+msgstr ""
+
+#: templates/register.html:79
+msgid "VAT number (optional)"
+msgstr ""
+
+#: templates/register.html:86
+msgid "Enter billing address"
+msgstr ""
+
+#: templates/register.html:98
+msgid "Add Another Guest"
+msgstr ""
+
+#: templates/register.html:104
+msgid "Continue to Review"
+msgstr ""
+
+#: templates/register.html:124
+msgid "First Name"
+msgstr ""
+
+#: templates/register.html:130
+msgid "Last Name"
+msgstr ""
+
+#: templates/register.html:140
+msgid "Select document type"
+msgstr ""
+
+#: templates/register.html:141
+msgid "Passport"
+msgstr ""
+
+#: templates/register.html:142
+msgid "Driving License"
+msgstr ""
+
+#: templates/register.html:143
+msgid "Citizen ID"
+msgstr ""
+
+#: templates/register.html:155
+msgid "Document Image"
+msgstr ""
+
+#: templates/register.html:157
+msgid "Upload a clear photo of the document"
+msgstr ""
+
+#: templates/register.html:163
+msgid ""
+"I consent to the processing of my personal data according to GDPR "
+"regulations"
+msgstr ""
+
+#: templates/register.html:168
+msgid "Remove Guest"
+msgstr ""
+
+#: templates/register_landing.html:19
+msgid ""
+"Please enter your Airbnb confirmation code to proceed with your "
+"registration."
+msgstr ""
+
+#: templates/register_landing.html:38
+msgid "Airbnb Confirmation Code"
+msgstr ""
+
+#: templates/register_landing.html:41
+msgid "Enter your confirmation code"
+msgstr ""
+
+#: templates/register_landing.html:45
+msgid "This is the confirmation code from your Airbnb reservation email."
+msgstr ""
+
+#: templates/register_landing.html:51
+msgid "Continue to Registration"
+msgstr ""
+
+#: templates/register_landing.html:59
+msgid "Need Help?"
+msgstr ""
+
+#: templates/register_landing.html:61
+msgid ""
+"If you can't find your confirmation code, please check your Airbnb "
+"reservation email\n"
+"                            or contact your host for assistance."
+msgstr ""
+
+#: templates/register_landing.html:65
+msgid "About This Service"
+msgstr ""
+
+#: templates/success.html:3
+msgid "Registration Submitted"
+msgstr ""
+
+#: templates/success.html:14
+msgid "Registration Submitted Successfully!"
+msgstr ""
+
+#: templates/success.html:17
+msgid ""
+"Thank you for submitting your guest registration. Your information has "
+"been received and is\n"
+"                    now pending admin approval."
+msgstr ""
+
+#: templates/success.html:22
+msgid "What happens next?"
+msgstr ""
+
+#: templates/success.html:24
+msgid "An administrator will review your registration within 24-48 hours"
+msgstr ""
+
+#: templates/success.html:25
+msgid "You will receive an email notification with the approval status"
+msgstr ""
+
+#: templates/success.html:26
+msgid ""
+"If approved, your uploaded documents will be automatically deleted for "
+"GDPR\n"
+"                            compliance"
+msgstr ""
+
+#: templates/success.html:28
+msgid ""
+"If any corrections are needed, you'll receive a link to update your "
+"information"
+msgstr ""
+
+#: templates/success.html:34
+msgid "Data Protection"
+msgstr ""
+
+#: templates/success.html:36
+msgid ""
+"Your personal data is protected according to GDPR regulations. All "
+"uploaded documents will\n"
+"                        be securely deleted after approval to ensure your"
+" privacy."
+msgstr ""
+
+#: templates/admin/dashboard.html:3 templates/admin/dashboard.html:9
+msgid "Admin Dashboard"
+msgstr ""
+
+#: templates/admin/dashboard.html:19
+msgid "Total Trips"
+msgstr ""
+
+#: templates/admin/dashboard.html:34
+msgid "Pending Registrations"
+msgstr ""
+
+#: templates/admin/dashboard.html:49 templates/admin/dashboard.html:101
+msgid "Quick Actions"
+msgstr ""
+
+#: templates/admin/dashboard.html:50
+msgid "Manage your system"
+msgstr ""
+
+#: templates/admin/dashboard.html:65
+msgid "Recent Trips"
+msgstr ""
+
+#: templates/admin/dashboard.html:84
+msgid "No trips created yet."
+msgstr ""
+
+#: templates/admin/dashboard.html:88
+msgid "View All Trips"
+msgstr ""
+
+#: templates/admin/dashboard.html:91
+msgid "New Trip"
+msgstr ""
+
+#: templates/admin/dashboard.html:108
+msgid "Review Registrations"
+msgstr ""
+
+#: templates/admin/dashboard.html:114
+msgid "Manage Invoices"
+msgstr ""
+
+#: templates/admin/dashboard.html:120
+msgid "Settings"
+msgstr ""
+
+#: templates/admin/dashboard.html:126
+msgid "Data Management"
+msgstr ""
+
+#: templates/admin/login.html:30
+msgid "Username"
+msgstr ""
+
+#: templates/admin/login.html:34
+msgid "Password"
+msgstr ""
+
+#: templates/admin/login.html:39
+msgid "Login"
+msgstr ""
+

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Registration Submitted{% endblock %}
+{% block title %}{{ _('Registration Submitted') }}{% endblock %}
 
 {% block content %}
 <div class="row">
@@ -11,28 +11,30 @@
                     <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
                 </div>
 
-                <h2 class="mb-4">Registration Submitted Successfully!</h2>
+                <h2 class="mb-4">{{ _('Registration Submitted Successfully!') }}</h2>
 
                 <p class="lead mb-4">
-                    Thank you for submitting your guest registration. Your information has been received and is now
-                    pending admin approval.
+                    {{ _('Thank you for submitting your guest registration. Your information has been received and is
+                    now pending admin approval.') }}
                 </p>
 
                 <div class="alert alert-info" role="alert">
-                    <h5><i class="fas fa-envelope"></i> What happens next?</h5>
+                    <h5><i class="fas fa-envelope"></i> {{ _('What happens next?') }}</h5>
                     <ul class="text-start mb-0">
-                        <li>An administrator will review your registration within 24-48 hours</li>
-                        <li>You will receive an email notification with the approval status</li>
-                        <li>If approved, your uploaded documents will be automatically deleted for GDPR compliance</li>
-                        <li>If any corrections are needed, you'll receive a link to update your information</li>
+                        <li>{{ _('An administrator will review your registration within 24-48 hours') }}</li>
+                        <li>{{ _('You will receive an email notification with the approval status') }}</li>
+                        <li>{{ _('If approved, your uploaded documents will be automatically deleted for GDPR
+                            compliance') }}</li>
+                        <li>{{ _('If any corrections are needed, you\'ll receive a link to update your information') }}
+                        </li>
                     </ul>
                 </div>
 
                 <div class="alert alert-warning" role="alert">
-                    <h5><i class="fas fa-shield-alt"></i> Data Protection</h5>
+                    <h5><i class="fas fa-shield-alt"></i> {{ _('Data Protection') }}</h5>
                     <p class="mb-0">
-                        Your personal data is protected according to GDPR regulations. All uploaded documents will be
-                        securely deleted after approval to ensure your privacy.
+                        {{ _('Your personal data is protected according to GDPR regulations. All uploaded documents will
+                        be securely deleted after approval to ensure your privacy.') }}
                     </p>
                 </div>
 

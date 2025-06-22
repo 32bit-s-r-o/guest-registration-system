@@ -50,31 +50,45 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="langDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            {% if get_locale() == 'cs' %}🇨🇿 Čeština{% else %}🇬🇧 English{% endif %}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="langDropdown">
+                            <li><a class="dropdown-item" href="{{ url_for('set_language', lang_code='en') }}">🇬🇧
+                                    English</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('set_language', lang_code='cs') }}">🇨🇿
+                                    Čeština</a></li>
+                        </ul>
+                    </li>
+                </ul>
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('index') }}">Home</a>
+                        <a class="nav-link" href="{{ url_for('index') }}">{{ _('Home') }}</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('about') }}">About</a>
+                        <a class="nav-link" href="{{ url_for('about') }}">{{ _('About') }}</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('contact') }}">Contact</a>
+                        <a class="nav-link" href="{{ url_for('contact') }}">{{ _('Contact') }}</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('gdpr') }}">GDPR</a>
+                        <a class="nav-link" href="{{ url_for('gdpr') }}">{{ _('GDPR') }}</a>
                     </li>
                 </ul>
                 <ul class="navbar-nav">
                     {% if current_user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+                        <a class="nav-link" href="{{ url_for('admin_dashboard') }}">{{ _('Dashboard') }}</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin_logout') }}">Logout</a>
+                        <a class="nav-link" href="{{ url_for('admin_logout') }}">{{ _('Logout') }}</a>
                     </li>
                     {% else %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin_login') }}">Admin Login</a>
+                        <a class="nav-link" href="{{ url_for('admin_login') }}">{{ _('Admin Login') }}</a>
                     </li>
                     {% endif %}
                 </ul>

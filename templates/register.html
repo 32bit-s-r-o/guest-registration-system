@@ -1,252 +1,192 @@
 {% extends "base.html" %}
 
-{% block title %}Register - {{ trip.title }}{% endblock %}
+{% block title %}{{ _('Register') }} - {{ trip.title }}{% endblock %}
 
 {% block content %}
 <div class="form-container">
     <div class="text-center mb-4">
-        <h2>Guest Registration</h2>
+        <h2>{{ _('Guest Registration') }}</h2>
         <h4 class="text-primary">{{ trip.title }}</h4>
         <p class="text-muted">
             <i class="fas fa-calendar"></i> {{ trip.start_date.strftime('%B %d, %Y') }} - {{ trip.end_date.strftime('%B
             %d, %Y') }}<br>
-            <i class="fas fa-users"></i> Maximum {{ trip.max_guests }} guests
+            <i class="fas fa-users"></i> {{ _('Maximum') }} {{ trip.max_guests }} {{ _('guests') }}
             {% if trip.airbnb_confirm_code %}
-            <br><i class="fas fa-key"></i> Confirmation Code: <strong>{{ trip.airbnb_confirm_code }}</strong>
+            <br><i class="fas fa-key"></i> {{ _('Confirmation Code') }}: <strong>{{ trip.airbnb_confirm_code }}</strong>
             {% endif %}
         </p>
     </div>
 
     <div class="alert alert-warning" role="alert">
-        <h5><i class="fas fa-exclamation-triangle"></i> Important Information</h5>
+        <h5><i class="fas fa-exclamation-triangle"></i> {{ _('Important Information') }}</h5>
         <ul class="mb-0">
-            <li>All personal data is handled according to GDPR regulations</li>
-            <li>Uploaded documents will be automatically deleted after approval</li>
-            <li>One email address is required for the entire group</li>
-            <li>Each guest must provide valid identification</li>
+            <li>{{ _('All personal data is handled according to GDPR regulations') }}</li>
+            <li>{{ _('Uploaded documents will be automatically deleted after approval') }}</li>
+            <li>{{ _('One email address is required for the entire group') }}</li>
+            <li>{{ _('Each guest must provide valid identification') }}</li>
         </ul>
     </div>
 
-    <form method="POST" enctype="multipart/form-data" id="registrationForm">
-        <!-- Contact Email -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5><i class="fas fa-envelope"></i> Contact Information</h5>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show"
+        role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('submit_registration', trip_id=trip.id) }}" enctype="multipart/form-data">
+        <!-- Email Section -->
+        <div class="guest-form">
+            <h4><i class="fas fa-envelope"></i> {{ _('Contact Information') }}</h4>
+            <div class="mb-3">
+                <label for="email" class="form-label">{{ _('Email Address') }} *</label>
+                <input type="email" class="form-control" id="email" name="email" required
+                    placeholder="{{ _('Enter email address for the group') }}">
+                <div class="form-text">{{ _('This email will be used for all communications about this registration.')
+                    }}</div>
             </div>
-            <div class="card-body">
+        </div>
+
+        <!-- Invoice Request Section -->
+        <div class="guest-form">
+            <h4><i class="fas fa-file-invoice"></i> {{ _('Invoice Request') }}</h4>
+            <div class="mb-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="invoice_request" name="invoice_request">
+                    <label class="form-check-label" for="invoice_request">
+                        {{ _('I would like to request an invoice for this registration') }}
+                    </label>
+                </div>
+            </div>
+            <div id="invoice_details" style="display: none;">
                 <div class="row">
                     <div class="col-md-6">
-                        <label for="email" class="form-label">Email Address *</label>
-                        <input type="email" class="form-control" id="email" name="email" required>
-                        <div class="form-text">This email will be used for all communications regarding this
-                            registration.</div>
+                        <div class="mb-3">
+                            <label for="invoice_name" class="form-label">{{ _('Client Name') }} *</label>
+                            <input type="text" class="form-control" id="invoice_name" name="invoice_name"
+                                placeholder="{{ _('Full name for invoice') }}">
+                        </div>
                     </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="invoice_vat" class="form-label">{{ _('VAT Number') }}</label>
+                            <input type="text" class="form-control" id="invoice_vat" name="invoice_vat"
+                                placeholder="{{ _('VAT number (optional)') }}">
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="invoice_address" class="form-label">{{ _('Billing Address') }}</label>
+                    <textarea class="form-control" id="invoice_address" name="invoice_address" rows="3"
+                        placeholder="{{ _('Enter billing address') }}"></textarea>
                 </div>
             </div>
         </div>
 
         <!-- Guest Information -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5><i class="fas fa-users"></i> Guest Information</h5>
+        <div class="guest-form">
+            <h4><i class="fas fa-users"></i> {{ _('Guest Information') }}</h4>
+            <div id="guests-container">
+                <!-- Guest forms will be added here dynamically -->
             </div>
-            <div class="card-body">
-                <p class="text-muted mb-3">Please fill out information for each guest (up to {{ trip.max_guests }}
-                    guests):</p>
-
-                {% for i in range(trip.max_guests) %}
-                <div class="guest-form" id="guest-{{ i }}">
-                    <h6 class="mb-3">Guest {{ i + 1 }}</h6>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="first_name_{{ i }}" class="form-label">First Name *</label>
-                            <input type="text" class="form-control" id="first_name_{{ i }}" name="first_name_{{ i }}"
-                                required>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="last_name_{{ i }}" class="form-label">Last Name *</label>
-                            <input type="text" class="form-control" id="last_name_{{ i }}" name="last_name_{{ i }}"
-                                required>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="document_type_{{ i }}" class="form-label">Document Type *</label>
-                            <select class="form-select" id="document_type_{{ i }}" name="document_type_{{ i }}"
-                                required>
-                                <option value="">Select document type</option>
-                                <option value="passport">Passport</option>
-                                <option value="driving_license">Driving License</option>
-                                <option value="citizen_id">Citizen ID</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="document_number_{{ i }}" class="form-label">Document Number *</label>
-                            <input type="text" class="form-control" id="document_number_{{ i }}"
-                                name="document_number_{{ i }}" required>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="document_image_{{ i }}" class="form-label">Document Image *</label>
-                            <input type="file" class="form-control" id="document_image_{{ i }}" name="document_images"
-                                accept="image/*" required>
-                            <div class="form-text">Upload a clear photo of the document (JPG, PNG, max 16MB)</div>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="gdpr_consent_{{ i }}"
-                                    name="gdpr_consent_{{ i }}" required>
-                                <label class="form-check-label" for="gdpr_consent_{{ i }}">
-                                    I consent to the processing of my personal data according to the <a
-                                        href="{{ url_for('gdpr') }}" target="_blank">GDPR policy</a> *
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-12">
-                            <div id="preview_{{ i }}" class="mt-2" style="display: none;">
-                                <img id="preview_img_{{ i }}" class="document-preview" alt="Document preview">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-
-        <!-- Invoice Request Section -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5><i class="fas fa-file-invoice"></i> Invoice Request</h5>
-            </div>
-            <div class="card-body">
-                <div class="form-check mb-3">
-                    <input class="form-check-input" type="checkbox" id="request_invoice" name="request_invoice">
-                    <label class="form-check-label" for="request_invoice">
-                        <strong>I would like to receive an invoice for this registration</strong>
-                    </label>
-                </div>
-
-                <div id="invoiceDetails" style="display: none;">
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i>
-                        <strong>Invoice Information:</strong> Please provide the details below for your invoice.
-                        The admin will review and finalize the invoice with pricing details.
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="invoice_company_name" class="form-label">Client Name</label>
-                            <input type="text" class="form-control" id="invoice_company_name"
-                                name="invoice_company_name">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="invoice_vat_number" class="form-label">VAT Number (if applicable)</label>
-                            <input type="text" class="form-control" id="invoice_vat_number" name="invoice_vat_number">
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="invoice_address" class="form-label">Billing Address</label>
-                        <textarea class="form-control" id="invoice_address" name="invoice_address" rows="3"
-                            placeholder="Please provide your complete billing address"></textarea>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="invoice_currency" class="form-label">Preferred Currency</label>
-                            <select class="form-select" id="invoice_currency" name="invoice_currency">
-                                <option value="EUR">EUR (€)</option>
-                                <option value="USD">USD ($)</option>
-                                <option value="GBP">GBP (£)</option>
-                                <option value="CZK">CZK (Kč)</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="invoice_notes" class="form-label">Additional Notes</label>
-                            <textarea class="form-control" id="invoice_notes" name="invoice_notes" rows="2"
-                                placeholder="Any special requirements or notes for the invoice"></textarea>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <button type="button" class="btn btn-outline-primary" id="add-guest-btn">
+                <i class="fas fa-plus"></i> {{ _('Add Another Guest') }}
+            </button>
         </div>
 
         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
             <button type="submit" class="btn btn-primary btn-lg">
-                <i class="fas fa-arrow-right"></i> Continue to Review
+                <i class="fas fa-arrow-right"></i> {{ _('Continue to Review') }}
             </button>
         </div>
     </form>
 </div>
-{% endblock %}
 
-{% block scripts %}
 <script>
-    // File preview functionality
-    document.querySelectorAll('input[type="file"]').forEach(function (input, index) {
-        input.addEventListener('change', function (e) {
-            const file = e.target.files[0];
-            const preview = document.getElementById(`preview_${index}`);
-            const previewImg = document.getElementById(`preview_img_${index}`);
+    // JavaScript for dynamic guest forms
+    let guestCount = 0;
 
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    previewImg.src = e.target.result;
-                    preview.style.display = 'block';
-                };
-                reader.readAsDataURL(file);
-            } else {
-                preview.style.display = 'none';
-            }
+    function addGuestForm() {
+        guestCount++;
+        const container = document.getElementById('guests-container');
+        const guestDiv = document.createElement('div');
+        guestDiv.className = 'guest-form mb-3';
+        guestDiv.innerHTML = `
+            <h5>{{ _('Guest') }} ${guestCount}</h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="first_name_${guestCount}" class="form-label">{{ _('First Name') }} *</label>
+                        <input type="text" class="form-control" id="first_name_${guestCount}" name="first_name_${guestCount}" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="last_name_${guestCount}" class="form-label">{{ _('Last Name') }} *</label>
+                        <input type="text" class="form-control" id="last_name_${guestCount}" name="last_name_${guestCount}" required>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="document_type_${guestCount}" class="form-label">{{ _('Document Type') }} *</label>
+                        <select class="form-select" id="document_type_${guestCount}" name="document_type_${guestCount}" required>
+                            <option value="">{{ _('Select document type') }}</option>
+                            <option value="passport">{{ _('Passport') }}</option>
+                            <option value="driving_license">{{ _('Driving License') }}</option>
+                            <option value="citizen_id">{{ _('Citizen ID') }}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="document_number_${guestCount}" class="form-label">{{ _('Document Number') }} *</label>
+                        <input type="text" class="form-control" id="document_number_${guestCount}" name="document_number_${guestCount}" required>
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="document_image_${guestCount}" class="form-label">{{ _('Document Image') }} *</label>
+                <input type="file" class="form-control" id="document_image_${guestCount}" name="document_image_${guestCount}" accept="image/*" required>
+                <div class="form-text">{{ _('Upload a clear photo of the document') }}</div>
+            </div>
+            <div class="mb-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="gdpr_consent_${guestCount}" name="gdpr_consent_${guestCount}" required>
+                    <label class="form-check-label" for="gdpr_consent_${guestCount}">
+                        {{ _('I consent to the processing of my personal data according to GDPR regulations') }} *
+                    </label>
+                </div>
+            </div>
+            <button type="button" class="btn btn-outline-danger btn-sm remove-guest" onclick="removeGuest(this)">
+                <i class="fas fa-trash"></i> {{ _('Remove Guest') }}
+            </button>
+        `;
+        container.appendChild(guestDiv);
+    }
+
+    function removeGuest(button) {
+        button.closest('.guest-form').remove();
+    }
+
+    // Add first guest form on page load
+    document.addEventListener('DOMContentLoaded', function () {
+        addGuestForm();
+
+        // Add guest button
+        document.getElementById('add-guest-btn').addEventListener('click', addGuestForm);
+
+        // Invoice request toggle
+        document.getElementById('invoice_request').addEventListener('change', function () {
+            const details = document.getElementById('invoice_details');
+            details.style.display = this.checked ? 'block' : 'none';
         });
-    });
-
-    // Invoice request toggle
-    document.getElementById('request_invoice').addEventListener('change', function () {
-        const invoiceDetails = document.getElementById('invoiceDetails');
-        if (this.checked) {
-            invoiceDetails.style.display = 'block';
-        } else {
-            invoiceDetails.style.display = 'none';
-        }
-    });
-
-    // Form validation
-    document.getElementById('registrationForm').addEventListener('submit', function (e) {
-        const email = document.getElementById('email').value;
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-        if (!emailRegex.test(email)) {
-            e.preventDefault();
-            alert('Please enter a valid email address.');
-            return;
-        }
-
-        // Check if at least one guest has all required fields
-        let hasValidGuest = false;
-        for (let i = 0; i < {{ trip.max_guests }}; i++) {
-        const firstName = document.getElementById(`first_name_${i}`).value.trim();
-        const lastName = document.getElementById(`last_name_${i}`).value.trim();
-        const documentType = document.getElementById(`document_type_${i}`).value;
-        const documentNumber = document.getElementById(`document_number_${i}`).value.trim();
-        const documentImage = document.getElementById(`document_image_${i}`).files[0];
-        const gdprConsent = document.getElementById(`gdpr_consent_${i}`).checked;
-
-        if (firstName && lastName && documentType && documentNumber && documentImage && gdprConsent) {
-            hasValidGuest = true;
-            break;
-        }
-    }
-
-    if (!hasValidGuest) {
-        e.preventDefault();
-        alert('Please fill out complete information for at least one guest.');
-        return;
-    }
     });
 </script>
 {% endblock %}

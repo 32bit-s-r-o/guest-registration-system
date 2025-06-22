@@ -1,158 +1,128 @@
 {% extends "base.html" %}
 
-{% block title %}Confirm Registration{% endblock %}
+{% block title %}{{ _('Confirm Registration') }}{% endblock %}
 
 {% block content %}
-<div class="form-container">
-    <div class="text-center mb-4">
-        <h2>Confirm Your Registration</h2>
-        <h4 class="text-primary">{{ trip.title }}</h4>
-        <p class="text-muted">
-            <i class="fas fa-calendar"></i> {{ trip.start_date.strftime('%B %d, %Y') }} - {{ trip.end_date.strftime('%B
-            %d, %Y') }}
-        </p>
-    </div>
-
-    <div class="alert alert-info" role="alert">
-        <h5><i class="fas fa-info-circle"></i> Please review your information</h5>
-        <p class="mb-0">Please carefully review all the information below before submitting. Once submitted, you will
-            receive an email confirmation and your registration will be sent for approval.</p>
-    </div>
-
-    <!-- Contact Information -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <h5><i class="fas fa-envelope"></i> Contact Information</h5>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-6">
-                    <strong>Email Address:</strong><br>
-                    {{ data.email }}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white text-center">
+                    <h3 class="mb-0">
+                        <i class="fas fa-check-circle"></i> {{ _('Confirm Your Registration') }}
+                    </h3>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Guest Information -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <h5><i class="fas fa-users"></i> Guest Information</h5>
-        </div>
-        <div class="card-body">
-            {% for guest in data.guests %}
-            <div class="guest-form">
-                <h6>Guest {{ loop.index }}</h6>
-                <div class="row">
-                    <div class="col-md-6">
-                        <strong>Name:</strong><br>
-                        {{ guest.first_name }} {{ guest.last_name }}
+                <div class="card-body p-4">
+                    <div class="alert alert-info" role="alert">
+                        <h5><i class="fas fa-info-circle"></i> {{ _('Please review your information before submitting')
+                            }}</h5>
+                        <p class="mb-0">{{ _('Once submitted, your registration will be reviewed by an administrator.
+                            You will receive an email notification with the result.') }}</p>
                     </div>
-                    <div class="col-md-6">
-                        <strong>Document:</strong><br>
-                        {{ guest.document_type|title }} - {{ guest.document_number }}
+
+                    <!-- Trip Information -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5><i class="fas fa-plane"></i> {{ _('Trip Information') }}</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>{{ _('Trip Title') }}:</strong> {{ trip.title }}<br>
+                                    <strong>{{ _('Start Date') }}:</strong> {{ trip.start_date.strftime('%B %d, %Y')
+                                    }}<br>
+                                    <strong>{{ _('End Date') }}:</strong> {{ trip.end_date.strftime('%B %d, %Y') }}
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>{{ _('Maximum Guests') }}:</strong> {{ trip.max_guests }}<br>
+                                    {% if trip.airbnb_confirm_code %}
+                                    <strong>{{ _('Confirmation Code') }}:</strong> {{ trip.airbnb_confirm_code }}<br>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="row mt-2">
-                    <div class="col-md-6">
-                        <strong>GDPR Consent:</strong><br>
-                        <span class="badge bg-{{ 'success' if guest.gdpr_consent else 'danger' }}">
-                            {{ 'Yes' if guest.gdpr_consent else 'No' }}
-                        </span>
+
+                    <!-- Contact Information -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5><i class="fas fa-envelope"></i> {{ _('Contact Information') }}</h5>
+                        </div>
+                        <div class="card-body">
+                            <strong>{{ _('Email Address') }}:</strong> {{ data.email }}
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <strong>Document Uploaded:</strong><br>
-                        <span class="badge bg-success">
-                            <i class="fas fa-check"></i> Yes
-                        </span>
+
+                    <!-- Guest Information -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5><i class="fas fa-users"></i> {{ _('Guest Information') }} ({{ data.guests|length }} {{
+                                _('guest(s)') }})</h5>
+                        </div>
+                        <div class="card-body">
+                            {% for guest in data.guests %}
+                            <div class="border-bottom pb-3 mb-3">
+                                <h6>{{ _('Guest') }} {{ loop.index }}</h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <strong>{{ _('Name') }}:</strong> {{ guest.first_name }} {{ guest.last_name
+                                        }}<br>
+                                        <strong>{{ _('Document Type') }}:</strong> {{ guest.document_type|title }}<br>
+                                        <strong>{{ _('Document Number') }}:</strong> {{ guest.document_number }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <strong>{{ _('GDPR Consent') }}:</strong>
+                                        {% if guest.gdpr_consent %}
+                                        <span class="badge bg-success">{{ _('Yes') }}</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">{{ _('No') }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
                     </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
 
-    <!-- Invoice Request Information -->
-    {% if data.invoice_request %}
-    <div class="card mb-4">
-        <div class="card-header bg-success text-white">
-            <h5><i class="fas fa-file-invoice"></i> Invoice Request</h5>
-        </div>
-        <div class="card-body">
-            <div class="alert alert-success">
-                <i class="fas fa-check-circle"></i>
-                <strong>Invoice Requested:</strong> A draft invoice will be created for your registration.
-            </div>
+                    <!-- Invoice Information -->
+                    {% if data.invoice_request %}
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5><i class="fas fa-file-invoice"></i> {{ _('Invoice Request') }}</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>{{ _('Client Name') }}:</strong> {{ data.invoice_data.company_name }}<br>
+                                    {% if data.invoice_data.vat_number %}
+                                    <strong>{{ _('VAT Number') }}:</strong> {{ data.invoice_data.vat_number }}<br>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    {% if data.invoice_data.address %}
+                                    <strong>{{ _('Billing Address') }}:</strong><br>
+                                    {{ data.invoice_data.address|nl2br }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
 
-            {% if data.invoice_data.company_name %}
-            <div class="row mb-2">
-                <div class="col-md-6">
-                    <strong>Client Name:</strong><br>
-                    {{ data.invoice_data.company_name }}
+                    <!-- Submit Form -->
+                    <form method="POST" action="{{ url_for('submit_for_approval') }}">
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('register', trip_id=trip.id) }}" class="btn btn-secondary btn-lg">
+                                <i class="fas fa-arrow-left"></i> {{ _('Go Back') }}
+                            </a>
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-paper-plane"></i> {{ _('Submit Registration') }}
+                            </button>
+                        </div>
+                    </form>
                 </div>
-                {% if data.invoice_data.vat_number %}
-                <div class="col-md-6">
-                    <strong>VAT Number:</strong><br>
-                    {{ data.invoice_data.vat_number }}
-                </div>
-                {% endif %}
-            </div>
-            {% endif %}
-
-            {% if data.invoice_data.address %}
-            <div class="row mb-2">
-                <div class="col-12">
-                    <strong>Billing Address:</strong><br>
-                    {{ data.invoice_data.address | nl2br }}
-                </div>
-            </div>
-            {% endif %}
-
-            <div class="row mb-2">
-                <div class="col-md-6">
-                    <strong>Preferred Currency:</strong><br>
-                    {{ data.invoice_data.currency }}
-                </div>
-                {% if data.invoice_data.notes %}
-                <div class="col-md-6">
-                    <strong>Additional Notes:</strong><br>
-                    {{ data.invoice_data.notes }}
-                </div>
-                {% endif %}
-            </div>
-
-            <div class="alert alert-info">
-                <i class="fas fa-info-circle"></i>
-                <strong>Note:</strong> The admin will review your registration and complete the invoice with pricing
-                details.
-                You will be notified when the invoice is ready.
             </div>
         </div>
-    </div>
-    {% endif %}
-
-    <!-- Important Notice -->
-    <div class="alert alert-warning" role="alert">
-        <h5><i class="fas fa-exclamation-triangle"></i> Important Notice</h5>
-        <ul class="mb-0">
-            <li>By submitting this registration, you confirm that all information provided is accurate and complete.
-            </li>
-            <li>Your uploaded documents will be automatically deleted after approval for GDPR compliance.</li>
-            <li>You will receive an email notification once your registration has been reviewed.</li>
-            <li>If any information is incorrect, you may be asked to resubmit with corrections.</li>
-        </ul>
-    </div>
-
-    <!-- Action Buttons -->
-    <div class="d-grid gap-2 d-md-flex justify-content-md-between">
-        <a href="{{ url_for('register', trip_id=trip.id) }}" class="btn btn-secondary btn-lg">
-            <i class="fas fa-arrow-left"></i> Go Back and Edit
-        </a>
-        <form method="POST" action="{{ url_for('submit_for_approval') }}" style="display: inline;">
-            <button type="submit" class="btn btn-success btn-lg">
-                <i class="fas fa-check"></i> Submit for Approval
-            </button>
-        </form>
     </div>
 </div>
 {% endblock %}

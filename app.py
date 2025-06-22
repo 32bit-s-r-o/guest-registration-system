@@ -21,6 +21,7 @@ from weasyprint import HTML, CSS
 from weasyprint.text.fonts import FontConfiguration
 import tempfile
 from decimal import Decimal
+from flask_babel import Babel, gettext as _
 
 load_dotenv()
 
@@ -40,6 +41,26 @@ app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', 587))
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
 app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
+
+# Flask-Babel setup
+app.config['BABEL_DEFAULT_LOCALE'] = 'en'
+app.config['BABEL_SUPPORTED_LOCALES'] = ['en', 'cs']
+app.config['BABEL_TRANSLATION_DIRECTORIES'] = 'translations'
+
+def get_locale():
+    # Try to get language from session, then from request, fallback to default
+    from flask import session, request
+    lang = session.get('lang')
+    if lang in app.config['BABEL_SUPPORTED_LOCALES']:
+        return lang
+    return request.accept_languages.best_match(app.config['BABEL_SUPPORTED_LOCALES'])
+
+babel = Babel(app, locale_selector=get_locale)
+
+# Make get_locale available in templates
+@app.context_processor
+def inject_get_locale():
+    return dict(get_locale=get_locale)
 
 db = SQLAlchemy(app)
 mail = Mail(app)
@@ -372,7 +393,7 @@ def contact():
         
         # For now, just show a success message
         # In a real application, you would send an email here
-        flash(f'Thank you for your message, {name}! We will get back to you soon.', 'success')
+        flash(_('Thank you for your message, %(name)s! We will get back to you soon.', name=name), 'success')
         return redirect(url_for('contact'))
     
     return render_template('contact.html', admin_contact=admin_contact)
@@ -399,37 +420,32 @@ def submit_confirm_code():
     confirm_code = request.form.get('confirm_code', '').strip().upper()
     
     if not confirm_code:
-        flash('Please enter a confirmation code', 'error')
+        flash(_('Please enter a confirmation code'), 'error')
         return redirect(url_for('register_landing'))
     
-    # Find trip by confirmation code
+    # Check if confirmation code exists
     trip = Trip.query.filter_by(airbnb_confirm_code=confirm_code).first()
-    
     if not trip:
-        flash('Invalid confirmation code. Please check your code and try again.', 'error')
+        flash(_('Invalid confirmation code. Please check your code and try again.'), 'error')
         return redirect(url_for('register_landing'))
     
-    # Redirect to the registration form with confirmation code
-    return redirect(url_for('register_by_code', confirm_code=confirm_code))
+    return redirect(url_for('register', trip_id=trip.id))
 
 @app.route('/register/id/<int:trip_id>')
 def register(trip_id):
-    """Registration using trip ID."""
+    """Registration form for a specific trip."""
     trip = Trip.query.get_or_404(trip_id)
     return render_template('register.html', trip=trip)
 
 @app.route('/register/<confirm_code>')
 def register_by_code(confirm_code):
-    """Registration using confirmation code in URL."""
-    # Try to find by confirmation code
-    trip = Trip.query.filter_by(airbnb_confirm_code=confirm_code.upper()).first()
+    """Registration form using confirmation code."""
+    trip = Trip.query.filter_by(airbnb_confirm_code=confirm_code).first()
+    if not trip:
+        flash(_('Invalid confirmation code. Please check your code and try again.'), 'error')
+        return redirect(url_for('register_landing'))
     
-    if trip:
-        return render_template('register.html', trip=trip)
-    
-    # If not found by confirmation code, redirect to landing page
-    flash('Invalid confirmation code. Please check your code and try again.', 'error')
-    return redirect(url_for('register_landing'))
+    return render_template('register.html', trip=trip)
 
 @app.route('/register/id/<int:trip_id>', methods=['POST'])
 def submit_registration(trip_id):
@@ -578,7 +594,7 @@ def submit_for_approval():
     else:
         session['last_confirm_code_url'] = ''
     
-    flash('Registration submitted successfully! You will receive an email once it is reviewed.', 'success')
+    flash(_('Registration submitted successfully! You will receive an email once it is reviewed.'), 'success')
     return redirect(url_for('registration_success'))
 
 @app.route('/success')
@@ -597,7 +613,7 @@ def admin_login():
             login_user(admin)
             return redirect(url_for('admin_dashboard'))
         else:
-            flash('Invalid username or password', 'error')
+            flash(_('Invalid username or password'), 'error')
     
     return render_template('admin/login.html')
 
@@ -644,7 +660,7 @@ def admin_settings():
             current_user.password_hash = generate_password_hash(new_password)
         
         db.session.commit()
-        flash('Settings updated successfully!', 'success')
+        flash(_('Settings updated successfully!'), 'success')
         return redirect(url_for('admin_settings'))
     
     return render_template('admin/settings.html')
@@ -656,9 +672,9 @@ def sync_airbnb():
     result = sync_airbnb_reservations(current_user.id)
     
     if result['success']:
-        flash(f"Airbnb sync successful: {result['message']}", 'success')
+        flash(_('Airbnb sync successful: %(message)s', message=result['message']), 'success')
     else:
-        flash(f"Airbnb sync failed: {result['message']}", 'error')
+        flash(_('Airbnb sync failed: %(message)s', message=result['message']), 'error')
     
     return redirect(url_for('admin_trips'))
 
@@ -681,7 +697,7 @@ def new_trip():
         )
         db.session.add(trip)
         db.session.commit()
-        flash('Trip created successfully!', 'success')
+        flash(_('Trip created successfully!'), 'success')
         return redirect(url_for('admin_trips'))
     
     return render_template('admin/new_trip.html')
@@ -719,7 +735,7 @@ def approve_registration(registration_id):
     # Send approval email
     send_approval_email(registration)
     
-    flash('Registration approved and email sent to user', 'success')
+    flash(_('Registration approved and email sent to user'), 'success')
     return redirect(url_for('admin_registrations'))
 
 @app.route('/admin/registration/<int:registration_id>/reject', methods=['POST'])
@@ -735,7 +751,7 @@ def reject_registration(registration_id):
     # Send rejection email
     send_rejection_email(registration)
     
-    flash('Registration rejected and email sent to user', 'success')
+    flash(_('Registration rejected and email sent to user'), 'success')
     return redirect(url_for('admin_registrations'))
 
 # Invoice Management Routes
@@ -803,7 +819,7 @@ def new_invoice():
         invoice.total_amount = invoice.subtotal + invoice.vat_total
         
         db.session.commit()
-        flash('Invoice created successfully!', 'success')
+        flash(_('Invoice created successfully!'), 'success')
         return redirect(url_for('view_invoice', invoice_id=invoice.id))
     
     today = datetime.now().strftime('%Y-%m-%d')
@@ -868,7 +884,7 @@ def edit_invoice(invoice_id):
         invoice.total_amount = invoice.subtotal + invoice.vat_total
         
         db.session.commit()
-        flash('Invoice updated successfully!', 'success')
+        flash(_('Invoice updated successfully!'), 'success')
         return redirect(url_for('view_invoice', invoice_id=invoice.id))
     
     # Convert invoice items to dictionaries for JSON serialization
@@ -890,7 +906,7 @@ def delete_invoice(invoice_id):
     invoice = Invoice.query.filter_by(id=invoice_id, admin_id=current_user.id).first_or_404()
     db.session.delete(invoice)
     db.session.commit()
-    flash('Invoice deleted successfully!', 'success')
+    flash(_('Invoice deleted successfully!'), 'success')
     return redirect(url_for('admin_invoices'))
 
 @app.route('/admin/invoices/<int:invoice_id>/change-status', methods=['POST'])
@@ -906,9 +922,9 @@ def change_invoice_status(invoice_id):
         invoice.updated_at = datetime.utcnow()
         db.session.commit()
         
-        flash(f'Invoice status changed from {old_status.title()} to {new_status.title()} successfully!', 'success')
+        flash(_('Invoice status changed from %(old_status)s to %(new_status)s successfully!', old_status=old_status.title(), new_status=new_status.title()), 'success')
     else:
-        flash('Invalid status provided.', 'error')
+        flash(_('Invalid status provided.'), 'error')
     
     return redirect(url_for('view_invoice', invoice_id=invoice.id))
 
@@ -1074,12 +1090,12 @@ def reset_data():
         print("Data deleted successfully from trips, registrations, and guests tables")
         print("Admin accounts preserved")
         
-        flash('All data has been reset successfully! Admin accounts have been preserved.', 'success')
+        flash(_('All data has been reset successfully! Admin accounts have been preserved.'), 'success')
         
     except Exception as e:
         db.session.rollback()
         print(f"Error during reset: {str(e)}")
-        flash(f'Error resetting data: {str(e)}. Please use the command line tool: python quick_reset.py --confirm', 'error')
+        flash(_('Error resetting data: %(error)s. Please use the command line tool: python quick_reset.py --confirm', error=str(e)), 'error')
     
     return redirect(url_for('data_management'))
 
@@ -1424,10 +1440,10 @@ def seed_data():
         
         db.session.commit()
         
-        flash('Sample data has been seeded successfully! Created 5 trips, 7 registrations (including 1 single-person pending), 3 invoices with realistic data, and updated admin contact information.', 'success')
+        flash(_('Sample data has been seeded successfully! Created 5 trips, 7 registrations (including 1 single-person pending), 3 invoices with realistic data, and updated admin contact information.'), 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'Error seeding data: {str(e)}', 'error')
+        flash(_('Error seeding data: %(error)s', error=str(e)), 'error')
     
     return redirect(url_for('data_management'))
 
@@ -1649,26 +1665,26 @@ def seed_reset():
         db.session.commit()
         print("Sample data seeded successfully")
         
-        flash('Database has been reset and seeded with sample data successfully! Admin accounts have been preserved. Created 5 trips and 6 registrations with various statuses. Sample document images have been copied to uploads directory.', 'success')
+        flash(_('Database has been reset and seeded with sample data successfully! Admin accounts have been preserved. Created 5 trips and 6 registrations with various statuses. Sample document images have been copied to uploads directory.'), 'success')
         
     except Exception as e:
         db.session.rollback()
         print(f"Error during reset and seed: {str(e)}")
-        flash(f'Error during reset and seed: {str(e)}. Please use the command line tool: python quick_reset.py --reset-seed', 'error')
+        flash(_('Error during reset and seed: %(error)s. Please use the command line tool: python quick_reset.py --reset-seed', error=str(e)), 'error')
     
     return redirect(url_for('data_management'))
 
 def send_approval_email(registration):
     try:
         msg = Message(
-            'Registration Approved',
+            _('Your registration has been approved!'),
             sender=app.config['MAIL_USERNAME'],
             recipients=[registration.email]
         )
-        msg.body = f"""
+        msg.body = _("""
         Dear Guest,
         
-        Your registration for {registration.trip.title} has been approved!
+        Your registration for %(trip_title)s has been approved!
         
         Your personal data has been processed and all uploaded documents have been securely deleted in compliance with GDPR regulations.
         
@@ -1676,7 +1692,7 @@ def send_approval_email(registration):
         
         Best regards,
         The Admin Team
-        """
+        """, trip_title=registration.trip.title)
         mail.send(msg)
     except Exception as e:
         print(f"Error sending email: {e}")
@@ -1685,27 +1701,33 @@ def send_rejection_email(registration):
     try:
         update_link = url_for('register', trip_id=registration.trip_id, _external=True).replace('/register/', '/register/id/')
         msg = Message(
-            'Registration Update Required',
+            _('Registration Update Required'),
             sender=app.config['MAIL_USERNAME'],
             recipients=[registration.email]
         )
-        msg.body = f"""
+        msg.body = _("""
         Dear Guest,
         
-        Your registration for {registration.trip.title} requires updates.
+        Your registration for %(trip_title)s requires updates.
         
-        Admin Comment: {registration.admin_comment}
+        Admin Comment: %(admin_comment)s
         
-        Please update your information using this link: {update_link}
+        Please update your information using this link: %(update_link)s
         
         Thank you for your understanding.
         
         Best regards,
         The Admin Team
-        """
+        """, trip_title=registration.trip.title, admin_comment=registration.admin_comment, update_link=update_link)
         mail.send(msg)
     except Exception as e:
         print(f"Error sending email: {e}")
+
+@app.route('/set_language/<lang_code>')
+def set_language(lang_code):
+    if lang_code in app.config['BABEL_SUPPORTED_LOCALES']:
+        session['lang'] = lang_code
+    return redirect(request.referrer or url_for('index'))
 
 if __name__ == '__main__':
     with app.app_context():
