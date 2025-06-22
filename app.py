@@ -1,9 +1,10 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_from_directory, send_file
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_mail import Mail, Message
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
+from werkzeug.exceptions import RequestEntityTooLarge
 import os
 from datetime import datetime, timedelta
 import uuid
@@ -16,6 +17,10 @@ import threading
 import time
 import shutil
 from markupsafe import Markup
+from weasyprint import HTML, CSS
+from weasyprint.text.fonts import FontConfiguration
+import tempfile
+from decimal import Decimal
 
 load_dotenv()
 
@@ -877,6 +882,99 @@ def delete_invoice(invoice_id):
     db.session.commit()
     flash('Invoice deleted successfully!', 'success')
     return redirect(url_for('admin_invoices'))
+
+@app.route('/admin/invoices/<int:invoice_id>/pdf')
+@login_required
+def generate_invoice_pdf(invoice_id):
+    """Generate PDF for an invoice."""
+    invoice = Invoice.query.filter_by(id=invoice_id, admin_id=current_user.id).first_or_404()
+    
+    # Generate HTML content for the invoice
+    html_content = render_template('admin/invoice_pdf.html', invoice=invoice)
+    
+    # Create PDF
+    font_config = FontConfiguration()
+    css = CSS(string='''
+        @page { 
+            size: A4; 
+            margin: 2cm;
+            @top-center { content: "Invoice {{ invoice.invoice_number }}"; }
+            @bottom-center { content: "Page " counter(page) " of " counter(pages); }
+        }
+        body { 
+            font-family: Arial, sans-serif; 
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        .header { 
+            text-align: center; 
+            margin-bottom: 30px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 20px;
+        }
+        .company-info {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+        .invoice-info {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+        .client-info {
+            margin-bottom: 30px;
+        }
+        .invoice-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        .invoice-table th,
+        .invoice-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .invoice-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .total-row {
+            font-weight: bold;
+            background-color: #f8f9fa;
+        }
+        .notes {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #007bff;
+        }
+    ''', font_config=font_config)
+    
+    # Generate PDF
+    html_doc = HTML(string=html_content)
+    pdf = html_doc.write_pdf(stylesheets=[css], font_config=font_config)
+    
+    # Create temporary file
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp_file:
+        tmp_file.write(pdf)
+        tmp_path = tmp_file.name
+    
+    # Send file and clean up
+    try:
+        return send_file(
+            tmp_path,
+            as_attachment=True,
+            download_name=f'invoice_{invoice.invoice_number}.pdf',
+            mimetype='application/pdf'
+        )
+    finally:
+        # Clean up temporary file after sending
+        try:
+            os.unlink(tmp_path)
+        except:
+            pass
 
 # Data management routes
 @app.route('/admin/data-management')

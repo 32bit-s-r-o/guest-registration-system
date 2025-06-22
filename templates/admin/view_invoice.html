@@ -160,6 +160,10 @@
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
+                    <a href="{{ url_for('generate_invoice_pdf', invoice_id=invoice.id) }}"
+                        class="btn btn-outline-success">
+                        <i class="fas fa-file-pdf"></i> Download PDF
+                    </a>
                     <button type="button" class="btn btn-outline-primary" onclick="window.print()">
                         <i class="fas fa-print"></i> Print Invoice
                     </button>

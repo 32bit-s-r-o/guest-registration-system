@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice {{ invoice.invoice_number }}</title>
+</head>
+
+<body>
+    <div class="header">
+        <h1>INVOICE</h1>
+        <h2>{{ invoice.invoice_number }}</h2>
+    </div>
+
+    <div class="row">
+        <div class="company-info">
+            <h3>From:</h3>
+            <p><strong>{{ invoice.admin.company_name or 'Your Company Name' }}</strong></p>
+            {% if invoice.admin.contact_name %}
+            <p>{{ invoice.admin.contact_name }}</p>
+            {% endif %}
+            {% if invoice.admin.contact_address %}
+            <p>{{ invoice.admin.contact_address | nl2br }}</p>
+            {% endif %}
+            {% if invoice.admin.contact_phone %}
+            <p>Phone: {{ invoice.admin.contact_phone }}</p>
+            {% endif %}
+            {% if invoice.admin.contact_email %}
+            <p>Email: {{ invoice.admin.contact_email }}</p>
+            {% endif %}
+            {% if invoice.admin.company_ico %}
+            <p>ICO: {{ invoice.admin.company_ico }}</p>
+            {% endif %}
+            {% if invoice.admin.company_vat %}
+            <p>VAT: {{ invoice.admin.company_vat }}</p>
+            {% endif %}
+        </div>
+
+        <div class="invoice-info">
+            <h3>Invoice Details:</h3>
+            <p><strong>Invoice Number:</strong> {{ invoice.invoice_number }}</p>
+            <p><strong>Issue Date:</strong> {{ invoice.issue_date.strftime('%Y-%m-%d') }}</p>
+            {% if invoice.due_date %}
+            <p><strong>Due Date:</strong> {{ invoice.due_date.strftime('%Y-%m-%d') }}</p>
+            {% endif %}
+            <p><strong>Status:</strong> {{ invoice.status|title }}</p>
+            <p><strong>Currency:</strong> {{ invoice.currency }}</p>
+        </div>
+    </div>
+
+    <div class="client-info">
+        <h3>Bill To:</h3>
+        <p><strong>{{ invoice.client_name }}</strong></p>
+        {% if invoice.client_email %}
+        <p>Email: {{ invoice.client_email }}</p>
+        {% endif %}
+        {% if invoice.client_vat_number %}
+        <p>VAT Number: {{ invoice.client_vat_number }}</p>
+        {% endif %}
+        {% if invoice.client_address %}
+        <p>{{ invoice.client_address | nl2br }}</p>
+        {% endif %}
+    </div>
+
+    <table class="invoice-table">
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th class="text-center">Quantity</th>
+                <th class="text-right">Unit Price</th>
+                <th class="text-center">VAT %</th>
+                <th class="text-right">Line Total</th>
+                <th class="text-right">VAT Amount</th>
+                <th class="text-right">Total with VAT</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in invoice.items %}
+            <tr>
+                <td>{{ item.description }}</td>
+                <td class="text-center">{{ "%.2f"|format(item.quantity) }}</td>
+                <td class="text-right">{{ "%.2f"|format(item.unit_price) }} {{ invoice.currency }}</td>
+                <td class="text-center">{{ "%.2f"|format(item.vat_rate) }}%</td>
+                <td class="text-right">{{ "%.2f"|format(item.line_total) }} {{ invoice.currency }}</td>
+                <td class="text-right">{{ "%.2f"|format(item.vat_amount) }} {{ invoice.currency }}</td>
+                <td class="text-right"><strong>{{ "%.2f"|format(item.total_with_vat) }} {{ invoice.currency }}</strong>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr class="total-row">
+                <td colspan="4"><strong>Subtotal:</strong></td>
+                <td class="text-right"><strong>{{ "%.2f"|format(invoice.subtotal) }} {{ invoice.currency }}</strong>
+                </td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr class="total-row">
+                <td colspan="4"><strong>VAT Total:</strong></td>
+                <td></td>
+                <td class="text-right"><strong>{{ "%.2f"|format(invoice.vat_total) }} {{ invoice.currency }}</strong>
+                </td>
+                <td></td>
+            </tr>
+            <tr class="total-row">
+                <td colspan="4"><strong>Total Amount:</strong></td>
+                <td></td>
+                <td></td>
+                <td class="text-right"><strong>{{ "%.2f"|format(invoice.total_amount) }} {{ invoice.currency }}</strong>
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+
+    {% if invoice.notes %}
+    <div class="notes">
+        <h4>Notes:</h4>
+        <p>{{ invoice.notes | nl2br }}</p>
+    </div>
+    {% endif %}
+
+    <div style="margin-top: 50px; text-align: center; font-size: 10px; color: #666;">
+        <p>Thank you for your business!</p>
+        {% if invoice.admin.contact_website %}
+        <p>Website: {{ invoice.admin.contact_website }}</p>
+        {% endif %}
+        <p>Generated on: {{ invoice.updated_at.strftime('%Y-%m-%d %H:%M') }}</p>
+    </div>
+</body>
+
+</html>

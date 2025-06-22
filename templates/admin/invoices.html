@@ -75,6 +75,10 @@
                                             class="btn btn-sm btn-outline-primary">
                                             <i class="fas fa-eye"></i> View
                                         </a>
+                                        <a href="{{ url_for('generate_invoice_pdf', invoice_id=invoice.id) }}"
+                                            class="btn btn-sm btn-outline-success">
+                                            <i class="fas fa-file-pdf"></i> PDF
+                                        </a>
                                         <a href="{{ url_for('edit_invoice', invoice_id=invoice.id) }}"
                                             class="btn btn-sm btn-outline-warning">
                                             <i class="fas fa-edit"></i> Edit
