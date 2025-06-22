@@ -40,7 +40,7 @@ A secure, GDPR-compliant guest registration system built with Flask and PostgreS
 ### Prerequisites
 
 - Python 3.8 or higher
-- PostgreSQL database
+- PostgreSQL database (already configured)
 - pip (Python package manager)
 
 ### 1. Clone and Setup
@@ -58,14 +58,16 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 2. Database Setup
+### 2. Database Configuration
 
-```sql
--- Connect to PostgreSQL and run:
-CREATE DATABASE airbnb_guests;
-CREATE USER airbnb_user WITH PASSWORD 'your_secure_password';
-GRANT ALL PRIVILEGES ON DATABASE airbnb_guests TO airbnb_user;
-```
+Your PostgreSQL database is already configured:
+- **Host**: localhost
+- **Port**: 5432
+- **Database**: ekom21
+- **User**: postgres
+- **Password**: postgres
+
+The application will automatically create the required tables in your existing database.
 
 ### 3. Environment Configuration
 
@@ -82,8 +84,8 @@ nano .env  # or use your preferred editor
 # Flask Configuration
 SECRET_KEY=your-super-secret-key-change-this-in-production
 
-# Database Configuration
-DATABASE_URL=postgresql://airbnb_user:your_secure_password@localhost/airbnb_guests
+# Database Configuration (already configured for your setup)
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/ekom21
 
 # Email Configuration (for notifications)
 MAIL_SERVER=smtp.gmail.com
@@ -101,8 +103,8 @@ python setup.py
 
 The setup script will:
 - Check your environment configuration
-- Test database connectivity
-- Create all database tables
+- Test database connectivity to your ekom21 database
+- Create all database tables in your existing database
 - Guide you through creating the first admin user
 
 ### 5. Run the Application
@@ -192,6 +194,8 @@ airbnb/
 
 ## Database Schema
 
+The application will create the following tables in your `ekom21` database:
+
 ### Tables
 
 - **Admin**: Admin user accounts and authentication
@@ -214,7 +218,7 @@ airbnb/
 | Variable | Description | Required | Default |
 |----------|-------------|----------|---------|
 | `SECRET_KEY` | Flask secret key for sessions | Yes | - |
-| `DATABASE_URL` | PostgreSQL connection string | Yes | - |
+| `DATABASE_URL` | PostgreSQL connection string | Yes | postgresql://postgres:postgres@localhost:5432/ekom21 |
 | `MAIL_SERVER` | SMTP server for emails | No | smtp.gmail.com |
 | `MAIL_PORT` | SMTP port | No | 587 |
 | `MAIL_USERNAME` | Email username | Yes | - |
@@ -267,9 +271,10 @@ airbnb/
 ### Common Issues
 
 1. **Database Connection Error**
-   - Verify PostgreSQL is running
-   - Check DATABASE_URL in .env file
-   - Ensure database and user exist
+   - Verify PostgreSQL is running on localhost:5432
+   - Check that the ekom21 database exists
+   - Ensure postgres user has access to the database
+   - Verify DATABASE_URL in .env file
 
 2. **Email Not Sending**
    - Check MAIL_USERNAME and MAIL_PASSWORD
