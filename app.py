@@ -131,6 +131,44 @@ class Guest(db.Model):
     gdpr_consent = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+class Invoice(db.Model):
+    __tablename__ = f"{app.config['TABLE_PREFIX']}invoice"
+    
+    id = db.Column(db.Integer, primary_key=True)
+    invoice_number = db.Column(db.String(50), unique=True, nullable=False)
+    admin_id = db.Column(db.Integer, db.ForeignKey(f'{app.config["TABLE_PREFIX"]}admin.id'), nullable=False)
+    client_name = db.Column(db.String(200), nullable=False)
+    client_email = db.Column(db.String(200))
+    client_address = db.Column(db.Text)
+    issue_date = db.Column(db.Date, nullable=False, default=datetime.utcnow().date)
+    due_date = db.Column(db.Date)
+    subtotal = db.Column(db.Numeric(10, 2), default=0)
+    vat_total = db.Column(db.Numeric(10, 2), default=0)
+    total_amount = db.Column(db.Numeric(10, 2), default=0)
+    currency = db.Column(db.String(3), default='EUR')
+    notes = db.Column(db.Text)
+    status = db.Column(db.String(20), default='draft')  # draft, sent, paid, overdue
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    items = db.relationship('InvoiceItem', backref='invoice', lazy=True, cascade='all, delete-orphan')
+    admin = db.relationship('Admin', backref='invoices')
+
+class InvoiceItem(db.Model):
+    __tablename__ = f"{app.config['TABLE_PREFIX']}invoice_item"
+    
+    id = db.Column(db.Integer, primary_key=True)
+    invoice_id = db.Column(db.Integer, db.ForeignKey(f'{app.config["TABLE_PREFIX"]}invoice.id'), nullable=False)
+    description = db.Column(db.String(500), nullable=False)
+    quantity = db.Column(db.Numeric(10, 2), default=1)
+    unit_price = db.Column(db.Numeric(10, 2), nullable=False)
+    vat_rate = db.Column(db.Numeric(5, 2), default=0)  # VAT rate as percentage
+    line_total = db.Column(db.Numeric(10, 2), default=0)
+    vat_amount = db.Column(db.Numeric(10, 2), default=0)
+    total_with_vat = db.Column(db.Numeric(10, 2), default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
 @login_manager.user_loader
 def load_user(user_id):
     return Admin.query.get(int(user_id))
@@ -639,6 +677,148 @@ def reject_registration(registration_id):
     
     flash('Registration rejected and email sent to user', 'success')
     return redirect(url_for('admin_registrations'))
+
+# Invoice Management Routes
+@app.route('/admin/invoices')
+@login_required
+def admin_invoices():
+    """Admin invoices list page."""
+    invoices = Invoice.query.filter_by(admin_id=current_user.id).order_by(Invoice.created_at.desc()).all()
+    return render_template('admin/invoices.html', invoices=invoices)
+
+@app.route('/admin/invoices/new', methods=['GET', 'POST'])
+@login_required
+def new_invoice():
+    """Create a new invoice."""
+    if request.method == 'POST':
+        # Generate invoice number
+        invoice_number = f"INV-{datetime.now().strftime('%Y%m%d')}-{Invoice.query.filter_by(admin_id=current_user.id).count() + 1:03d}"
+        
+        # Create invoice
+        invoice = Invoice(
+            invoice_number=invoice_number,
+            admin_id=current_user.id,
+            client_name=request.form.get('client_name'),
+            client_email=request.form.get('client_email'),
+            client_address=request.form.get('client_address'),
+            issue_date=datetime.strptime(request.form.get('issue_date'), '%Y-%m-%d').date(),
+            due_date=datetime.strptime(request.form.get('due_date'), '%Y-%m-%d').date() if request.form.get('due_date') else None,
+            currency=request.form.get('currency', 'EUR'),
+            notes=request.form.get('notes')
+        )
+        
+        db.session.add(invoice)
+        db.session.flush()  # Get the invoice ID
+        
+        # Process invoice items
+        item_count = int(request.form.get('item_count', 0))
+        for i in range(item_count):
+            description = request.form.get(f'item_description_{i}')
+            quantity = float(request.form.get(f'item_quantity_{i}', 1))
+            unit_price = float(request.form.get(f'item_unit_price_{i}', 0))
+            vat_rate = float(request.form.get(f'item_vat_rate_{i}', 0))
+            
+            if description and unit_price > 0:
+                line_total = quantity * unit_price
+                vat_amount = line_total * (vat_rate / 100)
+                total_with_vat = line_total + vat_amount
+                
+                item = InvoiceItem(
+                    invoice_id=invoice.id,
+                    description=description,
+                    quantity=quantity,
+                    unit_price=unit_price,
+                    vat_rate=vat_rate,
+                    line_total=line_total,
+                    vat_amount=vat_amount,
+                    total_with_vat=total_with_vat
+                )
+                db.session.add(item)
+        
+        # Calculate totals
+        invoice.subtotal = sum(item.line_total for item in invoice.items)
+        invoice.vat_total = sum(item.vat_amount for item in invoice.items)
+        invoice.total_amount = invoice.subtotal + invoice.vat_total
+        
+        db.session.commit()
+        flash('Invoice created successfully!', 'success')
+        return redirect(url_for('view_invoice', invoice_id=invoice.id))
+    
+    today = datetime.now().strftime('%Y-%m-%d')
+    return render_template('admin/new_invoice.html', today=today)
+
+@app.route('/admin/invoices/<int:invoice_id>')
+@login_required
+def view_invoice(invoice_id):
+    """View a specific invoice."""
+    invoice = Invoice.query.filter_by(id=invoice_id, admin_id=current_user.id).first_or_404()
+    return render_template('admin/view_invoice.html', invoice=invoice)
+
+@app.route('/admin/invoices/<int:invoice_id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_invoice(invoice_id):
+    """Edit an existing invoice."""
+    invoice = Invoice.query.filter_by(id=invoice_id, admin_id=current_user.id).first_or_404()
+    
+    if request.method == 'POST':
+        # Update invoice details
+        invoice.client_name = request.form.get('client_name')
+        invoice.client_email = request.form.get('client_email')
+        invoice.client_address = request.form.get('client_address')
+        invoice.issue_date = datetime.strptime(request.form.get('issue_date'), '%Y-%m-%d').date()
+        invoice.due_date = datetime.strptime(request.form.get('due_date'), '%Y-%m-%d').date() if request.form.get('due_date') else None
+        invoice.currency = request.form.get('currency', 'EUR')
+        invoice.notes = request.form.get('notes')
+        
+        # Clear existing items
+        for item in invoice.items:
+            db.session.delete(item)
+        
+        # Add new items
+        item_count = int(request.form.get('item_count', 0))
+        for i in range(item_count):
+            description = request.form.get(f'item_description_{i}')
+            quantity = float(request.form.get(f'item_quantity_{i}', 1))
+            unit_price = float(request.form.get(f'item_unit_price_{i}', 0))
+            vat_rate = float(request.form.get(f'item_vat_rate_{i}', 0))
+            
+            if description and unit_price > 0:
+                line_total = quantity * unit_price
+                vat_amount = line_total * (vat_rate / 100)
+                total_with_vat = line_total + vat_amount
+                
+                item = InvoiceItem(
+                    invoice_id=invoice.id,
+                    description=description,
+                    quantity=quantity,
+                    unit_price=unit_price,
+                    vat_rate=vat_rate,
+                    line_total=line_total,
+                    vat_amount=vat_amount,
+                    total_with_vat=total_with_vat
+                )
+                db.session.add(item)
+        
+        # Recalculate totals
+        invoice.subtotal = sum(item.line_total for item in invoice.items)
+        invoice.vat_total = sum(item.vat_amount for item in invoice.items)
+        invoice.total_amount = invoice.subtotal + invoice.vat_total
+        
+        db.session.commit()
+        flash('Invoice updated successfully!', 'success')
+        return redirect(url_for('view_invoice', invoice_id=invoice.id))
+    
+    return render_template('admin/edit_invoice.html', invoice=invoice)
+
+@app.route('/admin/invoices/<int:invoice_id>/delete', methods=['POST'])
+@login_required
+def delete_invoice(invoice_id):
+    """Delete an invoice."""
+    invoice = Invoice.query.filter_by(id=invoice_id, admin_id=current_user.id).first_or_404()
+    db.session.delete(invoice)
+    db.session.commit()
+    flash('Invoice deleted successfully!', 'success')
+    return redirect(url_for('admin_invoices'))
 
 # Data management routes
 @app.route('/admin/data-management')

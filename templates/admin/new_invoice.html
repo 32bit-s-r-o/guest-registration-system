@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+
+{% block title %}New Invoice{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-plus"></i> New Invoice</h1>
+            <a href="{{ url_for('admin_invoices') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Invoices
+            </a>
+        </div>
+    </div>
+</div>
+
+<form method="POST" id="invoiceForm">
+    <div class="row">
+        <!-- Invoice Details -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-info-circle"></i> Invoice Details</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="client_name" class="form-label">Client Name *</label>
+                                <input type="text" class="form-control" id="client_name" name="client_name" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="client_email" class="form-label">Client Email</label>
+                                <input type="email" class="form-control" id="client_email" name="client_email">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="client_address" class="form-label">Client Address</label>
+                        <textarea class="form-control" id="client_address" name="client_address" rows="3"></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="issue_date" class="form-label">Issue Date *</label>
+                                <input type="date" class="form-control" id="issue_date" name="issue_date"
+                                    value="{{ today }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="due_date" class="form-label">Due Date</label>
+                                <input type="date" class="form-control" id="due_date" name="due_date">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="currency" class="form-label">Currency</label>
+                                <select class="form-control" id="currency" name="currency">
+                                    <option value="EUR">EUR (€)</option>
+                                    <option value="USD">USD ($)</option>
+                                    <option value="GBP">GBP (£)</option>
+                                    <option value="CZK">CZK (Kč)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Invoice Items -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0"><i class="fas fa-list"></i> Invoice Items</h4>
+                </div>
+                <div class="card-body">
+                    <div id="invoiceItems">
+                        <!-- Invoice items will be added here dynamically -->
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <button type="button" class="btn btn-success" onclick="addInvoiceItem()">
+                            <i class="fas fa-plus"></i> Add Item
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0"><i class="fas fa-sticky-note"></i> Notes</h4>
+                </div>
+                <div class="card-body">
+                    <textarea class="form-control" id="notes" name="notes" rows="3"
+                        placeholder="Additional notes or terms..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0"><i class="fas fa-calculator"></i> Summary</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-2">
+                        <div class="col-6">Subtotal:</div>
+                        <div class="col-6 text-end" id="subtotal">0.00</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-6">VAT Total:</div>
+                        <div class="col-6 text-end" id="vatTotal">0.00</div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-6"><strong>Total:</strong></div>
+                        <div class="col-6 text-end"><strong id="totalAmount">0.00</strong></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-save"></i> Create Invoice
+                </button>
+                <a href="{{ url_for('admin_invoices') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let itemCount = 0;
+
+    function addInvoiceItem() {
+        const container = document.getElementById('invoiceItems');
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'invoice-item border rounded p-3 mb-3';
+        itemDiv.innerHTML = `
+        <div class="row">
+            <div class="col-md-6">
+                <label class="form-label">Description *</label>
+                <input type="text" class="form-control" name="item_description_${itemCount}" required>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Quantity</label>
+                <input type="number" class="form-control item-quantity" name="item_quantity_${itemCount}" 
+                       value="1" min="0.01" step="0.01" onchange="calculateItemTotal(${itemCount})">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Unit Price *</label>
+                <input type="number" class="form-control item-price" name="item_unit_price_${itemCount}" 
+                       value="0" min="0" step="0.01" required onchange="calculateItemTotal(${itemCount})">
+            </div>
+            <div class="col-md-1">
+                <label class="form-label">VAT %</label>
+                <input type="number" class="form-control item-vat" name="item_vat_rate_${itemCount}" 
+                       value="0" min="0" max="100" step="0.01" onchange="calculateItemTotal(${itemCount})">
+            </div>
+            <div class="col-md-1">
+                <label class="form-label">&nbsp;</label>
+                <button type="button" class="btn btn-outline-danger btn-sm d-block" onclick="removeItem(this)">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-md-6">
+                <small class="text-muted">Line Total: <span class="item-line-total">0.00</span></small>
+            </div>
+            <div class="col-md-6">
+                <small class="text-muted">VAT Amount: <span class="item-vat-amount">0.00</span></small>
+            </div>
+        </div>
+    `;
+        container.appendChild(itemDiv);
+        itemCount++;
+        updateItemCount();
+    }
+
+    function removeItem(button) {
+        button.closest('.invoice-item').remove();
+        calculateTotals();
+    }
+
+    function calculateItemTotal(index) {
+        const item = document.querySelector(`[name="item_quantity_${index}"]`).closest('.invoice-item');
+        const quantity = parseFloat(item.querySelector('.item-quantity').value) || 0;
+        const price = parseFloat(item.querySelector('.item-price').value) || 0;
+        const vatRate = parseFloat(item.querySelector('.item-vat').value) || 0;
+
+        const lineTotal = quantity * price;
+        const vatAmount = lineTotal * (vatRate / 100);
+
+        item.querySelector('.item-line-total').textContent = lineTotal.toFixed(2);
+        item.querySelector('.item-vat-amount').textContent = vatAmount.toFixed(2);
+
+        calculateTotals();
+    }
+
+    function calculateTotals() {
+        let subtotal = 0;
+        let vatTotal = 0;
+
+        document.querySelectorAll('.invoice-item').forEach(item => {
+            const quantity = parseFloat(item.querySelector('.item-quantity').value) || 0;
+            const price = parseFloat(item.querySelector('.item-price').value) || 0;
+            const vatRate = parseFloat(item.querySelector('.item-vat').value) || 0;
+
+            const lineTotal = quantity * price;
+            const vatAmount = lineTotal * (vatRate / 100);
+
+            subtotal += lineTotal;
+            vatTotal += vatAmount;
+        });
+
+        const total = subtotal + vatTotal;
+
+        document.getElementById('subtotal').textContent = subtotal.toFixed(2);
+        document.getElementById('vatTotal').textContent = vatTotal.toFixed(2);
+        document.getElementById('totalAmount').textContent = total.toFixed(2);
+    }
+
+    function updateItemCount() {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'item_count';
+        input.value = itemCount;
+        document.getElementById('invoiceForm').appendChild(input);
+    }
+
+    // Add first item on page load
+    document.addEventListener('DOMContentLoaded', function () {
+        addInvoiceItem();
+    });
+</script>
+{% endblock %}

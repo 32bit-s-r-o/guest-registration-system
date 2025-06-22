@@ -75,11 +75,17 @@
                     <a href="{{ url_for('new_trip') }}" class="btn btn-outline-primary">
                         <i class="fas fa-plus"></i> Create New Trip
                     </a>
+                    <a href="{{ url_for('new_invoice') }}" class="btn btn-outline-success">
+                        <i class="fas fa-file-invoice"></i> Create New Invoice
+                    </a>
                     <a href="{{ url_for('admin_registrations') }}" class="btn btn-outline-warning">
                         <i class="fas fa-list"></i> Review Pending Registrations
                     </a>
                     <a href="{{ url_for('admin_trips') }}" class="btn btn-outline-info">
                         <i class="fas fa-plane"></i> Manage Trips
+                    </a>
+                    <a href="{{ url_for('admin_invoices') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-file-invoice"></i> Manage Invoices
                     </a>
                     <a href="{{ url_for('data_management') }}" class="btn btn-outline-secondary">
                         <i class="fas fa-database"></i> Data Management
