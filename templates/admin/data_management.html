@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+
+{% block title %}Data Management{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-database"></i> Data Management</h1>
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Database Statistics -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <h3 class="text-primary">{{ stats.admins }}</h3>
+                <p class="text-muted mb-0">Admins</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <h3 class="text-info">{{ stats.trips }}</h3>
+                <p class="text-muted mb-0">Trips</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <h3 class="text-success">{{ stats.registrations }}</h3>
+                <p class="text-muted mb-0">Registrations</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <h3 class="text-warning">{{ stats.guests }}</h3>
+                <p class="text-muted mb-0">Guests</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Registration Status -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <h4 class="text-warning">{{ stats.pending }}</h4>
+                <p class="text-muted mb-0">Pending</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <h4 class="text-success">{{ stats.approved }}</h4>
+                <p class="text-muted mb-0">Approved</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <h4 class="text-danger">{{ stats.rejected }}</h4>
+                <p class="text-muted mb-0">Rejected</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Data Management Actions -->
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card border-0 shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-cogs"></i> Data Management Actions</h4>
+            </div>
+            <div class="card-body">
+
+                <!-- Reset Data Section -->
+                <div class="mb-5">
+                    <h5 class="text-danger"><i class="fas fa-exclamation-triangle"></i> Reset All Data</h5>
+                    <p class="text-muted">
+                        This action will permanently delete all data from the database including:
+                    </p>
+                    <ul class="text-muted">
+                        <li>All admin accounts</li>
+                        <li>All trips</li>
+                        <li>All registrations and guest information</li>
+                        <li>All uploaded documents</li>
+                    </ul>
+                    <div class="alert alert-danger" role="alert">
+                        <strong>Warning:</strong> This action cannot be undone! Make sure you have backups if needed.
+                    </div>
+                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#resetModal">
+                        <i class="fas fa-trash"></i> Reset All Data
+                    </button>
+                </div>
+
+                <hr>
+
+                <!-- Seed Data Section -->
+                <div class="mb-4">
+                    <h5 class="text-success"><i class="fas fa-seedling"></i> Seed Sample Data</h5>
+                    <p class="text-muted">
+                        This action will create sample data for testing and demonstration:
+                    </p>
+                    <ul class="text-muted">
+                        <li>Sample admin user (admin/admin123)</li>
+                        <li>Sample trips with different dates</li>
+                        <li>Sample registrations in various states</li>
+                    </ul>
+                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#seedModal">
+                        <i class="fas fa-plus"></i> Seed Sample Data
+                    </button>
+                </div>
+
+                <!-- Command Line Tools -->
+                <div class="mt-5">
+                    <h5><i class="fas fa-terminal"></i> Command Line Tools</h5>
+                    <p class="text-muted">You can also use these command line tools for data management:</p>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6>Reset All Data</h6>
+                                    <code>python reset_data.py reset</code>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6>Seed Sample Data</h6>
+                                    <code>python reset_data.py seed</code>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6>Reset and Seed</h6>
+                                    <code>python reset_data.py reset-seed</code>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6>Show Statistics</h6>
+                                    <code>python reset_data.py stats</code>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reset Confirmation Modal -->
+<div class="modal fade" id="resetModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle"></i> Confirm Data Reset
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Are you absolutely sure you want to reset all data?</strong></p>
+                <p>This action will:</p>
+                <ul>
+                    <li>Delete all admin accounts</li>
+                    <li>Delete all trips</li>
+                    <li>Delete all registrations and guest data</li>
+                    <li>Delete all uploaded documents</li>
+                    <li>Recreate empty database tables</li>
+                </ul>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>This action cannot be undone!</strong> All data will be permanently lost.
+                </div>
+                <p>Type <strong>RESET</strong> to confirm:</p>
+                <input type="text" class="form-control" id="resetConfirmation" placeholder="Type RESET to confirm">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="{{ url_for('reset_data') }}" style="display: inline;">
+                    <button type="submit" class="btn btn-danger" id="resetButton" disabled>
+                        <i class="fas fa-trash"></i> Reset All Data
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Seed Confirmation Modal -->
+<div class="modal fade" id="seedModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-seedling"></i> Confirm Data Seeding
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>This action will create sample data for testing:</p>
+                <ul>
+                    <li>Sample admin user (username: admin, password: admin123)</li>
+                    <li>Sample trips with future dates</li>
+                    <li>Sample registrations in various states</li>
+                </ul>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Note:</strong> This will not delete existing data, only add sample data.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="{{ url_for('seed_data') }}" style="display: inline;">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Seed Sample Data
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Reset confirmation logic
+    document.getElementById('resetConfirmation').addEventListener('input', function () {
+        const resetButton = document.getElementById('resetButton');
+        if (this.value === 'RESET') {
+            resetButton.disabled = false;
+        } else {
+            resetButton.disabled = true;
+        }
+    });
+</script>
+{% endblock %}

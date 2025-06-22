@@ -303,6 +303,93 @@ def reject_registration(registration_id):
     flash('Registration rejected and email sent to user', 'success')
     return redirect(url_for('admin_registrations'))
 
+# Data management routes
+@app.route('/admin/data-management')
+@login_required
+def data_management():
+    """Data management page for admins."""
+    # Get database statistics
+    admin_count = Admin.query.count()
+    trip_count = Trip.query.count()
+    registration_count = Registration.query.count()
+    guest_count = Guest.query.count()
+    
+    pending_count = Registration.query.filter_by(status='pending').count()
+    approved_count = Registration.query.filter_by(status='approved').count()
+    rejected_count = Registration.query.filter_by(status='rejected').count()
+    
+    stats = {
+        'admins': admin_count,
+        'trips': trip_count,
+        'registrations': registration_count,
+        'guests': guest_count,
+        'pending': pending_count,
+        'approved': approved_count,
+        'rejected': rejected_count
+    }
+    
+    return render_template('admin/data_management.html', stats=stats)
+
+@app.route('/admin/reset-data', methods=['POST'])
+@login_required
+def reset_data():
+    """Reset all data in the database."""
+    try:
+        # Drop all tables
+        db.drop_all()
+        # Recreate all tables
+        db.create_all()
+        flash('All data has been reset successfully!', 'success')
+    except Exception as e:
+        flash(f'Error resetting data: {str(e)}', 'error')
+    
+    return redirect(url_for('data_management'))
+
+@app.route('/admin/seed-data', methods=['POST'])
+@login_required
+def seed_data():
+    """Seed the database with sample data."""
+    try:
+        # Create sample admin if not exists
+        existing_admin = Admin.query.filter_by(username='admin').first()
+        if not existing_admin:
+            admin = Admin(
+                username='admin',
+                email='admin@example.com',
+                password_hash=generate_password_hash('admin123')
+            )
+            db.session.add(admin)
+            db.session.flush()
+        else:
+            admin = existing_admin
+        
+        # Create sample trips
+        trip1 = Trip(
+            title="Summer Beach Vacation 2024",
+            start_date=datetime.now().date() + timedelta(days=30),
+            end_date=datetime.now().date() + timedelta(days=37),
+            max_guests=6,
+            admin_id=admin.id
+        )
+        db.session.add(trip1)
+        
+        trip2 = Trip(
+            title="Mountain Retreat Weekend",
+            start_date=datetime.now().date() + timedelta(days=14),
+            end_date=datetime.now().date() + timedelta(days=16),
+            max_guests=4,
+            admin_id=admin.id
+        )
+        db.session.add(trip2)
+        
+        db.session.commit()
+        
+        flash('Sample data has been seeded successfully!', 'success')
+    except Exception as e:
+        flash(f'Error seeding data: {str(e)}', 'error')
+    
+    return redirect(url_for('data_management'))
+
 def send_approval_email(registration):
     try:
         msg = Message(

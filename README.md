@@ -10,6 +10,7 @@ A secure, GDPR-compliant guest registration system built with Flask and PostgreS
 - Automatic email notifications for approval/rejection
 - GDPR-compliant document handling (automatic deletion after approval)
 - Admin dashboard with statistics and management tools
+- **Data management tools for reset and seeding**
 
 ### For Guests
 - Simple registration form with document upload
@@ -115,6 +116,47 @@ python app.py
 
 The application will be available at `http://localhost:5000`
 
+## Data Management
+
+The application includes comprehensive data management tools for development, testing, and demonstration purposes.
+
+### Command Line Tools
+
+Use the `reset_data.py` script for data management operations:
+
+```bash
+# Reset all data (drop and recreate tables)
+python reset_data.py reset
+
+# Seed with sample data (admin, trips, registrations)
+python reset_data.py seed
+
+# Reset and seed in one command
+python reset_data.py reset-seed
+
+# Show database statistics
+python reset_data.py stats
+```
+
+### Web Interface
+
+Access data management through the admin panel:
+
+1. **Login to Admin Panel**: `http://localhost:5000/admin/login`
+2. **Navigate to Data Management**: Click "Data Management" in the Quick Actions
+3. **View Statistics**: See current database counts and registration status
+4. **Reset Data**: Permanently delete all data (with confirmation)
+5. **Seed Data**: Add sample data for testing
+
+### Sample Data Created
+
+When seeding data, the system creates:
+
+- **Sample Admin**: username: `admin`, password: `admin123`
+- **Sample Trips**: 3 trips with different dates and guest limits
+- **Sample Registrations**: Various registrations in pending, approved, and rejected states
+- **Sample Guests**: Multiple guests with different document types
+
 ## Usage Guide
 
 ### Admin Workflow
@@ -169,6 +211,7 @@ airbnb/
 ├── app.py                 # Main Flask application
 ├── requirements.txt       # Python dependencies
 ├── setup.py              # Initialization script
+├── reset_data.py         # Data reset and seeding script
 ├── config.env.example    # Environment configuration template
 ├── README.md             # This file
 ├── .gitignore           # Git ignore rules
@@ -186,7 +229,8 @@ airbnb/
 │       ├── new_trip.html
 │       ├── trips.html
 │       ├── registrations.html
-│       └── view_registration.html
+│       ├── view_registration.html
+│       └── data_management.html
 ├── static/              # Static files
 │   └── uploads/         # Uploaded documents (auto-created)
 └── uploads/             # Temporary file storage
@@ -264,6 +308,9 @@ The application will create the following tables in your `ekom21` database:
 - `GET /admin/registration/<id>` - View registration details
 - `POST /admin/registration/<id>/approve` - Approve registration
 - `POST /admin/registration/<id>/reject` - Reject registration
+- `GET /admin/data-management` - Data management interface
+- `POST /admin/reset-data` - Reset all data
+- `POST /admin/seed-data` - Seed sample data
 - `GET /uploads/<filename>` - Serve uploaded files (admin only)
 
 ## Troubleshooting
