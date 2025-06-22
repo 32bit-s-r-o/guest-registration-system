@@ -6,6 +6,7 @@ This script allows you to reset all data and optionally seed with sample data.
 
 import os
 import sys
+import shutil
 from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash
 from app import app, db, Admin, Trip, Registration, Guest
@@ -157,6 +158,7 @@ def create_sample_registrations():
                 last_name='Doe',
                 document_type='passport',
                 document_number='AB1234567',
+                document_image=copy_sample_image('passport_john_doe.jpg'),
                 gdpr_consent=True
             )
             db.session.add(guest1_1)
@@ -167,6 +169,7 @@ def create_sample_registrations():
                 last_name='Doe',
                 document_type='driving_license',
                 document_number='DL9876543',
+                document_image=copy_sample_image('license_jane_doe.jpg'),
                 gdpr_consent=True
             )
             db.session.add(guest1_2)
@@ -188,6 +191,7 @@ def create_sample_registrations():
                 last_name='Smith',
                 document_type='citizen_id',
                 document_number='CID123456789',
+                document_image=copy_sample_image('citizen_id_mike_doe.jpg'),
                 gdpr_consent=True
             )
             db.session.add(guest2_1)
@@ -198,6 +202,7 @@ def create_sample_registrations():
                 last_name='Smith',
                 document_type='passport',
                 document_number='CD9876543',
+                document_image=copy_sample_image('passport_alice_smith.jpg'),
                 gdpr_consent=True
             )
             db.session.add(guest2_2)
@@ -221,6 +226,7 @@ def create_sample_registrations():
                 last_name='Brown',
                 document_type='driving_license',
                 document_number='DL5556667',
+                document_image=copy_sample_image('license_bob_smith.jpg'),
                 gdpr_consent=True
             )
             db.session.add(guest3_1)
@@ -230,6 +236,7 @@ def create_sample_registrations():
             print(f"   - Approved registration: {reg1.email} ({len(reg1.guests)} guests)")
             print(f"   - Pending registration: {reg2.email} ({len(reg2.guests)} guests)")
             print(f"   - Rejected registration: {reg3.email} ({len(reg3.guests)} guests)")
+            print("📸 Sample document images copied to uploads directory")
             return True
             
     except Exception as e:
@@ -301,6 +308,21 @@ def show_table_info():
     except Exception as e:
         print(f"❌ Error getting table info: {e}")
         return False
+
+def copy_sample_image(image_filename):
+    """Copy a sample image from static/sample_images to uploads directory."""
+    # Ensure uploads directory exists
+    os.makedirs('uploads', exist_ok=True)
+    
+    sample_image_path = os.path.join('static', 'sample_images', image_filename)
+    upload_image_path = os.path.join('uploads', image_filename)
+    
+    if os.path.exists(sample_image_path):
+        shutil.copy2(sample_image_path, upload_image_path)
+        return image_filename
+    else:
+        print(f"Warning: Sample image not found: {sample_image_path}")
+        return None
 
 def main():
     """Main function to handle reset and seed operations."""

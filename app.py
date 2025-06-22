@@ -14,6 +14,7 @@ from dateutil import parser
 import re
 import threading
 import time
+import shutil
 
 load_dotenv()
 
@@ -42,6 +43,18 @@ login_manager.login_view = 'admin_login'
 
 # Ensure upload directory exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+def copy_sample_image(image_filename):
+    """Copy a sample image from static/sample_images to uploads directory."""
+    sample_image_path = os.path.join('static', 'sample_images', image_filename)
+    upload_image_path = os.path.join(app.config['UPLOAD_FOLDER'], image_filename)
+    
+    if os.path.exists(sample_image_path):
+        shutil.copy2(sample_image_path, upload_image_path)
+        return image_filename
+    else:
+        print(f"Warning: Sample image not found: {sample_image_path}")
+        return None
 
 # Database Models with table prefix support
 class Admin(UserMixin, db.Model):
@@ -666,68 +679,68 @@ def seed_data():
         registrations_data = [
             # Approved registrations
             {
-                'trip_index': 0,  # Summer Beach Vacation
+                'trip_index': 0,
                 'email': 'john.doe@example.com',
                 'status': 'approved',
                 'created_at': datetime.now() - timedelta(days=5),
                 'guests': [
-                    {'first_name': 'John', 'last_name': 'Doe', 'document_type': 'passport', 'document_number': 'AB1234567'},
-                    {'first_name': 'Jane', 'last_name': 'Doe', 'document_type': 'driving_license', 'document_number': 'DL9876543'},
-                    {'first_name': 'Mike', 'last_name': 'Doe', 'document_type': 'citizen_id', 'document_number': 'CID123456789'}
+                    {'first_name': 'John', 'last_name': 'Doe', 'document_type': 'passport', 'document_number': 'AB1234567', 'image': 'passport_john_doe.jpg'},
+                    {'first_name': 'Jane', 'last_name': 'Doe', 'document_type': 'driving_license', 'document_number': 'DL9876543', 'image': 'license_jane_doe.jpg'},
+                    {'first_name': 'Mike', 'last_name': 'Doe', 'document_type': 'citizen_id', 'document_number': 'CID123456789', 'image': 'citizen_id_mike_doe.jpg'}
                 ]
             },
             {
-                'trip_index': 2,  # City Break Adventure
+                'trip_index': 2,
                 'email': 'alice.smith@example.com',
                 'status': 'approved',
                 'created_at': datetime.now() - timedelta(days=3),
                 'guests': [
-                    {'first_name': 'Alice', 'last_name': 'Smith', 'document_type': 'passport', 'document_number': 'CD9876543'},
-                    {'first_name': 'Bob', 'last_name': 'Smith', 'document_type': 'driving_license', 'document_number': 'DL5556667'}
+                    {'first_name': 'Alice', 'last_name': 'Smith', 'document_type': 'passport', 'document_number': 'CD9876543', 'image': 'passport_alice_smith.jpg'},
+                    {'first_name': 'Bob', 'last_name': 'Smith', 'document_type': 'driving_license', 'document_number': 'DL5556667', 'image': 'license_bob_smith.jpg'}
                 ]
             },
             # Pending registrations
             {
-                'trip_index': 1,  # Mountain Retreat
+                'trip_index': 1,
                 'email': 'charlie.brown@example.com',
                 'status': 'pending',
                 'created_at': datetime.now() - timedelta(days=2),
                 'guests': [
-                    {'first_name': 'Charlie', 'last_name': 'Brown', 'document_type': 'passport', 'document_number': 'EF1234567'},
-                    {'first_name': 'Lucy', 'last_name': 'Brown', 'document_type': 'citizen_id', 'document_number': 'CID987654321'}
+                    {'first_name': 'Charlie', 'last_name': 'Brown', 'document_type': 'passport', 'document_number': 'EF1234567', 'image': 'passport_charlie_brown.jpg'},
+                    {'first_name': 'Lucy', 'last_name': 'Brown', 'document_type': 'citizen_id', 'document_number': 'CID987654321', 'image': 'citizen_id_lucy_brown.jpg'}
                 ]
             },
             {
-                'trip_index': 3,  # Winter Ski Trip
+                'trip_index': 3,
                 'email': 'diana.prince@example.com',
                 'status': 'pending',
                 'created_at': datetime.now() - timedelta(days=1),
                 'guests': [
-                    {'first_name': 'Diana', 'last_name': 'Prince', 'document_type': 'passport', 'document_number': 'GH9876543'},
-                    {'first_name': 'Bruce', 'last_name': 'Wayne', 'document_type': 'driving_license', 'document_number': 'DL1112223'},
-                    {'first_name': 'Clark', 'last_name': 'Kent', 'document_type': 'citizen_id', 'document_number': 'CID555666777'}
+                    {'first_name': 'Diana', 'last_name': 'Prince', 'document_type': 'passport', 'document_number': 'GH9876543', 'image': 'passport_diana_prince.jpg'},
+                    {'first_name': 'Bruce', 'last_name': 'Wayne', 'document_type': 'driving_license', 'document_number': 'DL1112223', 'image': 'license_bruce_wayne.jpg'},
+                    {'first_name': 'Clark', 'last_name': 'Kent', 'document_type': 'citizen_id', 'document_number': 'CID555666777', 'image': 'citizen_id_clark_kent.jpg'}
                 ]
             },
             {
-                'trip_index': 4,  # Weekend Getaway
+                'trip_index': 4,
                 'email': 'peter.parker@example.com',
                 'status': 'pending',
                 'created_at': datetime.now() - timedelta(hours=6),
                 'guests': [
-                    {'first_name': 'Peter', 'last_name': 'Parker', 'document_type': 'passport', 'document_number': 'IJ1234567'},
-                    {'first_name': 'Mary', 'last_name': 'Jane', 'document_type': 'driving_license', 'document_number': 'DL4445556'}
+                    {'first_name': 'Peter', 'last_name': 'Parker', 'document_type': 'passport', 'document_number': 'IJ1234567', 'image': 'passport_peter_parker.jpg'},
+                    {'first_name': 'Mary', 'last_name': 'Jane', 'document_type': 'driving_license', 'document_number': 'DL4445556', 'image': 'license_mary_jane.jpg'}
                 ]
             },
             # Rejected registration
             {
-                'trip_index': 0,  # Summer Beach Vacation
+                'trip_index': 0,
                 'email': 'tony.stark@example.com',
                 'status': 'rejected',
                 'admin_comment': 'Document images were unclear. Please upload clearer photos.',
                 'created_at': datetime.now() - timedelta(days=4),
                 'updated_at': datetime.now() - timedelta(days=3),
                 'guests': [
-                    {'first_name': 'Tony', 'last_name': 'Stark', 'document_type': 'passport', 'document_number': 'KL9876543'}
+                    {'first_name': 'Tony', 'last_name': 'Stark', 'document_type': 'passport', 'document_number': 'KL9876543', 'image': 'passport_tony_stark.jpg'}
                 ]
             }
         ]
@@ -746,19 +759,25 @@ def seed_data():
             
             # Add guests for this registration
             for guest_data in reg_data['guests']:
+                # Copy sample image to uploads directory
+                image_filename = None
+                if guest_data.get('image'):
+                    image_filename = copy_sample_image(guest_data['image'])
+                
                 guest = Guest(
                     registration_id=registration.id,
                     first_name=guest_data['first_name'],
                     last_name=guest_data['last_name'],
                     document_type=guest_data['document_type'],
                     document_number=guest_data['document_number'],
+                    document_image=image_filename,  # Use copied image filename
                     gdpr_consent=True
                 )
                 db.session.add(guest)
         
         db.session.commit()
         
-        flash('Sample data has been seeded successfully! Created 5 trips and 6 registrations with various statuses.', 'success')
+        flash('Sample data has been seeded successfully! Created 5 trips and 6 registrations with various statuses. Sample document images have been copied to uploads directory.', 'success')
     except Exception as e:
         db.session.rollback()
         flash(f'Error seeding data: {str(e)}', 'error')
@@ -883,9 +902,9 @@ def seed_reset():
                 'status': 'approved',
                 'created_at': datetime.now() - timedelta(days=5),
                 'guests': [
-                    {'first_name': 'John', 'last_name': 'Doe', 'document_type': 'passport', 'document_number': 'AB1234567'},
-                    {'first_name': 'Jane', 'last_name': 'Doe', 'document_type': 'driving_license', 'document_number': 'DL9876543'},
-                    {'first_name': 'Mike', 'last_name': 'Doe', 'document_type': 'citizen_id', 'document_number': 'CID123456789'}
+                    {'first_name': 'John', 'last_name': 'Doe', 'document_type': 'passport', 'document_number': 'AB1234567', 'image': 'passport_john_doe.jpg'},
+                    {'first_name': 'Jane', 'last_name': 'Doe', 'document_type': 'driving_license', 'document_number': 'DL9876543', 'image': 'license_jane_doe.jpg'},
+                    {'first_name': 'Mike', 'last_name': 'Doe', 'document_type': 'citizen_id', 'document_number': 'CID123456789', 'image': 'citizen_id_mike_doe.jpg'}
                 ]
             },
             {
@@ -894,8 +913,8 @@ def seed_reset():
                 'status': 'approved',
                 'created_at': datetime.now() - timedelta(days=3),
                 'guests': [
-                    {'first_name': 'Alice', 'last_name': 'Smith', 'document_type': 'passport', 'document_number': 'CD9876543'},
-                    {'first_name': 'Bob', 'last_name': 'Smith', 'document_type': 'driving_license', 'document_number': 'DL5556667'}
+                    {'first_name': 'Alice', 'last_name': 'Smith', 'document_type': 'passport', 'document_number': 'CD9876543', 'image': 'passport_alice_smith.jpg'},
+                    {'first_name': 'Bob', 'last_name': 'Smith', 'document_type': 'driving_license', 'document_number': 'DL5556667', 'image': 'license_bob_smith.jpg'}
                 ]
             },
             # Pending registrations
@@ -905,8 +924,8 @@ def seed_reset():
                 'status': 'pending',
                 'created_at': datetime.now() - timedelta(days=2),
                 'guests': [
-                    {'first_name': 'Charlie', 'last_name': 'Brown', 'document_type': 'passport', 'document_number': 'EF1234567'},
-                    {'first_name': 'Lucy', 'last_name': 'Brown', 'document_type': 'citizen_id', 'document_number': 'CID987654321'}
+                    {'first_name': 'Charlie', 'last_name': 'Brown', 'document_type': 'passport', 'document_number': 'EF1234567', 'image': 'passport_charlie_brown.jpg'},
+                    {'first_name': 'Lucy', 'last_name': 'Brown', 'document_type': 'citizen_id', 'document_number': 'CID987654321', 'image': 'citizen_id_lucy_brown.jpg'}
                 ]
             },
             {
@@ -915,9 +934,9 @@ def seed_reset():
                 'status': 'pending',
                 'created_at': datetime.now() - timedelta(days=1),
                 'guests': [
-                    {'first_name': 'Diana', 'last_name': 'Prince', 'document_type': 'passport', 'document_number': 'GH9876543'},
-                    {'first_name': 'Bruce', 'last_name': 'Wayne', 'document_type': 'driving_license', 'document_number': 'DL1112223'},
-                    {'first_name': 'Clark', 'last_name': 'Kent', 'document_type': 'citizen_id', 'document_number': 'CID555666777'}
+                    {'first_name': 'Diana', 'last_name': 'Prince', 'document_type': 'passport', 'document_number': 'GH9876543', 'image': 'passport_diana_prince.jpg'},
+                    {'first_name': 'Bruce', 'last_name': 'Wayne', 'document_type': 'driving_license', 'document_number': 'DL1112223', 'image': 'license_bruce_wayne.jpg'},
+                    {'first_name': 'Clark', 'last_name': 'Kent', 'document_type': 'citizen_id', 'document_number': 'CID555666777', 'image': 'citizen_id_clark_kent.jpg'}
                 ]
             },
             {
@@ -926,8 +945,8 @@ def seed_reset():
                 'status': 'pending',
                 'created_at': datetime.now() - timedelta(hours=6),
                 'guests': [
-                    {'first_name': 'Peter', 'last_name': 'Parker', 'document_type': 'passport', 'document_number': 'IJ1234567'},
-                    {'first_name': 'Mary', 'last_name': 'Jane', 'document_type': 'driving_license', 'document_number': 'DL4445556'}
+                    {'first_name': 'Peter', 'last_name': 'Parker', 'document_type': 'passport', 'document_number': 'IJ1234567', 'image': 'passport_peter_parker.jpg'},
+                    {'first_name': 'Mary', 'last_name': 'Jane', 'document_type': 'driving_license', 'document_number': 'DL4445556', 'image': 'license_mary_jane.jpg'}
                 ]
             },
             # Rejected registration
@@ -939,7 +958,7 @@ def seed_reset():
                 'created_at': datetime.now() - timedelta(days=4),
                 'updated_at': datetime.now() - timedelta(days=3),
                 'guests': [
-                    {'first_name': 'Tony', 'last_name': 'Stark', 'document_type': 'passport', 'document_number': 'KL9876543'}
+                    {'first_name': 'Tony', 'last_name': 'Stark', 'document_type': 'passport', 'document_number': 'KL9876543', 'image': 'passport_tony_stark.jpg'}
                 ]
             }
         ]
@@ -958,12 +977,18 @@ def seed_reset():
             
             # Add guests for this registration
             for guest_data in reg_data['guests']:
+                # Copy sample image to uploads directory
+                image_filename = None
+                if guest_data.get('image'):
+                    image_filename = copy_sample_image(guest_data['image'])
+                
                 guest = Guest(
                     registration_id=registration.id,
                     first_name=guest_data['first_name'],
                     last_name=guest_data['last_name'],
                     document_type=guest_data['document_type'],
                     document_number=guest_data['document_number'],
+                    document_image=image_filename,  # Use copied image filename
                     gdpr_consent=True
                 )
                 db.session.add(guest)
@@ -971,7 +996,7 @@ def seed_reset():
         db.session.commit()
         print("Sample data seeded successfully")
         
-        flash('Database has been reset and seeded with sample data successfully! Admin accounts have been preserved. Created 5 trips and 6 registrations with various statuses.', 'success')
+        flash('Database has been reset and seeded with sample data successfully! Admin accounts have been preserved. Created 5 trips and 6 registrations with various statuses. Sample document images have been copied to uploads directory.', 'success')
         
     except Exception as e:
         db.session.rollback()

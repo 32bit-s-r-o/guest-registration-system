@@ -6,9 +6,25 @@ This script provides a fast way to reset the database without the web interface.
 
 import os
 import sys
+import shutil
 from app import app, db, Admin, Trip, Registration, Guest
 from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash
+
+def copy_sample_image(image_filename):
+    """Copy a sample image from static/sample_images to uploads directory."""
+    # Ensure uploads directory exists
+    os.makedirs('uploads', exist_ok=True)
+    
+    sample_image_path = os.path.join('static', 'sample_images', image_filename)
+    upload_image_path = os.path.join('uploads', image_filename)
+    
+    if os.path.exists(sample_image_path):
+        shutil.copy2(sample_image_path, upload_image_path)
+        return image_filename
+    else:
+        print(f"Warning: Sample image not found: {sample_image_path}")
+        return None
 
 def quick_reset():
     """Quickly reset all database tables except admin."""
@@ -146,9 +162,9 @@ def quick_seed():
                     'status': 'approved',
                     'created_at': datetime.now() - timedelta(days=5),
                     'guests': [
-                        {'first_name': 'John', 'last_name': 'Doe', 'document_type': 'passport', 'document_number': 'AB1234567'},
-                        {'first_name': 'Jane', 'last_name': 'Doe', 'document_type': 'driving_license', 'document_number': 'DL9876543'},
-                        {'first_name': 'Mike', 'last_name': 'Doe', 'document_type': 'citizen_id', 'document_number': 'CID123456789'}
+                        {'first_name': 'John', 'last_name': 'Doe', 'document_type': 'passport', 'document_number': 'AB1234567', 'image': 'passport_john_doe.jpg'},
+                        {'first_name': 'Jane', 'last_name': 'Doe', 'document_type': 'driving_license', 'document_number': 'DL9876543', 'image': 'license_jane_doe.jpg'},
+                        {'first_name': 'Mike', 'last_name': 'Doe', 'document_type': 'citizen_id', 'document_number': 'CID123456789', 'image': 'citizen_id_mike_doe.jpg'}
                     ]
                 },
                 {
@@ -157,8 +173,8 @@ def quick_seed():
                     'status': 'approved',
                     'created_at': datetime.now() - timedelta(days=3),
                     'guests': [
-                        {'first_name': 'Alice', 'last_name': 'Smith', 'document_type': 'passport', 'document_number': 'CD9876543'},
-                        {'first_name': 'Bob', 'last_name': 'Smith', 'document_type': 'driving_license', 'document_number': 'DL5556667'}
+                        {'first_name': 'Alice', 'last_name': 'Smith', 'document_type': 'passport', 'document_number': 'CD9876543', 'image': 'passport_alice_smith.jpg'},
+                        {'first_name': 'Bob', 'last_name': 'Smith', 'document_type': 'driving_license', 'document_number': 'DL5556667', 'image': 'license_bob_smith.jpg'}
                     ]
                 },
                 # Pending registrations
@@ -168,8 +184,8 @@ def quick_seed():
                     'status': 'pending',
                     'created_at': datetime.now() - timedelta(days=2),
                     'guests': [
-                        {'first_name': 'Charlie', 'last_name': 'Brown', 'document_type': 'passport', 'document_number': 'EF1234567'},
-                        {'first_name': 'Lucy', 'last_name': 'Brown', 'document_type': 'citizen_id', 'document_number': 'CID987654321'}
+                        {'first_name': 'Charlie', 'last_name': 'Brown', 'document_type': 'passport', 'document_number': 'EF1234567', 'image': 'passport_charlie_brown.jpg'},
+                        {'first_name': 'Lucy', 'last_name': 'Brown', 'document_type': 'citizen_id', 'document_number': 'CID987654321', 'image': 'citizen_id_lucy_brown.jpg'}
                     ]
                 },
                 {
@@ -178,9 +194,9 @@ def quick_seed():
                     'status': 'pending',
                     'created_at': datetime.now() - timedelta(days=1),
                     'guests': [
-                        {'first_name': 'Diana', 'last_name': 'Prince', 'document_type': 'passport', 'document_number': 'GH9876543'},
-                        {'first_name': 'Bruce', 'last_name': 'Wayne', 'document_type': 'driving_license', 'document_number': 'DL1112223'},
-                        {'first_name': 'Clark', 'last_name': 'Kent', 'document_type': 'citizen_id', 'document_number': 'CID555666777'}
+                        {'first_name': 'Diana', 'last_name': 'Prince', 'document_type': 'passport', 'document_number': 'GH9876543', 'image': 'passport_diana_prince.jpg'},
+                        {'first_name': 'Bruce', 'last_name': 'Wayne', 'document_type': 'driving_license', 'document_number': 'DL1112223', 'image': 'license_bruce_wayne.jpg'},
+                        {'first_name': 'Clark', 'last_name': 'Kent', 'document_type': 'citizen_id', 'document_number': 'CID555666777', 'image': 'citizen_id_clark_kent.jpg'}
                     ]
                 },
                 {
@@ -189,8 +205,8 @@ def quick_seed():
                     'status': 'pending',
                     'created_at': datetime.now() - timedelta(hours=6),
                     'guests': [
-                        {'first_name': 'Peter', 'last_name': 'Parker', 'document_type': 'passport', 'document_number': 'IJ1234567'},
-                        {'first_name': 'Mary', 'last_name': 'Jane', 'document_type': 'driving_license', 'document_number': 'DL4445556'}
+                        {'first_name': 'Peter', 'last_name': 'Parker', 'document_type': 'passport', 'document_number': 'IJ1234567', 'image': 'passport_peter_parker.jpg'},
+                        {'first_name': 'Mary', 'last_name': 'Jane', 'document_type': 'driving_license', 'document_number': 'DL4445556', 'image': 'license_mary_jane.jpg'}
                     ]
                 },
                 # Rejected registration
@@ -202,7 +218,7 @@ def quick_seed():
                     'created_at': datetime.now() - timedelta(days=4),
                     'updated_at': datetime.now() - timedelta(days=3),
                     'guests': [
-                        {'first_name': 'Tony', 'last_name': 'Stark', 'document_type': 'passport', 'document_number': 'KL9876543'}
+                        {'first_name': 'Tony', 'last_name': 'Stark', 'document_type': 'passport', 'document_number': 'KL9876543', 'image': 'passport_tony_stark.jpg'}
                     ]
                 }
             ]
@@ -221,12 +237,18 @@ def quick_seed():
                 
                 # Add guests for this registration
                 for guest_data in reg_data['guests']:
+                    # Copy sample image to uploads directory
+                    image_filename = None
+                    if guest_data.get('image'):
+                        image_filename = copy_sample_image(guest_data['image'])
+                    
                     guest = Guest(
                         registration_id=registration.id,
                         first_name=guest_data['first_name'],
                         last_name=guest_data['last_name'],
                         document_type=guest_data['document_type'],
                         document_number=guest_data['document_number'],
+                        document_image=image_filename,  # Use copied image filename
                         gdpr_consent=True
                     )
                     db.session.add(guest)
@@ -234,6 +256,7 @@ def quick_seed():
             db.session.commit()
             print(f"📝 Created {len(registrations_data)} sample registrations")
             print("✅ Database seeding completed successfully!")
+            print("📸 Sample document images copied to uploads directory")
             
             return True
             
