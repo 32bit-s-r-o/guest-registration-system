@@ -233,22 +233,22 @@
                         <p class="text-muted">Airbnb Synced</p>
                     </div>
                     <div class="col-md-2">
-                        <h4 class="text-info">{{ trips|sum(attribute='registrations|length') }}</h4>
+                        <h4 class="text-info">{{ trips|map(attribute='registrations')|map('length')|sum }}</h4>
                         <p class="text-muted">Total Registrations</p>
                     </div>
                     <div class="col-md-2">
-                        <h4 class="text-warning">{{ trips|sum(attribute='registrations|selectattr("status", "equalto",
-                            "pending")|list|length') }}</h4>
+                        <h4 class="text-warning">{{ trips|map(attribute='registrations')|map('selectattr', 'status',
+                            'equalto', 'pending')|map('list')|map('length')|sum }}</h4>
                         <p class="text-muted">Pending Reviews</p>
                     </div>
                     <div class="col-md-2">
-                        <h4 class="text-success">{{ trips|sum(attribute='registrations|selectattr("status", "equalto",
-                            "approved")|list|length') }}</h4>
+                        <h4 class="text-success">{{ trips|map(attribute='registrations')|map('selectattr', 'status',
+                            'equalto', 'approved')|map('list')|map('length')|sum }}</h4>
                         <p class="text-muted">Approved</p>
                     </div>
                     <div class="col-md-2">
-                        <h4 class="text-danger">{{ trips|sum(attribute='registrations|selectattr("status", "equalto",
-                            "rejected")|list|length') }}</h4>
+                        <h4 class="text-danger">{{ trips|map(attribute='registrations')|map('selectattr', 'status',
+                            'equalto', 'rejected')|map('list')|map('length')|sum }}</h4>
                         <p class="text-muted">Rejected</p>
                     </div>
                 </div>

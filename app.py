@@ -431,6 +431,11 @@ def submit_for_approval():
     
     # Clear session
     session.pop('registration_data', None)
+    # Store last confirmation code registration link for sharing
+    if trip.airbnb_confirm_code:
+        session['last_confirm_code_url'] = url_for('register_by_code', confirm_code=trip.airbnb_confirm_code, _external=True)
+    else:
+        session['last_confirm_code_url'] = ''
     
     flash('Registration submitted successfully! You will receive an email once it is reviewed.', 'success')
     return redirect(url_for('registration_success'))

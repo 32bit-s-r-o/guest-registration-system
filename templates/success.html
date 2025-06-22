@@ -36,6 +36,31 @@
                     </p>
                 </div>
 
+                <div class="alert alert-success" role="alert">
+                    <h5><i class="fas fa-link"></i> Share Registration Link</h5>
+                    <p class="mb-2">
+                        You can share this link with other guests in your group to register for this trip using your
+                        Airbnb confirmation code:
+                    </p>
+                    <div class="input-group mb-2">
+                        <input type="text" class="form-control text-center" id="shareLinkInput"
+                            value="{{ session.get('last_confirm_code_url') or '' }}" readonly>
+                        <button class="btn btn-outline-secondary" type="button" onclick="copyShareLink()">
+                            <i class="fas fa-copy"></i> Copy Link
+                        </button>
+                    </div>
+                    <small class="text-muted">This link is unique to your Airbnb confirmation code.</small>
+                </div>
+
+                <script>
+                    function copyShareLink() {
+                        var input = document.getElementById('shareLinkInput');
+                        input.select();
+                        input.setSelectionRange(0, 99999);
+                        document.execCommand('copy');
+                    }
+                </script>
+
                 <div class="mt-4">
                     <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg">
                         <i class="fas fa-home"></i> Return to Home
