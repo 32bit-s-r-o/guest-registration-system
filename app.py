@@ -1093,13 +1093,38 @@ def seed_data():
         if not existing_admin:
             admin = Admin(
                 username='admin',
-                email='admin@example.com',
-                password_hash=generate_password_hash('admin123')
+                email='admin@vacationrentals.com',
+                password_hash=generate_password_hash('admin123'),
+                # Company information
+                company_name='Vacation Rentals Plus',
+                company_ico='12345678',
+                company_vat='CZ12345678',
+                contact_name='John Manager',
+                contact_phone='+420 123 456 789',
+                contact_address='Vacation Street 123\nPrague 110 00\nCzech Republic',
+                contact_website='https://vacationrentals.com',
+                contact_description='Professional vacation rental management services',
+                custom_line_1='24/7 Customer Support',
+                custom_line_2='Free WiFi & Parking',
+                custom_line_3='Pet Friendly Options Available'
             )
             db.session.add(admin)
             db.session.flush()
         else:
+            # Update existing admin with new fields
             admin = existing_admin
+            if not admin.company_name:
+                admin.company_name = 'Vacation Rentals Plus'
+                admin.company_ico = '12345678'
+                admin.company_vat = 'CZ12345678'
+                admin.contact_name = 'John Manager'
+                admin.contact_phone = '+420 123 456 789'
+                admin.contact_address = 'Vacation Street 123\nPrague 110 00\nCzech Republic'
+                admin.contact_website = 'https://vacationrentals.com'
+                admin.contact_description = 'Professional vacation rental management services'
+                admin.custom_line_1 = '24/7 Customer Support'
+                admin.custom_line_2 = 'Free WiFi & Parking'
+                admin.custom_line_3 = 'Pet Friendly Options Available'
         
         # Create sample trips with variety
         trips_data = [
@@ -1111,14 +1136,16 @@ def seed_data():
                 'is_airbnb_synced': True,
                 'airbnb_guest_name': 'John Smith',
                 'airbnb_guest_email': 'john.smith@example.com',
-                'airbnb_guest_count': 4
+                'airbnb_guest_count': 4,
+                'airbnb_confirm_code': 'SUMMER2024'
             },
             {
                 'title': "Mountain Retreat Weekend",
                 'start_date': datetime.now().date() + timedelta(days=14),
                 'end_date': datetime.now().date() + timedelta(days=16),
                 'max_guests': 4,
-                'is_airbnb_synced': False
+                'is_airbnb_synced': False,
+                'airbnb_confirm_code': 'MOUNTAIN24'
             },
             {
                 'title': "City Break Adventure",
@@ -1128,14 +1155,16 @@ def seed_data():
                 'is_airbnb_synced': True,
                 'airbnb_guest_name': 'Alice Johnson',
                 'airbnb_guest_email': 'alice.j@example.com',
-                'airbnb_guest_count': 3
+                'airbnb_guest_count': 3,
+                'airbnb_confirm_code': 'CITY2024'
             },
             {
                 'title': "Winter Ski Trip",
                 'start_date': datetime.now().date() + timedelta(days=90),
                 'end_date': datetime.now().date() + timedelta(days=97),
                 'max_guests': 5,
-                'is_airbnb_synced': False
+                'is_airbnb_synced': False,
+                'airbnb_confirm_code': 'SKI2024'
             },
             {
                 'title': "Weekend Getaway",
@@ -1145,7 +1174,8 @@ def seed_data():
                 'is_airbnb_synced': True,
                 'airbnb_guest_name': 'Bob Wilson',
                 'airbnb_guest_email': 'bob.wilson@example.com',
-                'airbnb_guest_count': 2
+                'airbnb_guest_count': 2,
+                'airbnb_confirm_code': 'WEEKEND24'
             }
         ]
         
@@ -1161,7 +1191,8 @@ def seed_data():
                 airbnb_guest_name=trip_data.get('airbnb_guest_name'),
                 airbnb_guest_email=trip_data.get('airbnb_guest_email'),
                 airbnb_guest_count=trip_data.get('airbnb_guest_count'),
-                airbnb_synced_at=datetime.utcnow() if trip_data.get('is_airbnb_synced') else None
+                airbnb_synced_at=datetime.utcnow() if trip_data.get('is_airbnb_synced') else None,
+                airbnb_confirm_code=trip_data.get('airbnb_confirm_code')
             )
             db.session.add(trip)
             created_trips.append(trip)
@@ -1224,6 +1255,16 @@ def seed_data():
                     {'first_name': 'Mary', 'last_name': 'Jane', 'document_type': 'driving_license', 'document_number': 'DL4445556', 'image': 'license_mary_jane.jpg'}
                 ]
             },
+            # Pending registration with ONE person
+            {
+                'trip_index': 0,
+                'email': 'solo.traveler@example.com',
+                'status': 'pending',
+                'created_at': datetime.now() - timedelta(hours=2),
+                'guests': [
+                    {'first_name': 'Emma', 'last_name': 'Wilson', 'document_type': 'passport', 'document_number': 'MN1234567', 'image': 'passport_emma_wilson.jpg'}
+                ]
+            },
             # Rejected registration
             {
                 'trip_index': 0,
@@ -1238,6 +1279,7 @@ def seed_data():
             }
         ]
         
+        created_registrations = []
         for reg_data in registrations_data:
             registration = Registration(
                 trip_id=created_trips[reg_data['trip_index']].id,
@@ -1249,6 +1291,7 @@ def seed_data():
             )
             db.session.add(registration)
             db.session.flush()
+            created_registrations.append(registration)
             
             # Add guests for this registration
             for guest_data in reg_data['guests']:
@@ -1268,9 +1311,120 @@ def seed_data():
                 )
                 db.session.add(guest)
         
+        db.session.flush()
+        
+        # Create sample invoices
+        invoices_data = [
+            {
+                'registration_index': 0,  # John Doe's approved registration
+                'invoice_number': 'INV-2024-001',
+                'client_name': 'John Doe',
+                'client_email': 'john.doe@example.com',
+                'client_vat_number': 'CZ12345678',
+                'client_address': '123 Main Street\nPrague 120 00\nCzech Republic',
+                'issue_date': datetime.now().date() - timedelta(days=5),
+                'due_date': datetime.now().date() + timedelta(days=25),
+                'status': 'sent',
+                'currency': 'EUR',
+                'notes': 'Payment due within 30 days. Bank transfer preferred.',
+                'items': [
+                    {'description': 'Beach Villa Rental - 7 nights', 'quantity': 1, 'unit_price': 1200.00, 'vat_rate': 21.0},
+                    {'description': 'Cleaning Service', 'quantity': 1, 'unit_price': 80.00, 'vat_rate': 21.0},
+                    {'description': 'Welcome Package', 'quantity': 1, 'unit_price': 50.00, 'vat_rate': 21.0}
+                ]
+            },
+            {
+                'registration_index': 1,  # Alice Smith's approved registration
+                'invoice_number': 'INV-2024-002',
+                'client_name': 'Alice Smith',
+                'client_email': 'alice.smith@example.com',
+                'client_vat_number': 'CZ87654321',
+                'client_address': '456 Oak Avenue\nBrno 602 00\nCzech Republic',
+                'issue_date': datetime.now().date() - timedelta(days=3),
+                'due_date': datetime.now().date() + timedelta(days=27),
+                'status': 'paid',
+                'currency': 'EUR',
+                'notes': 'Thank you for your business!',
+                'items': [
+                    {'description': 'City Apartment Rental - 5 nights', 'quantity': 1, 'unit_price': 800.00, 'vat_rate': 21.0},
+                    {'description': 'Airport Transfer', 'quantity': 2, 'unit_price': 25.00, 'vat_rate': 21.0},
+                    {'description': 'Late Check-out', 'quantity': 1, 'unit_price': 30.00, 'vat_rate': 21.0}
+                ]
+            },
+            {
+                'registration_index': 2,  # Charlie Brown's pending registration
+                'invoice_number': 'INV-2024-003',
+                'client_name': 'Charlie Brown',
+                'client_email': 'charlie.brown@example.com',
+                'client_vat_number': 'CZ11122233',
+                'client_address': '789 Pine Street\nOstrava 702 00\nCzech Republic',
+                'issue_date': datetime.now().date() - timedelta(days=2),
+                'due_date': datetime.now().date() + timedelta(days=28),
+                'status': 'draft',
+                'currency': 'EUR',
+                'notes': 'Invoice will be sent after registration approval.',
+                'items': [
+                    {'description': 'Mountain Cabin Rental - 2 nights', 'quantity': 1, 'unit_price': 300.00, 'vat_rate': 21.0},
+                    {'description': 'Ski Equipment Rental', 'quantity': 2, 'unit_price': 45.00, 'vat_rate': 21.0}
+                ]
+            }
+        ]
+        
+        for invoice_data in invoices_data:
+            # Calculate totals
+            subtotal = 0
+            vat_total = 0
+            total_amount = 0
+            
+            # Calculate line totals and VAT
+            for item_data in invoice_data['items']:
+                line_total = item_data['quantity'] * item_data['unit_price']
+                vat_amount = line_total * (item_data['vat_rate'] / 100)
+                item_data['line_total'] = line_total
+                item_data['vat_amount'] = vat_amount
+                item_data['total_with_vat'] = line_total + vat_amount
+                
+                subtotal += line_total
+                vat_total += vat_amount
+                total_amount += item_data['total_with_vat']
+            
+            invoice = Invoice(
+                invoice_number=invoice_data['invoice_number'],
+                admin_id=admin.id,
+                registration_id=created_registrations[invoice_data['registration_index']].id,
+                client_name=invoice_data['client_name'],
+                client_email=invoice_data['client_email'],
+                client_vat_number=invoice_data['client_vat_number'],
+                client_address=invoice_data['client_address'],
+                issue_date=invoice_data['issue_date'],
+                due_date=invoice_data['due_date'],
+                subtotal=subtotal,
+                vat_total=vat_total,
+                total_amount=total_amount,
+                currency=invoice_data['currency'],
+                notes=invoice_data['notes'],
+                status=invoice_data['status']
+            )
+            db.session.add(invoice)
+            db.session.flush()
+            
+            # Add invoice items
+            for item_data in invoice_data['items']:
+                invoice_item = InvoiceItem(
+                    invoice_id=invoice.id,
+                    description=item_data['description'],
+                    quantity=item_data['quantity'],
+                    unit_price=item_data['unit_price'],
+                    vat_rate=item_data['vat_rate'],
+                    line_total=item_data['line_total'],
+                    vat_amount=item_data['vat_amount'],
+                    total_with_vat=item_data['total_with_vat']
+                )
+                db.session.add(invoice_item)
+        
         db.session.commit()
         
-        flash('Sample data has been seeded successfully! Created 5 trips and 6 registrations with various statuses. Sample document images have been copied to uploads directory.', 'success')
+        flash('Sample data has been seeded successfully! Created 5 trips, 7 registrations (including 1 single-person pending), 3 invoices with realistic data, and updated admin contact information.', 'success')
     except Exception as e:
         db.session.rollback()
         flash(f'Error seeding data: {str(e)}', 'error')
@@ -1329,14 +1483,16 @@ def seed_reset():
                 'is_airbnb_synced': True,
                 'airbnb_guest_name': 'John Smith',
                 'airbnb_guest_email': 'john.smith@example.com',
-                'airbnb_guest_count': 4
+                'airbnb_guest_count': 4,
+                'airbnb_confirm_code': 'SUMMER2024'
             },
             {
                 'title': "Mountain Retreat Weekend",
                 'start_date': datetime.now().date() + timedelta(days=14),
                 'end_date': datetime.now().date() + timedelta(days=16),
                 'max_guests': 4,
-                'is_airbnb_synced': False
+                'is_airbnb_synced': False,
+                'airbnb_confirm_code': 'MOUNTAIN24'
             },
             {
                 'title': "City Break Adventure",
@@ -1346,14 +1502,16 @@ def seed_reset():
                 'is_airbnb_synced': True,
                 'airbnb_guest_name': 'Alice Johnson',
                 'airbnb_guest_email': 'alice.j@example.com',
-                'airbnb_guest_count': 3
+                'airbnb_guest_count': 3,
+                'airbnb_confirm_code': 'CITY2024'
             },
             {
                 'title': "Winter Ski Trip",
                 'start_date': datetime.now().date() + timedelta(days=90),
                 'end_date': datetime.now().date() + timedelta(days=97),
                 'max_guests': 5,
-                'is_airbnb_synced': False
+                'is_airbnb_synced': False,
+                'airbnb_confirm_code': 'SKI2024'
             },
             {
                 'title': "Weekend Getaway",
@@ -1363,7 +1521,8 @@ def seed_reset():
                 'is_airbnb_synced': True,
                 'airbnb_guest_name': 'Bob Wilson',
                 'airbnb_guest_email': 'bob.wilson@example.com',
-                'airbnb_guest_count': 2
+                'airbnb_guest_count': 2,
+                'airbnb_confirm_code': 'WEEKEND24'
             }
         ]
         
@@ -1379,7 +1538,8 @@ def seed_reset():
                 airbnb_guest_name=trip_data.get('airbnb_guest_name'),
                 airbnb_guest_email=trip_data.get('airbnb_guest_email'),
                 airbnb_guest_count=trip_data.get('airbnb_guest_count'),
-                airbnb_synced_at=datetime.utcnow() if trip_data.get('is_airbnb_synced') else None
+                airbnb_synced_at=datetime.utcnow() if trip_data.get('is_airbnb_synced') else None,
+                airbnb_confirm_code=trip_data.get('airbnb_confirm_code')
             )
             db.session.add(trip)
             created_trips.append(trip)
