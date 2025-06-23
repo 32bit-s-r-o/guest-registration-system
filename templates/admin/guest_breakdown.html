@@ -1,0 +1,352 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Guest Analytics') }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="fas fa-user"></i> {{ _('Guest Analytics') }}</h1>
+                <div>
+                    <a href="{{ url_for('export_guests_csv') }}" class="btn btn-outline-primary me-2">
+                        <i class="fas fa-download"></i> {{ _('Export CSV') }}
+                    </a>
+                    <a href="{{ url_for('admin_breakdowns') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> {{ _('Back to Analytics') }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">{{ _('Total Guests') }}</h5>
+                            <h2 class="mb-0">{{ stats.total_guests }}</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-user fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">{{ _('Adults') }}</h5>
+                            <h2 class="mb-0">{{ stats.adult_count }}</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-user-tie fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">{{ _('Children') }}</h5>
+                            <h2 class="mb-0">{{ stats.child_count }}</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-child fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">{{ _('GDPR Consent') }}</h5>
+                            <h2 class="mb-0">{{ stats.gdpr_consent_count }}</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-shield-alt fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts and Breakdowns -->
+    <div class="row">
+        <!-- Age Category Breakdown -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie"></i> {{ _('Age Category Distribution') }}</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="ageCategoryChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Document Type Breakdown -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-id-card"></i> {{ _('Document Type Preferences') }}</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="documentTypeChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Guest Registration -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-line"></i> {{ _('Monthly Guest Registration Trends') }}</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="monthlyGuestChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trip-wise Guest Distribution -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-plane"></i> {{ _('Guests by Trip') }}</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="tripGuestChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- GDPR Consent Breakdown -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-shield-alt"></i> {{ _('GDPR Consent Status') }}</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="gdprChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Guest Demographics Summary -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> {{ _('Demographics Summary') }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h4 class="text-primary">{{ "%.1f"|format((stats.adult_count / stats.total_guests * 100) if
+                                stats.total_guests > 0 else 0) }}%</h4>
+                            <p class="text-muted">{{ _('Adults') }}</p>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-info">{{ "%.1f"|format((stats.child_count / stats.total_guests * 100) if
+                                stats.total_guests > 0 else 0) }}%</h4>
+                            <p class="text-muted">{{ _('Children') }}</p>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h4 class="text-success">{{ "%.1f"|format((stats.gdpr_consent_count / stats.total_guests *
+                                100) if stats.total_guests > 0 else 0) }}%</h4>
+                            <p class="text-muted">{{ _('GDPR Consent') }}</p>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-warning">{{ "%.1f"|format((stats.gdpr_no_consent_count / stats.total_guests
+                                * 100) if stats.total_guests > 0 else 0) }}%</h4>
+                            <p class="text-muted">{{ _('No GDPR Consent') }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-table"></i> {{ _('Recent Guest Registrations') }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>{{ _('Name') }}</th>
+                                    <th>{{ _('Age Category') }}</th>
+                                    <th>{{ _('Document Type') }}</th>
+                                    <th>{{ _('Trip') }}</th>
+                                    <th>{{ _('GDPR Consent') }}</th>
+                                    <th>{{ _('Registration Date') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for guest in guests[:10] %}
+                                <tr>
+                                    <td>{{ guest.first_name }} {{ guest.last_name }}</td>
+                                    <td>
+                                        {% if guest.age_category == 'adult' %}
+                                        <span class="badge bg-primary">{{ _('Adult') }}</span>
+                                        {% else %}
+                                        <span class="badge bg-info">{{ _('Child') }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ guest.document_type.replace('_', ' ').title() }}</td>
+                                    <td>{{ guest.registration.trip.title }}</td>
+                                    <td>
+                                        {% if guest.gdpr_consent %}
+                                        <span class="badge bg-success">{{ _('Yes') }}</span>
+                                        {% else %}
+                                        <span class="badge bg-warning">{{ _('No') }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ guest.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Age Category Distribution Chart
+    const ageCategoryCtx = document.getElementById('ageCategoryChart').getContext('2d');
+    new Chart(ageCategoryCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['{{ _("Adult") }}', '{{ _("Child") }}'],
+            datasets: [{
+                data: [{{ stats.age_category_breakdown.adult }}, {{ stats.age_category_breakdown.child }}],
+        backgroundColor: ['#007bff', '#17a2b8']
+    }]
+    },
+        options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+    // Document Type Breakdown Chart
+    const documentTypeCtx = document.getElementById('documentTypeChart').getContext('2d');
+    new Chart(documentTypeCtx, {
+        type: 'bar',
+        data: {
+            labels: [{% for doc_type, count in stats.document_type_breakdown.items() %}'{{ doc_type.replace("_", " ").title() }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+        datasets: [{
+            label: '{{ _("Guests") }}',
+            data: [{% for doc_type, count in stats.document_type_breakdown.items() %}{{ count }}{% if not loop.last %}, {% endif %} {% endfor %}],
+    backgroundColor: '#28a745'
+        }]
+    },
+    options: {
+        responsive: true,
+            scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+    // Monthly Guest Registration Chart
+    const monthlyGuestCtx = document.getElementById('monthlyGuestChart').getContext('2d');
+    new Chart(monthlyGuestCtx, {
+        type: 'line',
+        data: {
+            labels: [{% for month, count in stats.monthly_guest_counts.items() %}'{{ month }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+        datasets: [{
+            label: '{{ _("Guests") }}',
+            data: [{% for month, count in stats.monthly_guest_counts.items() %}{{ count }}{% if not loop.last %}, {% endif %} {% endfor %}],
+    borderColor: '#28a745',
+        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+            tension: 0.1
+        }]
+    },
+    options: {
+        responsive: true,
+            scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+    // Trip-wise Guest Distribution Chart
+    const tripGuestCtx = document.getElementById('tripGuestChart').getContext('2d');
+    new Chart(tripGuestCtx, {
+        type: 'bar',
+        data: {
+            labels: [{% for trip, count in stats.trip_guest_counts.items() %}'{{ trip }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+        datasets: [{
+            label: '{{ _("Guests") }}',
+            data: [{% for trip, count in stats.trip_guest_counts.items() %}{{ count }}{% if not loop.last %}, {% endif %} {% endfor %}],
+    backgroundColor: '#6f42c1'
+        }]
+    },
+    options: {
+        responsive: true,
+            scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+    // GDPR Consent Chart
+    const gdprCtx = document.getElementById('gdprChart').getContext('2d');
+    new Chart(gdprCtx, {
+        type: 'pie',
+        data: {
+            labels: ['{{ _("Consent Given") }}', '{{ _("No Consent") }}'],
+            datasets: [{
+                data: [{{ stats.gdpr_consent_count }}, {{ stats.gdpr_no_consent_count }}],
+        backgroundColor: ['#28a745', '#ffc107']
+    }]
+    },
+        options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

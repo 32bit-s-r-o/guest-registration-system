@@ -83,14 +83,21 @@
                 <ul class="navbar-nav">
                     {% if current_user.is_authenticated %}
                     <li class="nav-item">
+                        {% if current_user.role == 'admin' %}
+                        <a class="nav-link" href="{{ url_for('admin_dashboard') }}">{{ _('Admin Dashboard') }}</a>
+                        {% elif current_user.role == 'housekeeper' %}
+                        <a class="nav-link" href="{{ url_for('housekeeper_dashboard') }}">{{ _('Housekeeper Dashboard')
+                            }}</a>
+                        {% else %}
                         <a class="nav-link" href="{{ url_for('admin_dashboard') }}">{{ _('Dashboard') }}</a>
+                        {% endif %}
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('admin_logout') }}">{{ _('Logout') }}</a>
                     </li>
                     {% else %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin_login') }}">{{ _('Admin Login') }}</a>
+                        <a class="nav-link" href="{{ url_for('admin_login') }}">{{ _('Login') }}</a>
                     </li>
                     {% endif %}
                 </ul>

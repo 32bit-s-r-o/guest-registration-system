@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_from_directory, send_file
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_from_directory, send_file, abort
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_mail import Mail, Message
@@ -22,6 +22,14 @@ from weasyprint.text.fonts import FontConfiguration
 import tempfile
 from decimal import Decimal
 from flask_babel import Babel, gettext as _
+from functools import wraps
+import json
+import csv
+from io import StringIO
+from flask_babel import lazy_gettext as _l
+from sqlalchemy import func, and_, or_
+from collections import defaultdict
+import calendar
 
 load_dotenv()
 
@@ -94,13 +102,14 @@ def copy_sample_image(image_filename):
         return None
 
 # Database Models with table prefix support
-class Admin(UserMixin, db.Model):
-    __tablename__ = f"{app.config['TABLE_PREFIX']}admin"
+class User(UserMixin, db.Model):
+    __tablename__ = f"{app.config['TABLE_PREFIX']}user"
     
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(120), nullable=False)
+    role = db.Column(db.String(20), nullable=False, default='admin')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     # Airbnb settings
     airbnb_listing_id = db.Column(db.String(100))
@@ -133,7 +142,7 @@ class Trip(db.Model):
     end_date = db.Column(db.Date, nullable=False)
     max_guests = db.Column(db.Integer, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    admin_id = db.Column(db.Integer, db.ForeignKey(f'{app.config["TABLE_PREFIX"]}admin.id'), nullable=False)
+    admin_id = db.Column(db.Integer, db.ForeignKey(f'{app.config["TABLE_PREFIX"]}user.id'), nullable=False)
     registrations = db.relationship('Registration', backref='trip', lazy=True)
     # Airbnb sync fields
     airbnb_reservation_id = db.Column(db.String(100), unique=True)
@@ -177,7 +186,7 @@ class Invoice(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     invoice_number = db.Column(db.String(50), unique=True, nullable=False)
-    admin_id = db.Column(db.Integer, db.ForeignKey(f'{app.config["TABLE_PREFIX"]}admin.id'), nullable=False)
+    admin_id = db.Column(db.Integer, db.ForeignKey(f'{app.config["TABLE_PREFIX"]}user.id'), nullable=False)
     registration_id = db.Column(db.Integer, db.ForeignKey(f'{app.config["TABLE_PREFIX"]}registration.id'))
     client_name = db.Column(db.String(200), nullable=False)
     client_email = db.Column(db.String(200))
@@ -196,7 +205,7 @@ class Invoice(db.Model):
     
     # Relationships
     items = db.relationship('InvoiceItem', backref='invoice', lazy=True, cascade='all, delete-orphan')
-    admin = db.relationship('Admin', backref='invoices')
+    admin = db.relationship('User', backref='invoices')
     registration = db.relationship('Registration', backref='invoices')
 
 class InvoiceItem(db.Model):
@@ -213,9 +222,29 @@ class InvoiceItem(db.Model):
     total_with_vat = db.Column(db.Numeric(10, 2), default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+class Housekeeping(db.Model):
+    __tablename__ = f"{app.config['TABLE_PREFIX']}housekeeping"
+    
+    id = db.Column(db.Integer, primary_key=True)
+    trip_id = db.Column(db.Integer, db.ForeignKey(f'{app.config["TABLE_PREFIX"]}trip.id'), nullable=False)
+    housekeeper_id = db.Column(db.Integer, db.ForeignKey(f'{app.config["TABLE_PREFIX"]}user.id'), nullable=False)
+    date = db.Column(db.Date, nullable=False)
+    status = db.Column(db.String(20), default='pending')  # pending, in_progress, completed
+    pay_amount = db.Column(db.Numeric(10, 2), default=0)
+    paid = db.Column(db.Boolean, default=False)
+    paid_date = db.Column(db.DateTime)
+    amenity_photo_path = db.Column(db.String(255))
+    notes = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    trip = db.relationship('Trip', backref='housekeeping_tasks')
+    housekeeper = db.relationship('User', backref='housekeeping_tasks')
+
 @login_manager.user_loader
 def load_user(user_id):
-    return Admin.query.get(int(user_id))
+    return User.query.get(int(user_id))
 
 # Airbnb Calendar Sync Functions
 def fetch_airbnb_calendar(calendar_url):
@@ -315,7 +344,7 @@ def parse_airbnb_guest_info(summary, description):
 
 def sync_airbnb_reservations(admin_id):
     """Sync Airbnb reservations with local trips."""
-    admin = Admin.query.get(admin_id)
+    admin = User.query.get(admin_id)
     if not admin or not admin.airbnb_calendar_url or not admin.airbnb_sync_enabled:
         return {'success': False, 'message': 'Airbnb sync not configured'}
     
@@ -397,7 +426,7 @@ def about():
 def contact():
     """Contact page with admin contact information."""
     # Get the first admin's contact information
-    admin_contact = Admin.query.first()
+    admin_contact = User.query.filter_by(role='admin').first()
     
     if request.method == 'POST':
         # Handle contact form submission
@@ -415,7 +444,7 @@ def contact():
 
 @app.route('/gdpr')
 def gdpr():
-    admin_contact = Admin.query.first()
+    admin_contact = User.query.filter_by(role='admin').first()
     return render_template('gdpr.html', admin_contact=admin_contact)
 
 @app.route('/uploads/<filename>')
@@ -450,7 +479,7 @@ def submit_confirm_code():
 def register(trip_id):
     """Registration form for a specific trip."""
     trip = Trip.query.get_or_404(trip_id)
-    admin = Admin.query.get(trip.admin_id)
+    admin = User.query.get(trip.admin_id)
     return render_template('register.html', trip=trip, admin=admin)
 
 @app.route('/register/<confirm_code>')
@@ -461,13 +490,13 @@ def register_by_code(confirm_code):
         flash(_('Invalid confirmation code. Please check your code and try again.'), 'error')
         return redirect(url_for('register_landing'))
     
-    admin = Admin.query.get(trip.admin_id)
+    admin = User.query.get(trip.admin_id)
     return render_template('register.html', trip=trip, admin=admin)
 
 @app.route('/register/id/<int:trip_id>', methods=['POST'])
 def submit_registration(trip_id):
     trip = Trip.query.get_or_404(trip_id)
-    admin = Admin.query.get(trip.admin_id)
+    admin = User.query.get(trip.admin_id)
     
     # Get form data
     email = request.form.get('email')
@@ -650,7 +679,7 @@ def admin_login():
         username = request.form.get('username')
         password = request.form.get('password')
         
-        admin = Admin.query.filter_by(username=username).first()
+        admin = User.query.filter_by(username=username).first()
         if admin and check_password_hash(admin.password_hash, password):
             login_user(admin)
             return redirect(url_for('admin_dashboard'))
@@ -665,8 +694,19 @@ def admin_logout():
     logout_user()
     return redirect(url_for('admin_login'))
 
+def role_required(role):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if not current_user.is_authenticated or current_user.role != role:
+                abort(403)
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
+
 @app.route('/admin/dashboard')
 @login_required
+@role_required('admin')
 def admin_dashboard():
     trips = Trip.query.filter_by(admin_id=current_user.id).all()
     pending_registrations = Registration.query.filter_by(status='pending').count()
@@ -674,6 +714,7 @@ def admin_dashboard():
 
 @app.route('/admin/settings', methods=['GET', 'POST'])
 @login_required
+@role_required('admin')
 def admin_settings():
     """Admin settings page for configuration."""
     if request.method == 'POST':
@@ -726,12 +767,14 @@ def sync_airbnb():
 
 @app.route('/admin/trips')
 @login_required
+@role_required('admin')
 def admin_trips():
     trips = Trip.query.filter_by(admin_id=current_user.id).all()
     return render_template('admin/trips.html', trips=trips)
 
 @app.route('/admin/trips/new', methods=['GET', 'POST'])
 @login_required
+@role_required('admin')
 def new_trip():
     if request.method == 'POST':
         trip = Trip(
@@ -750,18 +793,21 @@ def new_trip():
 
 @app.route('/admin/registrations')
 @login_required
+@role_required('admin')
 def admin_registrations():
     registrations = Registration.query.filter_by(status='pending').all()
     return render_template('admin/registrations.html', registrations=registrations)
 
 @app.route('/admin/registration/<int:registration_id>')
 @login_required
+@role_required('admin')
 def view_registration(registration_id):
     registration = Registration.query.get_or_404(registration_id)
     return render_template('admin/view_registration.html', registration=registration)
 
 @app.route('/admin/registration/<int:registration_id>/approve', methods=['POST'])
 @login_required
+@role_required('admin')
 def approve_registration(registration_id):
     registration = Registration.query.get_or_404(registration_id)
     registration.status = 'approved'
@@ -786,6 +832,7 @@ def approve_registration(registration_id):
 
 @app.route('/admin/registration/<int:registration_id>/reject', methods=['POST'])
 @login_required
+@role_required('admin')
 def reject_registration(registration_id):
     registration = Registration.query.get_or_404(registration_id)
     registration.status = 'rejected'
@@ -803,6 +850,7 @@ def reject_registration(registration_id):
 # Invoice Management Routes
 @app.route('/admin/invoices')
 @login_required
+@role_required('admin')
 def admin_invoices():
     """Admin invoices list page."""
     invoices = Invoice.query.filter_by(admin_id=current_user.id).order_by(Invoice.created_at.desc()).all()
@@ -810,6 +858,7 @@ def admin_invoices():
 
 @app.route('/admin/invoices/new', methods=['GET', 'POST'])
 @login_required
+@role_required('admin')
 def new_invoice():
     """Create a new invoice."""
     if request.method == 'POST':
@@ -873,6 +922,7 @@ def new_invoice():
 
 @app.route('/admin/invoices/<int:invoice_id>')
 @login_required
+@role_required('admin')
 def view_invoice(invoice_id):
     """View a specific invoice."""
     invoice = Invoice.query.filter_by(id=invoice_id, admin_id=current_user.id).first_or_404()
@@ -1083,7 +1133,7 @@ def generate_invoice_pdf(invoice_id):
 def data_management():
     """Data management page for admins."""
     # Get database statistics
-    admin_count = Admin.query.count()
+    admin_count = User.query.count()
     trip_count = Trip.query.count()
     registration_count = Registration.query.count()
     guest_count = Guest.query.count()
@@ -1123,7 +1173,7 @@ def reset_data():
         ]
         
         print(f"Starting database reset for tables: {', '.join(tables_to_reset)}")
-        print(f"Preserving admin table: {table_prefix}admin")
+        print(f"Preserving admin table: {table_prefix}user")
         
         # Delete data from specific tables instead of dropping all
         Guest.query.delete()
@@ -1151,9 +1201,9 @@ def seed_data():
     """Seed the database with sample data."""
     try:
         # Create sample admin if not exists
-        existing_admin = Admin.query.filter_by(username='admin').first()
+        existing_admin = User.query.filter_by(username='admin').first()
         if not existing_admin:
-            admin = Admin(
+            admin = User(
                 username='admin',
                 email='admin@vacationrentals.com',
                 password_hash=generate_password_hash('admin123'),
@@ -1508,7 +1558,7 @@ def seed_reset():
         ]
         
         print(f"Starting database reset and seed for tables: {', '.join(tables_to_reset)}")
-        print(f"Preserving admin table: {table_prefix}admin")
+        print(f"Preserving admin table: {table_prefix}user")
         
         # Delete data from specific tables instead of dropping all
         Guest.query.delete()
@@ -1523,9 +1573,9 @@ def seed_reset():
         print("Starting to seed sample data...")
         
         # Use existing admin or create one if none exists
-        admin = Admin.query.first()
+        admin = User.query.first()
         if not admin:
-            admin = Admin(
+            admin = User(
                 username='admin',
                 email='admin@example.com',
                 password_hash=generate_password_hash('admin123')
@@ -1780,6 +1830,570 @@ def set_language(lang_code):
     if lang_code in app.config['BABEL_SUPPORTED_LOCALES']:
         session['lang'] = lang_code
     return redirect(request.referrer or url_for('index'))
+
+@app.route('/housekeeper/dashboard')
+@login_required
+@role_required('housekeeper')
+def housekeeper_dashboard():
+    # Show assigned housekeeping tasks (for now, all tasks)
+    tasks = Housekeeping.query.filter_by(housekeeper_id=current_user.id).all()
+    return render_template('housekeeper/dashboard.html', tasks=tasks)
+
+@app.route('/housekeeper/calendar')
+@login_required
+@role_required('housekeeper')
+def housekeeper_calendar():
+    return render_template('housekeeper/calendar.html')
+
+@app.route('/api/housekeeping_events')
+@login_required
+@role_required('housekeeper')
+def housekeeping_events_api():
+    # Return housekeeping tasks as JSON for the calendar
+    tasks = Housekeeping.query.filter_by(housekeeper_id=current_user.id).all()
+    events = []
+    for task in tasks:
+        events.append({
+            'id': task.id,
+            'title': f'Housekeeping for Trip #{task.trip_id}',
+            'start': task.date.isoformat(),
+            'end': task.date.isoformat(),
+            'status': task.status,
+            'pay_amount': float(task.pay_amount),
+            'paid': task.paid,
+        })
+    return jsonify(events)
+
+@app.route('/housekeeper/upload_photo/<int:task_id>', methods=['POST'])
+@login_required
+@role_required('housekeeper')
+def upload_amenity_photo(task_id):
+    """Upload amenity photo for a housekeeping task."""
+    task = Housekeeping.query.get_or_404(task_id)
+    
+    # Verify the task belongs to the current housekeeper
+    if task.housekeeper_id != current_user.id:
+        abort(403)
+    
+    if 'photo' not in request.files:
+        flash(_('No photo selected'), 'error')
+        return redirect(url_for('housekeeper_dashboard'))
+    
+    file = request.files['photo']
+    if file.filename == '':
+        flash(_('No photo selected'), 'error')
+        return redirect(url_for('housekeeper_dashboard'))
+    
+    if file and allowed_file(file.filename):
+        # Generate unique filename
+        filename = secure_filename(f"amenity_{task_id}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}_{file.filename}")
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        
+        # Save the file
+        file.save(file_path)
+        
+        # Update the task with photo path
+        task.amenity_photo_path = filename
+        task.updated_at = datetime.utcnow()
+        db.session.commit()
+        
+        flash(_('Photo uploaded successfully'), 'success')
+    else:
+        flash(_('Invalid file type. Please upload JPG or PNG files only.'), 'error')
+    
+    return redirect(url_for('housekeeper_dashboard'))
+
+def allowed_file(filename):
+    """Check if the uploaded file is allowed."""
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@app.route('/admin/housekeeping', methods=['GET', 'POST'])
+@login_required
+@role_required('admin')
+def admin_housekeeping():
+    # Filtering
+    housekeeper_id = request.args.get('housekeeper_id', type=int)
+    status = request.args.get('status')
+    query = Housekeeping.query
+    if housekeeper_id:
+        query = query.filter_by(housekeeper_id=housekeeper_id)
+    if status:
+        query = query.filter_by(status=status)
+    tasks = query.order_by(Housekeeping.date.desc()).all()
+    housekeepers = User.query.filter_by(role='housekeeper').all()
+
+    # Pay summaries
+    pay_summary = {}
+    for hk in housekeepers:
+        hk_tasks = [t for t in tasks if t.housekeeper_id == hk.id]
+        pay_summary[hk.id] = {
+            'username': hk.username,
+            'total': sum(float(t.pay_amount) for t in hk_tasks),
+            'paid': sum(float(t.pay_amount) for t in hk_tasks if t.paid),
+            'pending': sum(float(t.pay_amount) for t in hk_tasks if not t.paid),
+        }
+    grand_total = sum(float(t.pay_amount) for t in tasks)
+    grand_paid = sum(float(t.pay_amount) for t in tasks if t.paid)
+    grand_pending = sum(float(t.pay_amount) for t in tasks if not t.paid)
+
+    # Handle pay status/amount update
+    if request.method == 'POST':
+        task_id = request.form.get('task_id', type=int)
+        pay_amount = request.form.get('pay_amount', type=float)
+        paid = request.form.get('paid') == 'on'
+        task = Housekeeping.query.get_or_404(task_id)
+        task.pay_amount = pay_amount
+        task.paid = paid
+        if paid:
+            task.paid_date = datetime.utcnow()
+        db.session.commit()
+        flash(_('Housekeeping pay updated.'), 'success')
+        return redirect(url_for('admin_housekeeping', housekeeper_id=housekeeper_id, status=status))
+
+    return render_template('admin/housekeeping.html', tasks=tasks, housekeepers=housekeepers, selected_housekeeper=housekeeper_id, selected_status=status, pay_summary=pay_summary, grand_total=grand_total, grand_paid=grand_paid, grand_pending=grand_pending)
+
+# CSV Export Routes
+@app.route('/admin/export/registrations')
+@login_required
+@role_required('admin')
+def export_registrations_csv():
+    """Export registrations to CSV."""
+    # Get all registrations for the current admin
+    registrations = Registration.query.join(Trip).filter(Trip.admin_id == current_user.id).all()
+    
+    # Create CSV data
+    output = StringIO()
+    writer = csv.writer(output)
+    
+    # Write header
+    writer.writerow([
+        _('Registration ID'),
+        _('Trip Title'),
+        _('Email'),
+        _('Status'),
+        _('Language'),
+        _('Created Date'),
+        _('Updated Date'),
+        _('Guest Count'),
+        _('Admin Comment')
+    ])
+    
+    # Write data
+    for reg in registrations:
+        writer.writerow([
+            reg.id,
+            reg.trip.title,
+            reg.email,
+            reg.status,
+            reg.language,
+            reg.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+            reg.updated_at.strftime('%Y-%m-%d %H:%M:%S'),
+            len(reg.guests),
+            reg.admin_comment or ''
+        ])
+    
+    output.seek(0)
+    return send_file(
+        StringIO(output.getvalue()),
+        mimetype='text/csv',
+        as_attachment=True,
+        download_name=f'registrations_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+    )
+
+@app.route('/admin/export/guests')
+@login_required
+@role_required('admin')
+def export_guests_csv():
+    """Export guests to CSV."""
+    # Get all guests for registrations belonging to the current admin
+    guests = Guest.query.join(Registration).join(Trip).filter(Trip.admin_id == current_user.id).all()
+    
+    # Create CSV data
+    output = StringIO()
+    writer = csv.writer(output)
+    
+    # Write header
+    writer.writerow([
+        _('Guest ID'),
+        _('Registration ID'),
+        _('Trip Title'),
+        _('First Name'),
+        _('Last Name'),
+        _('Age Category'),
+        _('Document Type'),
+        _('Document Number'),
+        _('GDPR Consent'),
+        _('Created Date')
+    ])
+    
+    # Write data
+    for guest in guests:
+        writer.writerow([
+            guest.id,
+            guest.registration_id,
+            guest.registration.trip.title,
+            guest.first_name,
+            guest.last_name,
+            guest.age_category,
+            guest.document_type,
+            guest.document_number,
+            'Yes' if guest.gdpr_consent else 'No',
+            guest.created_at.strftime('%Y-%m-%d %H:%M:%S')
+        ])
+    
+    output.seek(0)
+    return send_file(
+        StringIO(output.getvalue()),
+        mimetype='text/csv',
+        as_attachment=True,
+        download_name=f'guests_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+    )
+
+@app.route('/admin/export/trips')
+@login_required
+@role_required('admin')
+def export_trips_csv():
+    """Export trips to CSV."""
+    # Get all trips for the current admin
+    trips = Trip.query.filter_by(admin_id=current_user.id).all()
+    
+    # Create CSV data
+    output = StringIO()
+    writer = csv.writer(output)
+    
+    # Write header
+    writer.writerow([
+        _('Trip ID'),
+        _('Title'),
+        _('Start Date'),
+        _('End Date'),
+        _('Max Guests'),
+        _('Created Date'),
+        _('Airbnb Synced'),
+        _('Airbnb Guest Name'),
+        _('Airbnb Guest Email'),
+        _('Airbnb Guest Count'),
+        _('Confirmation Code'),
+        _('Registration Count'),
+        _('Pending Count'),
+        _('Approved Count'),
+        _('Rejected Count')
+    ])
+    
+    # Write data
+    for trip in trips:
+        registrations = trip.registrations
+        pending_count = len([r for r in registrations if r.status == 'pending'])
+        approved_count = len([r for r in registrations if r.status == 'approved'])
+        rejected_count = len([r for r in registrations if r.status == 'rejected'])
+        
+        writer.writerow([
+            trip.id,
+            trip.title,
+            trip.start_date.strftime('%Y-%m-%d'),
+            trip.end_date.strftime('%Y-%m-%d'),
+            trip.max_guests,
+            trip.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'Yes' if trip.is_airbnb_synced else 'No',
+            trip.airbnb_guest_name or '',
+            trip.airbnb_guest_email or '',
+            trip.airbnb_guest_count or '',
+            trip.airbnb_confirm_code or '',
+            len(registrations),
+            pending_count,
+            approved_count,
+            rejected_count
+        ])
+    
+    output.seek(0)
+    return send_file(
+        StringIO(output.getvalue()),
+        mimetype='text/csv',
+        as_attachment=True,
+        download_name=f'trips_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+    )
+
+@app.route('/admin/export/invoices')
+@login_required
+@role_required('admin')
+def export_invoices_csv():
+    """Export invoices to CSV."""
+    # Get all invoices for the current admin
+    invoices = Invoice.query.filter_by(admin_id=current_user.id).all()
+    
+    # Create CSV data
+    output = StringIO()
+    writer = csv.writer(output)
+    
+    # Write header
+    writer.writerow([
+        _('Invoice ID'),
+        _('Invoice Number'),
+        _('Client Name'),
+        _('Client Email'),
+        _('Client VAT Number'),
+        _('Issue Date'),
+        _('Due Date'),
+        _('Subtotal'),
+        _('VAT Total'),
+        _('Total Amount'),
+        _('Currency'),
+        _('Status'),
+        _('Created Date'),
+        _('Updated Date'),
+        _('Registration ID'),
+        _('Trip Title')
+    ])
+    
+    # Write data
+    for invoice in invoices:
+        trip_title = invoice.registration.trip.title if invoice.registration else ''
+        writer.writerow([
+            invoice.id,
+            invoice.invoice_number,
+            invoice.client_name,
+            invoice.client_email or '',
+            invoice.client_vat_number or '',
+            invoice.issue_date.strftime('%Y-%m-%d'),
+            invoice.due_date.strftime('%Y-%m-%d') if invoice.due_date else '',
+            float(invoice.subtotal),
+            float(invoice.vat_total),
+            float(invoice.total_amount),
+            invoice.currency,
+            invoice.status,
+            invoice.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+            invoice.updated_at.strftime('%Y-%m-%d %H:%M:%S'),
+            invoice.registration_id or '',
+            trip_title
+        ])
+    
+    output.seek(0)
+    return send_file(
+        StringIO(output.getvalue()),
+        mimetype='text/csv',
+        as_attachment=True,
+        download_name=f'invoices_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+    )
+
+# Breakdown/Analytics Routes
+@app.route('/admin/breakdowns')
+@login_required
+@role_required('admin')
+def admin_breakdowns():
+    """Main breakdowns/analytics page."""
+    return render_template('admin/breakdowns.html')
+
+@app.route('/admin/breakdowns/registrations')
+@login_required
+@role_required('admin')
+def registration_breakdown():
+    """Registration statistics and breakdowns."""
+    # Get all registrations for the current admin
+    registrations = Registration.query.join(Trip).filter(Trip.admin_id == current_user.id).all()
+    
+    # Status breakdown
+    status_counts = defaultdict(int)
+    for reg in registrations:
+        status_counts[reg.status] += 1
+    
+    # Monthly breakdown
+    monthly_counts = defaultdict(int)
+    for reg in registrations:
+        month_key = reg.created_at.strftime('%Y-%m')
+        monthly_counts[month_key] += 1
+    
+    # Trip breakdown
+    trip_counts = defaultdict(int)
+    for reg in registrations:
+        trip_counts[reg.trip.title] += 1
+    
+    # Language breakdown
+    language_counts = defaultdict(int)
+    for reg in registrations:
+        language_counts[reg.language] += 1
+    
+    # Guest count distribution
+    guest_count_distribution = defaultdict(int)
+    for reg in registrations:
+        guest_count_distribution[len(reg.guests)] += 1
+    
+    # Recent activity (last 30 days)
+    thirty_days_ago = datetime.now() - timedelta(days=30)
+    recent_registrations = [reg for reg in registrations if reg.created_at >= thirty_days_ago]
+    
+    stats = {
+        'total_registrations': len(registrations),
+        'pending_count': status_counts['pending'],
+        'approved_count': status_counts['approved'],
+        'rejected_count': status_counts['rejected'],
+        'recent_count': len(recent_registrations),
+        'status_breakdown': dict(status_counts),
+        'monthly_breakdown': dict(monthly_counts),
+        'trip_breakdown': dict(trip_counts),
+        'language_breakdown': dict(language_counts),
+        'guest_count_distribution': dict(guest_count_distribution)
+    }
+    
+    return render_template('admin/registration_breakdown.html', stats=stats, registrations=registrations)
+
+@app.route('/admin/breakdowns/guests')
+@login_required
+@role_required('admin')
+def guest_breakdown():
+    """Guest statistics and breakdowns."""
+    # Get all guests for registrations belonging to the current admin
+    guests = Guest.query.join(Registration).join(Trip).filter(Trip.admin_id == current_user.id).all()
+    
+    # Age category breakdown
+    age_category_counts = defaultdict(int)
+    for guest in guests:
+        age_category_counts[guest.age_category] += 1
+    
+    # Document type breakdown
+    document_type_counts = defaultdict(int)
+    for guest in guests:
+        document_type_counts[guest.document_type] += 1
+    
+    # GDPR consent breakdown
+    gdpr_consent_count = sum(1 for guest in guests if guest.gdpr_consent)
+    gdpr_no_consent_count = len(guests) - gdpr_consent_count
+    
+    # Monthly guest registration
+    monthly_guest_counts = defaultdict(int)
+    for guest in guests:
+        month_key = guest.created_at.strftime('%Y-%m')
+        monthly_guest_counts[month_key] += 1
+    
+    # Trip breakdown for guests
+    trip_guest_counts = defaultdict(int)
+    for guest in guests:
+        trip_guest_counts[guest.registration.trip.title] += 1
+    
+    stats = {
+        'total_guests': len(guests),
+        'adult_count': age_category_counts['adult'],
+        'child_count': age_category_counts['child'],
+        'gdpr_consent_count': gdpr_consent_count,
+        'gdpr_no_consent_count': gdpr_no_consent_count,
+        'age_category_breakdown': dict(age_category_counts),
+        'document_type_breakdown': dict(document_type_counts),
+        'monthly_guest_counts': dict(monthly_guest_counts),
+        'trip_guest_counts': dict(trip_guest_counts)
+    }
+    
+    return render_template('admin/guest_breakdown.html', stats=stats, guests=guests)
+
+@app.route('/admin/breakdowns/trips')
+@login_required
+@role_required('admin')
+def trip_breakdown():
+    """Trip statistics and breakdowns."""
+    # Get all trips for the current admin
+    trips = Trip.query.filter_by(admin_id=current_user.id).all()
+    
+    # Registration count per trip
+    trip_registration_counts = {}
+    trip_guest_counts = {}
+    trip_status_breakdowns = {}
+    
+    for trip in trips:
+        registrations = trip.registrations
+        trip_registration_counts[trip.title] = len(registrations)
+        
+        # Count guests per trip
+        guest_count = sum(len(reg.guests) for reg in registrations)
+        trip_guest_counts[trip.title] = guest_count
+        
+        # Status breakdown per trip
+        status_counts = defaultdict(int)
+        for reg in registrations:
+            status_counts[reg.status] += 1
+        trip_status_breakdowns[trip.title] = dict(status_counts)
+    
+    # Monthly trip creation
+    monthly_trip_counts = defaultdict(int)
+    for trip in trips:
+        month_key = trip.created_at.strftime('%Y-%m')
+        monthly_trip_counts[month_key] += 1
+    
+    # Airbnb sync statistics
+    airbnb_synced_count = sum(1 for trip in trips if trip.is_airbnb_synced)
+    airbnb_not_synced_count = len(trips) - airbnb_synced_count
+    
+    # Duration statistics
+    trip_durations = []
+    for trip in trips:
+        duration = (trip.end_date - trip.start_date).days
+        trip_durations.append(duration)
+    
+    avg_duration = sum(trip_durations) / len(trip_durations) if trip_durations else 0
+    
+    stats = {
+        'total_trips': len(trips),
+        'airbnb_synced_count': airbnb_synced_count,
+        'airbnb_not_synced_count': airbnb_not_synced_count,
+        'avg_duration_days': round(avg_duration, 1),
+        'trip_registration_counts': trip_registration_counts,
+        'trip_guest_counts': trip_guest_counts,
+        'trip_status_breakdowns': trip_status_breakdowns,
+        'monthly_trip_counts': dict(monthly_trip_counts)
+    }
+    
+    return render_template('admin/trip_breakdown.html', stats=stats, trips=trips)
+
+@app.route('/admin/breakdowns/invoices')
+@login_required
+@role_required('admin')
+def invoice_breakdown():
+    """Invoice statistics and breakdowns."""
+    # Get all invoices for the current admin
+    invoices = Invoice.query.filter_by(admin_id=current_user.id).all()
+    
+    # Status breakdown
+    status_counts = defaultdict(int)
+    for invoice in invoices:
+        status_counts[invoice.status] += 1
+    
+    # Monthly invoice creation
+    monthly_invoice_counts = defaultdict(int)
+    for invoice in invoices:
+        month_key = invoice.created_at.strftime('%Y-%m')
+        monthly_invoice_counts[month_key] += 1
+    
+    # Amount statistics
+    total_amount = sum(float(invoice.total_amount) for invoice in invoices)
+    avg_amount = total_amount / len(invoices) if invoices else 0
+    
+    # Status-based amounts
+    status_amounts = defaultdict(float)
+    for invoice in invoices:
+        status_amounts[invoice.status] += float(invoice.total_amount)
+    
+    # Currency breakdown
+    currency_counts = defaultdict(int)
+    for invoice in invoices:
+        currency_counts[invoice.currency] += 1
+    
+    # Monthly revenue
+    monthly_revenue = defaultdict(float)
+    for invoice in invoices:
+        month_key = invoice.created_at.strftime('%Y-%m')
+        monthly_revenue[month_key] += float(invoice.total_amount)
+    
+    stats = {
+        'total_invoices': len(invoices),
+        'total_amount': total_amount,
+        'avg_amount': round(avg_amount, 2),
+        'status_counts': dict(status_counts),
+        'status_amounts': dict(status_amounts),
+        'currency_counts': dict(currency_counts),
+        'monthly_invoice_counts': dict(monthly_invoice_counts),
+        'monthly_revenue': dict(monthly_revenue)
+    }
+    
+    return render_template('admin/invoice_breakdown.html', stats=stats, invoices=invoices)
 
 if __name__ == '__main__':
     with app.app_context():

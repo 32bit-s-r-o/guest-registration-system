@@ -9,7 +9,7 @@ import sys
 import shutil
 from datetime import datetime, timedelta, date
 from werkzeug.security import generate_password_hash
-from app import app, db, Admin, Trip, Registration, Guest
+from app import app, db, User, Trip, Registration, Guest
 
 def get_table_names():
     """Get the actual table names with prefix."""
@@ -54,13 +54,13 @@ def create_sample_admin():
     try:
         with app.app_context():
             # Check if any admin exists
-            existing_admin = Admin.query.first()
+            existing_admin = User.query.first()
             if existing_admin:
                 print(f"✅ Using existing admin: {existing_admin.username}")
                 return True
             
             # Create sample admin if none exists
-            admin = Admin(
+            admin = User(
                 username='admin',
                 email='admin@example.com',
                 password_hash=generate_password_hash('admin123'),
@@ -76,7 +76,8 @@ def create_sample_admin():
                 # Custom lines
                 custom_line_1='Business Hours: Mon-Fri 9AM-5PM',
                 custom_line_2='Emergency Contact: +1 (555) 999-8888',
-                custom_line_3='License: VR-12345'
+                custom_line_3='License: VR-12345',
+                role='admin'
             )
             db.session.add(admin)
             db.session.commit()
@@ -98,7 +99,7 @@ def create_sample_trips():
     
     try:
         with app.app_context():
-            admin = Admin.query.filter_by(username='admin').first()
+            admin = User.query.filter_by(username='admin').first()
             if not admin:
                 print("❌ Admin user not found. Please create admin first.")
                 return False
@@ -270,7 +271,7 @@ def show_database_stats():
             tables = get_table_names()
             prefix = app.config.get('TABLE_PREFIX', 'guest_reg_')
             
-            admin_count = Admin.query.count()
+            admin_count = User.query.count()
             trip_count = Trip.query.count()
             registration_count = Registration.query.count()
             guest_count = Guest.query.count()
@@ -353,9 +354,9 @@ def seed_data():
     try:
         with app.app_context():
             # Create sample admin if not exists
-            existing_admin = Admin.query.filter_by(username='admin').first()
+            existing_admin = User.query.filter_by(username='admin').first()
             if not existing_admin:
-                admin = Admin(
+                admin = User(
                     username='admin',
                     email='admin@vacationrentals.com',
                     password_hash=generate_password_hash('admin123'),
@@ -370,12 +371,12 @@ def seed_data():
                     contact_description='Professional vacation rental management services',
                     custom_line_1='24/7 Customer Support',
                     custom_line_2='Free WiFi & Parking',
-                    custom_line_3='Pet Friendly Options Available'
+                    custom_line_3='Pet Friendly Options Available',
+                    role='admin'
                 )
                 db.session.add(admin)
                 db.session.flush()
             else:
-                # Update existing admin with new fields
                 admin = existing_admin
                 if not admin.company_name:
                     admin.company_name = 'Vacation Rentals Plus'

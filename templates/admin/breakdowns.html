@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Analytics & Breakdowns') }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="fas fa-chart-bar"></i> {{ _('Analytics & Breakdowns') }}</h1>
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> {{ _('Back to Dashboard') }}
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overview Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">{{ _('Total Registrations') }}</h5>
+                            <h2 class="mb-0">{{ stats.total_registrations if stats else 0 }}</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">{{ _('Total Guests') }}</h5>
+                            <h2 class="mb-0">{{ stats.total_guests if stats else 0 }}</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-user fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">{{ _('Total Trips') }}</h5>
+                            <h2 class="mb-0">{{ stats.total_trips if stats else 0 }}</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-plane fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">{{ _('Total Revenue') }}</h5>
+                            <h2 class="mb-0">{{ "%.2f"|format(stats.total_revenue) if stats and stats.total_revenue else
+                                "0.00" }} €</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-euro-sign fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Breakdown Categories -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-users"></i> {{ _('Registration Analytics') }}</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">{{ _('Detailed analysis of guest registrations including status breakdowns,
+                        monthly trends, and language preferences.') }}</p>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success"></i> {{ _('Status distribution (pending, approved,
+                            rejected)') }}</li>
+                        <li><i class="fas fa-check text-success"></i> {{ _('Monthly registration trends') }}</li>
+                        <li><i class="fas fa-check text-success"></i> {{ _('Trip-wise registration analysis') }}</li>
+                        <li><i class="fas fa-check text-success"></i> {{ _('Language preference breakdown') }}</li>
+                        <li><i class="fas fa-check text-success"></i> {{ _('Guest count distribution') }}</li>
+                    </ul>
+                    <div class="mt-3">
+                        <a href="{{ url_for('registration_breakdown') }}" class="btn btn-primary">
+                            <i class="fas fa-chart-line"></i> {{ _('View Registration Analytics') }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-user"></i> {{ _('Guest Analytics') }}</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">{{ _('Comprehensive guest demographics including age categories, document
+                        types, and GDPR compliance statistics.') }}</p>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success"></i> {{ _('Age category breakdown (adults vs
+                            children)') }}</li>
+                        <li><i class="fas fa-check text-success"></i> {{ _('Document type preferences') }}</li>
+                        <li><i class="fas fa-check text-success"></i> {{ _('GDPR consent statistics') }}</li>
+                        <li><i class="fas fa-check text-success"></i> {{ _('Monthly guest registration trends') }}</li>
+                        <li><i class="fas fa-check text-success"></i> {{ _('Trip-wise guest distribution') }}</li>
+                    </ul>
+                    <div class="mt-3">
+                        <a href="{{ url_for('guest_breakdown') }}" class="btn btn-success">
+                            <i class="fas fa-chart-pie"></i> {{ _('View Guest Analytics') }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-plane"></i> {{ _('Trip Analytics') }}</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">{{ _('Trip performance analysis including registration rates, Airbnb sync
+                        status, and duration statistics.') }}</p>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success"></i> {{ _('Registration count per trip') }}</li>
+                        <li><i class="fas fa-check text-success"></i> {{ _('Guest count per trip') }}</li>
+                        <li><i class="fas fa-check text-success"></i> {{ _('Airbnb sync statistics') }}</li>
+                        <li><i class="fas fa-check text-success"></i> {{ _('Trip duration analysis') }}</li>
+                        <li><i class="fas fa-check text-success"></i> {{ _('Monthly trip creation trends') }}</li>
+                    </ul>
+                    <div class="mt-3">
+                        <a href="{{ url_for('trip_breakdown') }}" class="btn btn-info">
+                            <i class="fas fa-chart-bar"></i> {{ _('View Trip Analytics') }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="mb-0"><i class="fas fa-file-invoice"></i> {{ _('Invoice Analytics') }}</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">{{ _('Financial analysis including revenue trends, invoice status
+                        distribution, and currency breakdowns.') }}</p>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success"></i> {{ _('Revenue trends and totals') }}</li>
+                        <li><i class="fas fa-check text-success"></i> {{ _('Invoice status distribution') }}</li>
+                        <li><i class="fas fa-check text-success"></i> {{ _('Currency breakdown') }}</li>
+                        <li><i class="fas fa-check text-success"></i> {{ _('Monthly revenue analysis') }}</li>
+                        <li><i class="fas fa-check text-success"></i> {{ _('Average invoice amounts') }}</li>
+                    </ul>
+                    <div class="mt-3">
+                        <a href="{{ url_for('invoice_breakdown') }}" class="btn btn-warning">
+                            <i class="fas fa-chart-line"></i> {{ _('View Invoice Analytics') }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Section -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-download"></i> {{ _('Data Export') }}</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">{{ _('Export your data in CSV format for further analysis in external tools
+                        like Excel or Google Sheets.') }}</p>
+                    <div class="row">
+                        <div class="col-md-3 mb-2">
+                            <a href="{{ url_for('export_registrations_csv') }}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-download"></i> {{ _('Export Registrations') }}
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{{ url_for('export_guests_csv') }}" class="btn btn-outline-success w-100">
+                                <i class="fas fa-download"></i> {{ _('Export Guests') }}
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{{ url_for('export_trips_csv') }}" class="btn btn-outline-info w-100">
+                                <i class="fas fa-download"></i> {{ _('Export Trips') }}
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{{ url_for('export_invoices_csv') }}" class="btn btn-outline-warning w-100">
+                                <i class="fas fa-download"></i> {{ _('Export Invoices') }}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

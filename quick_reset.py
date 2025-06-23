@@ -7,7 +7,7 @@ This script provides a fast way to reset the database without the web interface.
 import os
 import sys
 import shutil
-from app import app, db, Admin, Trip, Registration, Guest
+from app import app, db, User, Trip, Registration, Guest
 from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash
 
@@ -71,12 +71,13 @@ def quick_seed():
     try:
         with app.app_context():
             # Use existing admin or create one if none exists
-            existing_admin = Admin.query.first()
+            existing_admin = User.query.first()
             if not existing_admin:
-                admin = Admin(
+                admin = User(
                     username='admin',
                     email='admin@example.com',
-                    password_hash=generate_password_hash('admin123')
+                    password_hash=generate_password_hash('admin123'),
+                    role='admin'
                 )
                 db.session.add(admin)
                 db.session.flush()

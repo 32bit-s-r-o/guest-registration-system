@@ -1,0 +1,347 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Invoice Analytics') }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="fas fa-file-invoice"></i> {{ _('Invoice Analytics') }}</h1>
+                <div>
+                    <a href="{{ url_for('export_invoices_csv') }}" class="btn btn-outline-primary me-2">
+                        <i class="fas fa-download"></i> {{ _('Export CSV') }}
+                    </a>
+                    <a href="{{ url_for('admin_breakdowns') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> {{ _('Back to Analytics') }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">{{ _('Total Invoices') }}</h5>
+                            <h2 class="mb-0">{{ stats.total_invoices }}</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-file-invoice fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">{{ _('Total Revenue') }}</h5>
+                            <h2 class="mb-0">{{ "%.2f"|format(stats.total_amount) }} €</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-euro-sign fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">{{ _('Average Invoice') }}</h5>
+                            <h2 class="mb-0">{{ "%.2f"|format(stats.avg_amount) }} €</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-chart-line fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">{{ _('Paid Invoices') }}</h5>
+                            <h2 class="mb-0">{{ stats.status_counts.paid if 'paid' in stats.status_counts else 0 }}</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-check-circle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts and Breakdowns -->
+    <div class="row">
+        <!-- Invoice Status Distribution -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie"></i> {{ _('Invoice Status Distribution') }}</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="statusChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Revenue -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-line"></i> {{ _('Monthly Revenue') }}</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="revenueChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Invoice Creation -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar"></i> {{ _('Monthly Invoice Creation') }}</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="monthlyChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Currency Breakdown -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-money-bill-wave"></i> {{ _('Currency Distribution') }}</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="currencyChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Revenue by Status -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar"></i> {{ _('Revenue by Status') }}</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="revenueByStatusChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Financial Summary -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> {{ _('Financial Summary') }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h4 class="text-success">{{ "%.2f"|format(stats.total_amount) }} €</h4>
+                            <p class="text-muted">{{ _('Total Revenue') }}</p>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-info">{{ "%.2f"|format(stats.avg_amount) }} €</h4>
+                            <p class="text-muted">{{ _('Average Invoice') }}</p>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h4 class="text-primary">{{ stats.total_invoices }}</h4>
+                            <p class="text-muted">{{ _('Total Invoices') }}</p>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-warning">{{ stats.status_counts.draft if 'draft' in stats.status_counts else
+                                0 }}</h4>
+                            <p class="text-muted">{{ _('Draft Invoices') }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-table"></i> {{ _('Recent Invoices') }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>{{ _('Invoice Number') }}</th>
+                                    <th>{{ _('Client') }}</th>
+                                    <th>{{ _('Amount') }}</th>
+                                    <th>{{ _('Status') }}</th>
+                                    <th>{{ _('Currency') }}</th>
+                                    <th>{{ _('Issue Date') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for invoice in invoices[:10] %}
+                                <tr>
+                                    <td>{{ invoice.invoice_number }}</td>
+                                    <td>{{ invoice.client_name }}</td>
+                                    <td>{{ "%.2f"|format(invoice.total_amount) }} {{ invoice.currency }}</td>
+                                    <td>
+                                        {% if invoice.status == 'paid' %}
+                                        <span class="badge bg-success">{{ _('Paid') }}</span>
+                                        {% elif invoice.status == 'sent' %}
+                                        <span class="badge bg-warning">{{ _('Sent') }}</span>
+                                        {% elif invoice.status == 'draft' %}
+                                        <span class="badge bg-secondary">{{ _('Draft') }}</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">{{ _('Overdue') }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ invoice.currency }}</td>
+                                    <td>{{ invoice.issue_date.strftime('%Y-%m-%d') }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Invoice Status Distribution Chart
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+    new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: [{% for status, count in stats.status_counts.items() %}'{{ status.title() }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+        datasets: [{
+            data: [{% for status, count in stats.status_counts.items() %}{{ count }}{% if not loop.last %}, {% endif %} {% endfor %}],
+    backgroundColor: ['#28a745', '#ffc107', '#6c757d', '#dc3545']
+        }]
+    },
+    options: {
+        responsive: true,
+            plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+    // Monthly Revenue Chart
+    const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+    new Chart(revenueCtx, {
+        type: 'line',
+        data: {
+            labels: [{% for month, amount in stats.monthly_revenue.items() %}'{{ month }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+        datasets: [{
+            label: '{{ _("Revenue") }} (€)',
+            data: [{% for month, amount in stats.monthly_revenue.items() %}{{ amount }}{% if not loop.last %}, {% endif %} {% endfor %}],
+    borderColor: '#ffc107',
+        backgroundColor: 'rgba(255, 193, 7, 0.1)',
+            tension: 0.1
+        }]
+    },
+    options: {
+        responsive: true,
+            scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+    // Monthly Invoice Creation Chart
+    const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+    new Chart(monthlyCtx, {
+        type: 'bar',
+        data: {
+            labels: [{% for month, count in stats.monthly_invoice_counts.items() %}'{{ month }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+        datasets: [{
+            label: '{{ _("Invoices Created") }}',
+            data: [{% for month, count in stats.monthly_invoice_counts.items() %}{{ count }}{% if not loop.last %}, {% endif %} {% endfor %}],
+    backgroundColor: '#17a2b8'
+        }]
+    },
+    options: {
+        responsive: true,
+            scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+    // Currency Distribution Chart
+    const currencyCtx = document.getElementById('currencyChart').getContext('2d');
+    new Chart(currencyCtx, {
+        type: 'pie',
+        data: {
+            labels: [{% for currency, count in stats.currency_counts.items() %}'{{ currency }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+        datasets: [{
+            data: [{% for currency, count in stats.currency_counts.items() %}{{ count }}{% if not loop.last %}, {% endif %} {% endfor %}],
+    backgroundColor: ['#28a745', '#007bff', '#ffc107', '#dc3545']
+        }]
+    },
+    options: {
+        responsive: true,
+            plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+    // Revenue by Status Chart
+    const revenueByStatusCtx = document.getElementById('revenueByStatusChart').getContext('2d');
+    new Chart(revenueByStatusCtx, {
+        type: 'bar',
+        data: {
+            labels: [{% for status, amount in stats.status_amounts.items() %}'{{ status.title() }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+        datasets: [{
+            label: '{{ _("Revenue") }} (€)',
+            data: [{% for status, amount in stats.status_amounts.items() %}{{ amount }}{% if not loop.last %}, {% endif %} {% endfor %}],
+    backgroundColor: '#6f42c1'
+        }]
+    },
+    options: {
+        responsive: true,
+            scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

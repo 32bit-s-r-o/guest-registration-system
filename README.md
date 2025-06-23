@@ -198,15 +198,117 @@ The application includes powerful Airbnb calendar integration that automatically
 
 3. **Sync Reservations**:
    - Use the "Sync Airbnb" button on the trips page
-   - Or enable automatic sync in settings
 
-### How It Works
+## Analytics & Data Export
 
-1. **Calendar Fetching**: System fetches your Airbnb calendar using the iCal URL
-2. **Reservation Parsing**: Extracts reservation details (dates, guest info, etc.)
-3. **Trip Creation**: Automatically creates registration forms for each reservation
-4. **Guest Information**: Populates trip details with guest names and counts
-5. **Confirmation Codes**: Extracts and stores Airbnb confirmation codes for easy access
+The application provides comprehensive analytics and data export capabilities for business intelligence and reporting.
+
+### CSV Export Functionality
+
+Export your data in CSV format for analysis in external tools like Excel, Google Sheets, or business intelligence software.
+
+#### Available Exports
+
+1. **Registrations Export** (`/admin/export/registrations`)
+   - Registration ID, Trip Title, Email, Status, Language
+   - Created/Updated dates, Guest count, Admin comments
+
+2. **Guests Export** (`/admin/export/guests`)
+   - Guest details: Name, Age category, Document type/number
+   - GDPR consent status, Registration date
+   - Linked trip information
+
+3. **Trips Export** (`/admin/export/trips`)
+   - Trip details: Title, dates, guest limits
+   - Airbnb sync status and guest information
+   - Registration counts by status (pending/approved/rejected)
+
+4. **Invoices Export** (`/admin/export/invoices`)
+   - Invoice details: Number, client info, amounts
+   - Status, currency, dates
+   - Financial summaries
+
+#### How to Export
+
+1. **From Analytics Dashboard**:
+   - Go to Admin Dashboard → Analytics
+   - Click "Export CSV" buttons on each analytics page
+
+2. **Direct URLs**:
+   - `/admin/export/registrations` - Export all registrations
+   - `/admin/export/guests` - Export all guest data
+   - `/admin/export/trips` - Export trip information
+   - `/admin/export/invoices` - Export invoice data
+
+### Analytics & Breakdowns
+
+Comprehensive analytics dashboard with interactive charts and statistics.
+
+#### Available Analytics
+
+1. **Registration Analytics** (`/admin/breakdowns/registrations`)
+   - Status distribution (pending/approved/rejected)
+   - Monthly registration trends
+   - Trip-wise registration analysis
+   - Language preference breakdown
+   - Guest count distribution
+
+2. **Guest Analytics** (`/admin/breakdowns/guests`)
+   - Age category breakdown (adults vs children)
+   - Document type preferences
+   - GDPR consent statistics
+   - Monthly guest registration trends
+   - Trip-wise guest distribution
+
+3. **Trip Analytics** (`/admin/breakdowns/trips`)
+   - Registration count per trip
+   - Guest count per trip
+   - Airbnb sync statistics
+   - Trip duration analysis
+   - Monthly trip creation trends
+
+4. **Invoice Analytics** (`/admin/breakdowns/invoices`)
+   - Revenue trends and totals
+   - Invoice status distribution
+   - Currency breakdown
+   - Monthly revenue analysis
+   - Average invoice amounts
+
+#### Features
+
+- **Interactive Charts**: Built with Chart.js for responsive, interactive visualizations
+- **Real-time Data**: All analytics are calculated from live database data
+- **Export Integration**: Direct CSV export from analytics pages
+- **Multi-language Support**: All analytics are available in English and Czech
+- **Mobile Responsive**: Charts and tables work on all device sizes
+
+#### Accessing Analytics
+
+1. **From Admin Dashboard**:
+   - Click "Analytics" in the Quick Actions section
+   - Navigate to specific analytics categories
+
+2. **Direct URLs**:
+   - `/admin/breakdowns` - Main analytics hub
+   - `/admin/breakdowns/registrations` - Registration analytics
+   - `/admin/breakdowns/guests` - Guest analytics
+   - `/admin/breakdowns/trips` - Trip analytics
+   - `/admin/breakdowns/invoices` - Invoice analytics
+
+### Testing Analytics & Export
+
+Use the provided test script to verify functionality:
+
+```bash
+# Test CSV export and analytics functionality
+python test_csv_export.py
+```
+
+This script will:
+- Test all CSV export endpoints
+- Verify analytics page accessibility
+- Check dashboard integration
+- Provide manual testing URLs
 
 ## Contact Information Management
 

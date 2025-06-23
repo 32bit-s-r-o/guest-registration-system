@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Housekeeping Management') }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>{{ _('Housekeeping Management') }}</h1>
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-euro-sign"></i> {{ _('Pay Summary by Housekeeper') }}</h5>
+                </div>
+                <div class="card-body p-2">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>{{ _('Housekeeper') }}</th>
+                                    <th>{{ _('Total') }}</th>
+                                    <th>{{ _('Paid') }}</th>
+                                    <th>{{ _('Pending') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for hk in housekeepers %}
+                                <tr>
+                                    <td>{{ hk.username }}</td>
+                                    <td>{{ '%.2f'|format(pay_summary[hk.id].total) }} €</td>
+                                    <td class="text-success">{{ '%.2f'|format(pay_summary[hk.id].paid) }} €</td>
+                                    <td class="text-warning">{{ '%.2f'|format(pay_summary[hk.id].pending) }} €</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-coins"></i> {{ _('Grand Totals') }}</h5>
+                </div>
+                <div class="card-body p-2">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>{{ _('Total') }}</span>
+                            <span class="fw-bold">{{ '%.2f'|format(grand_total) }} €</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span class="text-success">{{ _('Paid') }}</span>
+                            <span class="fw-bold text-success">{{ '%.2f'|format(grand_paid) }} €</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span class="text-warning">{{ _('Pending') }}</span>
+                            <span class="fw-bold text-warning">{{ '%.2f'|format(grand_pending) }} €</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <form class="row g-3 mb-4" method="get">
+        <div class="col-md-4">
+            <label for="housekeeper_id" class="form-label">{{ _('Housekeeper') }}</label>
+            <select class="form-select" id="housekeeper_id" name="housekeeper_id">
+                <option value="">{{ _('All') }}</option>
+                {% for hk in housekeepers %}
+                <option value="{{ hk.id }}" {% if selected_housekeeper==hk.id %}selected{% endif %}>{{ hk.username }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="status" class="form-label">{{ _('Status') }}</label>
+            <select class="form-select" id="status" name="status">
+                <option value="">{{ _('All') }}</option>
+                <option value="pending" {% if selected_status=='pending' %}selected{% endif %}>{{ _('Pending') }}
+                </option>
+                <option value="in_progress" {% if selected_status=='in_progress' %}selected{% endif %}>{{ _('In
+                    Progress') }}</option>
+                <option value="completed" {% if selected_status=='completed' %}selected{% endif %}>{{ _('Completed') }}
+                </option>
+            </select>
+        </div>
+        <div class="col-md-4 align-self-end">
+            <button type="submit" class="btn btn-primary">{{ _('Filter') }}</button>
+        </div>
+    </form>
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>{{ _('Date') }}</th>
+                    <th>{{ _('Trip ID') }}</th>
+                    <th>{{ _('Housekeeper') }}</th>
+                    <th>{{ _('Status') }}</th>
+                    <th>{{ _('Pay Amount') }}</th>
+                    <th>{{ _('Paid') }}</th>
+                    <th>{{ _('Photo') }}</th>
+                    <th>{{ _('Actions') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in tasks %}
+                <tr>
+                    <td>{{ task.date.strftime('%Y-%m-%d') }}</td>
+                    <td>{{ task.trip_id }}</td>
+                    <td>{{ task.housekeeper.username }}</td>
+                    <td>{{ task.status }}</td>
+                    <td>
+                        <form method="POST" class="d-flex align-items-center gap-2">
+                            <input type="hidden" name="task_id" value="{{ task.id }}">
+                            <input type="number" step="0.01" min="0" name="pay_amount" value="{{ task.pay_amount }}"
+                                class="form-control form-control-sm" style="width: 90px;">
+                    </td>
+                    <td>
+                        <input type="checkbox" name="paid" {% if task.paid %}checked{% endif %}>
+                    </td>
+                    <td>
+                        {% if task.amenity_photo_path %}
+                        <a href="{{ url_for('uploaded_file', filename=task.amenity_photo_path) }}" target="_blank"
+                            class="btn btn-sm btn-info">
+                            <i class="fas fa-image"></i> {{ _('View Photo') }}
+                        </a>
+                        {% else %}
+                        <span class="text-muted">{{ _('No photo') }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <button type="submit" class="btn btn-sm btn-success">{{ _('Save') }}</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="text-center">{{ _('No housekeeping tasks found.') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

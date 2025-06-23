@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Housekeeper Dashboard') }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1>{{ _('Housekeeper Dashboard') }}</h1>
+            <a href="{{ url_for('housekeeper_calendar') }}" class="btn btn-primary mb-3">{{ _('View Calendar') }}</a>
+        </div>
+    </div>
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-euro-sign"></i> {{ _('Your Pay Summary') }}</h5>
+                </div>
+                <div class="card-body p-2">
+                    {% set total = tasks|map(attribute='pay_amount')|map('float')|sum %}
+                    {% set paid = tasks|selectattr('paid')|map(attribute='pay_amount')|map('float')|sum %}
+                    {% set pending = tasks|rejectattr('paid')|map(attribute='pay_amount')|map('float')|sum %}
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>{{ _('Total') }}</span>
+                            <span class="fw-bold">{{ '%.2f'|format(total) }} €</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span class="text-success">{{ _('Paid') }}</span>
+                            <span class="fw-bold text-success">{{ '%.2f'|format(paid) }} €</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span class="text-warning">{{ _('Pending') }}</span>
+                            <span class="fw-bold text-warning">{{ '%.2f'|format(pending) }} €</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>{{ _('Housekeeping Tasks') }}</h5>
+                </div>
+                <div class="card-body">
+                    {% if tasks %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>{{ _('Date') }}</th>
+                                    <th>{{ _('Trip ID') }}</th>
+                                    <th>{{ _('Status') }}</th>
+                                    <th>{{ _('Pay Amount') }}</th>
+                                    <th>{{ _('Paid') }}</th>
+                                    <th>{{ _('Photo') }}</th>
+                                    <th>{{ _('Actions') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for task in tasks %}
+                                <tr>
+                                    <td>{{ task.date.strftime('%Y-%m-%d') }}</td>
+                                    <td>{{ task.trip_id }}</td>
+                                    <td>
+                                        <span
+                                            class="badge bg-{{ 'success' if task.status == 'completed' else 'warning' if task.status == 'in_progress' else 'secondary' }}">
+                                            {{ task.status }}
+                                        </span>
+                                    </td>
+                                    <td>{{ "%.2f"|format(task.pay_amount) }} €</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if task.paid else 'danger' }}">
+                                            {{ _('Yes') if task.paid else _('No') }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if task.amenity_photo_path %}
+                                        <a href="{{ url_for('uploaded_file', filename=task.amenity_photo_path) }}"
+                                            target="_blank" class="btn btn-sm btn-info">
+                                            <i class="fas fa-image"></i> {{ _('View Photo') }}
+                                        </a>
+                                        {% else %}
+                                        <span class="text-muted">{{ _('No photo') }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"
+                                            data-bs-target="#uploadModal{{ task.id }}">
+                                            <i class="fas fa-upload"></i> {{ _('Upload Photo') }}
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">{{ _('No housekeeping tasks assigned.') }}</h5>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Upload Photo Modals -->
+{% for task in tasks %}
+<div class="modal fade" id="uploadModal{{ task.id }}" tabindex="-1" aria-labelledby="uploadModalLabel{{ task.id }}"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="uploadModalLabel{{ task.id }}">{{ _('Upload Amenity Photo') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('upload_amenity_photo', task_id=task.id) }}" method="POST"
+                enctype="multipart/form-data">
+                <div class="modal-body">
+                    <p>{{ _('Upload a photo of the amenity for Trip #%(trip_id)s on %(date)s', trip_id=task.trip_id,
+                        date=task.date.strftime('%Y-%m-%d')) }}</p>
+                    <div class="mb-3">
+                        <label for="photo{{ task.id }}" class="form-label">{{ _('Select Photo') }}</label>
+                        <input type="file" class="form-control" id="photo{{ task.id }}" name="photo" accept="image/*"
+                            required>
+                        <div class="form-text">{{ _('Accepted formats: JPG, PNG, GIF. Max size: 16MB') }}</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Cancel') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ _('Upload Photo') }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

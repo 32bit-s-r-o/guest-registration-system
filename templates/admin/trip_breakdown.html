@@ -1,0 +1,324 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Trip Analytics') }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="fas fa-plane"></i> {{ _('Trip Analytics') }}</h1>
+                <div>
+                    <a href="{{ url_for('export_trips_csv') }}" class="btn btn-outline-primary me-2">
+                        <i class="fas fa-download"></i> {{ _('Export CSV') }}
+                    </a>
+                    <a href="{{ url_for('admin_breakdowns') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> {{ _('Back to Analytics') }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">{{ _('Total Trips') }}</h5>
+                            <h2 class="mb-0">{{ stats.total_trips }}</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-plane fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">{{ _('Airbnb Synced') }}</h5>
+                            <h2 class="mb-0">{{ stats.airbnb_synced_count }}</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fab fa-airbnb fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">{{ _('Not Synced') }}</h5>
+                            <h2 class="mb-0">{{ stats.airbnb_not_synced_count }}</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-exclamation-triangle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">{{ _('Avg Duration') }}</h5>
+                            <h2 class="mb-0">{{ stats.avg_duration_days }} {{ _('days') }}</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-calendar-alt fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts and Breakdowns -->
+    <div class="row">
+        <!-- Registration Count per Trip -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-users"></i> {{ _('Registrations per Trip') }}</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="registrationChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Guest Count per Trip -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-user-friends"></i> {{ _('Guests per Trip') }}</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="guestChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Trip Creation -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-line"></i> {{ _('Monthly Trip Creation') }}</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="monthlyTripChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Airbnb Sync Status -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fab fa-airbnb"></i> {{ _('Airbnb Sync Status') }}</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="airbnbChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trip Performance Summary -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-tachometer-alt"></i> {{ _('Trip Performance Summary') }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h4 class="text-success">{{ "%.1f"|format((stats.airbnb_synced_count / stats.total_trips *
+                                100) if stats.total_trips > 0 else 0) }}%</h4>
+                            <p class="text-muted">{{ _('Airbnb Synced') }}</p>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-info">{{ stats.avg_duration_days }}</h4>
+                            <p class="text-muted">{{ _('Avg Duration (days)') }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trip Status Overview -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> {{ _('Trip Overview') }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12">
+                            <h6>{{ _('Total Trips') }}: <span class="badge bg-info">{{ stats.total_trips }}</span></h6>
+                            <h6>{{ _('Airbnb Synced') }}: <span class="badge bg-success">{{ stats.airbnb_synced_count
+                                    }}</span></h6>
+                            <h6>{{ _('Not Synced') }}: <span class="badge bg-warning">{{ stats.airbnb_not_synced_count
+                                    }}</span></h6>
+                            <h6>{{ _('Average Duration') }}: <span class="badge bg-primary">{{ stats.avg_duration_days
+                                    }} {{ _('days') }}</span></h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-table"></i> {{ _('Trip Details') }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>{{ _('Trip Title') }}</th>
+                                    <th>{{ _('Dates') }}</th>
+                                    <th>{{ _('Max Guests') }}</th>
+                                    <th>{{ _('Registrations') }}</th>
+                                    <th>{{ _('Total Guests') }}</th>
+                                    <th>{{ _('Airbnb Sync') }}</th>
+                                    <th>{{ _('Duration') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for trip in trips %}
+                                <tr>
+                                    <td>{{ trip.title }}</td>
+                                    <td>{{ trip.start_date.strftime('%Y-%m-%d') }} - {{
+                                        trip.end_date.strftime('%Y-%m-%d') }}</td>
+                                    <td>{{ trip.max_guests }}</td>
+                                    <td>{{ trip.registrations|length }}</td>
+                                    <td>{{ trip.registrations|map(attribute='guests')|map('length')|sum }}</td>
+                                    <td>
+                                        {% if trip.is_airbnb_synced %}
+                                        <span class="badge bg-success">{{ _('Synced') }}</span>
+                                        {% else %}
+                                        <span class="badge bg-warning">{{ _('Not Synced') }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ (trip.end_date - trip.start_date).days }} {{ _('days') }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Registration Count per Trip Chart
+    const registrationCtx = document.getElementById('registrationChart').getContext('2d');
+    new Chart(registrationCtx, {
+        type: 'bar',
+        data: {
+            labels: [{% for trip, count in stats.trip_registration_counts.items() %}'{{ trip }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+        datasets: [{
+            label: '{{ _("Registrations") }}',
+            data: [{% for trip, count in stats.trip_registration_counts.items() %}{{ count }}{% if not loop.last %}, {% endif %} {% endfor %}],
+    backgroundColor: '#007bff'
+        }]
+    },
+    options: {
+        responsive: true,
+            scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+    // Guest Count per Trip Chart
+    const guestCtx = document.getElementById('guestChart').getContext('2d');
+    new Chart(guestCtx, {
+        type: 'bar',
+        data: {
+            labels: [{% for trip, count in stats.trip_guest_counts.items() %}'{{ trip }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+        datasets: [{
+            label: '{{ _("Guests") }}',
+            data: [{% for trip, count in stats.trip_guest_counts.items() %}{{ count }}{% if not loop.last %}, {% endif %} {% endfor %}],
+    backgroundColor: '#28a745'
+        }]
+    },
+    options: {
+        responsive: true,
+            scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+    // Monthly Trip Creation Chart
+    const monthlyTripCtx = document.getElementById('monthlyTripChart').getContext('2d');
+    new Chart(monthlyTripCtx, {
+        type: 'line',
+        data: {
+            labels: [{% for month, count in stats.monthly_trip_counts.items() %}'{{ month }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+        datasets: [{
+            label: '{{ _("Trips Created") }}',
+            data: [{% for month, count in stats.monthly_trip_counts.items() %}{{ count }}{% if not loop.last %}, {% endif %} {% endfor %}],
+    borderColor: '#17a2b8',
+        backgroundColor: 'rgba(23, 162, 184, 0.1)',
+            tension: 0.1
+        }]
+    },
+    options: {
+        responsive: true,
+            scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+    // Airbnb Sync Status Chart
+    const airbnbCtx = document.getElementById('airbnbChart').getContext('2d');
+    new Chart(airbnbCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['{{ _("Synced") }}', '{{ _("Not Synced") }}'],
+            datasets: [{
+                data: [{{ stats.airbnb_synced_count }}, {{ stats.airbnb_not_synced_count }}],
+        backgroundColor: ['#28a745', '#ffc107']
+    }]
+    },
+        options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

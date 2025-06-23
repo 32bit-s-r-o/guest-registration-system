@@ -7,7 +7,7 @@ This script initializes the database and creates the first admin user.
 import os
 import sys
 from werkzeug.security import generate_password_hash
-from app import app, db, Admin
+from app import app, db, User
 
 def check_environment():
     """Check if environment is properly configured."""
@@ -90,7 +90,7 @@ def create_admin_user():
     try:
         with app.app_context():
             # Check if admin already exists
-            existing_admin = Admin.query.first()
+            existing_admin = User.query.first()
             if existing_admin:
                 print(f"✅ Admin user already exists: {existing_admin.username}")
                 return True
@@ -112,10 +112,11 @@ def create_admin_user():
                 return False
             
             # Create admin user
-            admin = Admin(
+            admin = User(
                 username=username,
                 email=email,
-                password_hash=generate_password_hash(password)
+                password_hash=generate_password_hash(password),
+                role='admin'
             )
             
             db.session.add(admin)

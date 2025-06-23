@@ -1,0 +1,329 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Registration Analytics') }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="fas fa-users"></i> {{ _('Registration Analytics') }}</h1>
+                <div>
+                    <a href="{{ url_for('export_registrations_csv') }}" class="btn btn-outline-primary me-2">
+                        <i class="fas fa-download"></i> {{ _('Export CSV') }}
+                    </a>
+                    <a href="{{ url_for('admin_breakdowns') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> {{ _('Back to Analytics') }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">{{ _('Total Registrations') }}</h5>
+                            <h2 class="mb-0">{{ stats.total_registrations }}</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">{{ _('Pending') }}</h5>
+                            <h2 class="mb-0">{{ stats.pending_count }}</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-clock fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">{{ _('Approved') }}</h5>
+                            <h2 class="mb-0">{{ stats.approved_count }}</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-check fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">{{ _('Rejected') }}</h5>
+                            <h2 class="mb-0">{{ stats.rejected_count }}</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-times fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts and Breakdowns -->
+    <div class="row">
+        <!-- Status Breakdown -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie"></i> {{ _('Status Distribution') }}</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="statusChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Trends -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-line"></i> {{ _('Monthly Registration Trends') }}</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="monthlyChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trip Breakdown -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-plane"></i> {{ _('Registrations by Trip') }}</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="tripChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Language Breakdown -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-language"></i> {{ _('Language Preferences') }}</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="languageChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Guest Count Distribution -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-user-friends"></i> {{ _('Guest Count Distribution') }}</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="guestCountChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-history"></i> {{ _('Recent Activity (Last 30 Days)') }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center">
+                        <h3 class="text-primary">{{ stats.recent_count }}</h3>
+                        <p class="text-muted">{{ _('New registrations in the last 30 days') }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-table"></i> {{ _('Recent Registrations') }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>{{ _('ID') }}</th>
+                                    <th>{{ _('Trip') }}</th>
+                                    <th>{{ _('Email') }}</th>
+                                    <th>{{ _('Status') }}</th>
+                                    <th>{{ _('Guests') }}</th>
+                                    <th>{{ _('Language') }}</th>
+                                    <th>{{ _('Created') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for reg in registrations[:10] %}
+                                <tr>
+                                    <td>#{{ reg.id }}</td>
+                                    <td>{{ reg.trip.title }}</td>
+                                    <td>{{ reg.email }}</td>
+                                    <td>
+                                        {% if reg.status == 'pending' %}
+                                            <span class="badge bg-warning">{{ _('Pending') }}</span>
+                                        {% elif reg.status == 'approved' %}
+                                            <span class="badge bg-success">{{ _('Approved') }}</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">{{ _('Rejected') }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ reg.guests|length }}</td>
+                                    <td>{{ reg.language.upper() }}</td>
+                                    <td>{{ reg.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Status Distribution Chart
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+    new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['{{ _("Pending") }}', '{{ _("Approved") }}', '{{ _("Rejected") }}'],
+            datasets: [{
+                data: [{{ stats.status_breakdown.pending }}, {{ stats.status_breakdown.approved }}, {{ stats.status_breakdown.rejected }}],
+        backgroundColor: ['#ffc107', '#28a745', '#dc3545']
+        }]
+    },
+        options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+    // Monthly Trends Chart
+    const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+    new Chart(monthlyCtx, {
+        type: 'line',
+        data: {
+            labels: [{% for month, count in stats.monthly_breakdown.items() %}'{{ month }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+        datasets: [{
+            label: '{{ _("Registrations") }}',
+            data: [{% for month, count in stats.monthly_breakdown.items() %}{{ count }}{% if not loop.last %}, {% endif %} {% endfor %}],
+    borderColor: '#007bff',
+        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+            tension: 0.1
+        }]
+    },
+    options: {
+        responsive: true,
+            scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+    // Trip Breakdown Chart
+    const tripCtx = document.getElementById('tripChart').getContext('2d');
+    new Chart(tripCtx, {
+        type: 'bar',
+        data: {
+            labels: [{% for trip, count in stats.trip_breakdown.items() %}'{{ trip }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+        datasets: [{
+            label: '{{ _("Registrations") }}',
+            data: [{% for trip, count in stats.trip_breakdown.items() %}{{ count }}{% if not loop.last %}, {% endif %} {% endfor %}],
+    backgroundColor: '#17a2b8'
+        }]
+    },
+    options: {
+        responsive: true,
+            scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+    // Language Breakdown Chart
+    const languageCtx = document.getElementById('languageChart').getContext('2d');
+    new Chart(languageCtx, {
+        type: 'pie',
+        data: {
+            labels: [{% for lang, count in stats.language_breakdown.items() %}'{{ lang.upper() }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+        datasets: [{
+            data: [{% for lang, count in stats.language_breakdown.items() %}{{ count }}{% if not loop.last %}, {% endif %} {% endfor %}],
+    backgroundColor: ['#28a745', '#007bff', '#ffc107', '#dc3545']
+        }]
+    },
+    options: {
+        responsive: true,
+            plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+    // Guest Count Distribution Chart
+    const guestCountCtx = document.getElementById('guestCountChart').getContext('2d');
+    new Chart(guestCountCtx, {
+        type: 'bar',
+        data: {
+            labels: [{% for count, freq in stats.guest_count_distribution.items() %}'{{ count }} {{ _("guest(s)") }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+        datasets: [{
+            label: '{{ _("Registrations") }}',
+            data: [{% for count, freq in stats.guest_count_distribution.items() %}{{ freq }}{% if not loop.last %}, {% endif %} {% endfor %}],
+    backgroundColor: '#6f42c1'
+        }]
+    },
+    options: {
+        responsive: true,
+            scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+</script>
+{% endblock %}
