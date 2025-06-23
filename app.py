@@ -30,6 +30,8 @@ from flask_babel import lazy_gettext as _l
 from sqlalchemy import func, and_, or_
 from collections import defaultdict
 import calendar
+import subprocess
+import zipfile
 
 load_dotenv()
 
@@ -2631,6 +2633,140 @@ def delete_user(user_id):
     
     flash(_('User deleted successfully!'), 'success')
     return redirect(url_for('admin_users'))
+
+@app.route('/api/backup/guests', methods=['GET'])
+@login_required
+@role_required('admin')
+def api_backup_guests():
+    """Export all registered guests for a given month (no photos, admin only)."""
+    year = request.args.get('year', type=int)
+    month = request.args.get('month', type=int)
+    fmt = request.args.get('format', 'csv')
+    if not year or not month:
+        return jsonify({'error': 'Missing year or month parameter'}), 400
+
+    # Get guests for the given month
+    start_date = datetime(year, month, 1)
+    if month == 12:
+        end_date = datetime(year + 1, 1, 1)
+    else:
+        end_date = datetime(year, month + 1, 1)
+    guests = Guest.query.join(Registration).filter(
+        Registration.created_at >= start_date,
+        Registration.created_at < end_date
+    ).all()
+
+    # Prepare data (no photos)
+    guest_data = []
+    for g in guests:
+        guest_data.append({
+            'id': g.id,
+            'registration_id': g.registration_id,
+            'first_name': g.first_name,
+            'last_name': g.last_name,
+            'age_category': g.age_category,
+            'document_type': g.document_type,
+            'document_number': g.document_number,
+            'gdpr_consent': g.gdpr_consent,
+            'created_at': g.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'trip_title': g.registration.trip.title if g.registration and g.registration.trip else '',
+            'registration_email': g.registration.email if g.registration else '',
+            'registration_language': g.registration.language if g.registration else '',
+        })
+
+    if fmt == 'json':
+        return jsonify(guest_data)
+    else:
+        # CSV
+        output = StringIO()
+        writer = csv.DictWriter(output, fieldnames=guest_data[0].keys() if guest_data else [
+            'id','registration_id','first_name','last_name','age_category','document_type','document_number','gdpr_consent','created_at','trip_title','registration_email','registration_language'])
+        writer.writeheader()
+        for row in guest_data:
+            writer.writerow(row)
+        csv_data = output.getvalue().encode('utf-8')
+        output.close()
+        return send_file(
+            BytesIO(csv_data),
+            mimetype='text/csv',
+            as_attachment=True,
+            download_name=f'guests_{year}_{month:02d}.csv'
+        )
+
+@app.route('/admin/backup', methods=['GET'])
+@login_required
+@role_required('admin')
+def admin_system_backup():
+    """Create a system backup (DB dump + uploads, no guest photos) as a ZIP download."""
+    import subprocess, tempfile, zipfile, shutil
+    from flask import current_app
+
+    # Prepare temp directory
+    tmpdir = tempfile.mkdtemp()
+    db_dump_path = os.path.join(tmpdir, 'db_backup.sql')
+    uploads_dir = app.config['UPLOAD_FOLDER']
+    backup_zip_path = os.path.join(tmpdir, f'system_backup_{datetime.now().strftime("%Y%m%d_%H%M%S")}.zip')
+
+    # Parse DB URL
+    import re
+    db_url = app.config['SQLALCHEMY_DATABASE_URI']
+    m = re.match(r'postgresql://([^:]+):([^@]+)@([^:/]+)(?::(\d+))?/([^?]+)', db_url)
+    if not m:
+        shutil.rmtree(tmpdir)
+        return 'Invalid database URL', 500
+    db_user, db_pass, db_host, db_port, db_name = m.groups()
+    db_port = db_port or '5432'
+
+    # Run pg_dump
+    env = os.environ.copy()
+    env['PGPASSWORD'] = db_pass
+    try:
+        subprocess.check_call([
+            'pg_dump',
+            '-h', db_host,
+            '-p', db_port,
+            '-U', db_user,
+            '-F', 'plain',
+            '-f', db_dump_path,
+            db_name
+        ], env=env)
+    except Exception as e:
+        shutil.rmtree(tmpdir)
+        return f'Error running pg_dump: {e}', 500
+
+    # Prepare uploads (excluding guest document photos)
+    uploads_tmp = os.path.join(tmpdir, 'uploads')
+    os.makedirs(uploads_tmp, exist_ok=True)
+    for fname in os.listdir(uploads_dir):
+        # Exclude files that look like guest document images (by convention: uuid_*.jpg/png)
+        if re.match(r'[0-9a-fA-F\-]{36}_', fname):
+            continue
+        src = os.path.join(uploads_dir, fname)
+        dst = os.path.join(uploads_tmp, fname)
+        if os.path.isfile(src):
+            shutil.copy2(src, dst)
+        elif os.path.isdir(src):
+            shutil.copytree(src, dst)
+
+    # Create ZIP
+    with zipfile.ZipFile(backup_zip_path, 'w', zipfile.ZIP_DEFLATED) as zf:
+        zf.write(db_dump_path, arcname='db_backup.sql')
+        for root, dirs, files in os.walk(uploads_tmp):
+            for file in files:
+                full_path = os.path.join(root, file)
+                rel_path = os.path.relpath(full_path, uploads_tmp)
+                zf.write(full_path, arcname=os.path.join('uploads', rel_path))
+
+    # Serve ZIP
+    with open(backup_zip_path, 'rb') as f:
+        data = f.read()
+    shutil.rmtree(tmpdir)
+    return send_file(
+        BytesIO(data),
+        mimetype='application/zip',
+        as_attachment=True,
+        download_name=os.path.basename(backup_zip_path)
+    )
 
 if __name__ == '__main__':
     with app.app_context():
