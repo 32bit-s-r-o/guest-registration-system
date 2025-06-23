@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-06-23 11:22+0200\n"
+"POT-Creation-Date: 2025-06-23 11:26+0200\n"
 "PO-Revision-Date: 2025-06-23 01:07+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: cs\n"
@@ -288,41 +288,40 @@ msgid "Instant email notifications"
 msgstr "Emailová oznámení"
 
 #: templates/about.html:58
-#, fuzzy
 msgid "Admin dashboard for easy management"
-msgstr "Administrátorská nástěnka"
+msgstr "Administrátorská nástěnka pro snadnou správu"
 
 #: templates/about.html:59
 msgid "Mobile-responsive design"
-msgstr ""
+msgstr "Responzivní design pro mobilní zařízení"
 
 #: templates/about.html:65
 msgid "User Experience"
-msgstr ""
+msgstr "Uživatelská zkušenost"
 
 #: templates/about.html:67
 msgid "Intuitive interface design"
-msgstr ""
+msgstr "Intuitivní návrh rozhraní"
 
 #: templates/about.html:68
 msgid "Clear progress indicators"
-msgstr ""
+msgstr "Jasné indikátory průběhu"
 
 #: templates/about.html:69
 msgid "Helpful validation messages"
-msgstr ""
+msgstr "Užitečné validační zprávy"
 
 #: templates/about.html:70
 msgid "Accessible for all users"
-msgstr ""
+msgstr "Přístupné pro všechny uživatele"
 
 #: templates/about.html:74
 msgid "Flexibility"
-msgstr ""
+msgstr "Flexibilita"
 
 #: templates/about.html:76
 msgid "Customizable trip settings"
-msgstr ""
+msgstr "Přizpůsobitelná nastavení výletů"
 
 #: templates/about.html:77
 msgid "Multiple document types supported"
@@ -330,7 +329,7 @@ msgstr "Vyberte typ dokumentu"
 
 #: templates/about.html:78
 msgid "Scalable for any group size"
-msgstr ""
+msgstr "Škálovatelné pro jakoukoliv velikost skupiny"
 
 #: templates/about.html:79
 msgid "Easy admin management"
@@ -338,7 +337,7 @@ msgstr "Správa dat"
 
 #: templates/about.html:88
 msgid "Our Team"
-msgstr ""
+msgstr "Náš tým"
 
 #: templates/about.html:92
 msgid ""
@@ -516,15 +515,13 @@ msgid "Get in touch with us for any questions about your stay"
 msgstr ""
 
 #: templates/contact.html:27
-#, fuzzy
 msgid "Contact Person"
-msgstr "Kontaktní informace"
+msgstr "Kontaktní osoba"
 
 #: templates/contact.html:34 templates/gdpr.html:39 templates/gdpr.html:45
 #: templates/gdpr.html:263
-#, fuzzy
 msgid "Phone"
-msgstr "Domů"
+msgstr "Telefon"
 
 #: templates/admin/view_invoice.html:56 templates/contact.html:45
 #: templates/gdpr.html:35 templates/gdpr.html:44 templates/gdpr.html:253
@@ -533,7 +530,7 @@ msgstr "Email"
 
 #: templates/admin/settings.html:269 templates/contact.html:56
 msgid "Website"
-msgstr ""
+msgstr "Webové stránky"
 
 #: templates/admin/settings.html:258 templates/admin/view_invoice.html:62
 #: templates/contact.html:68 templates/gdpr.html:32 templates/gdpr.html:43
@@ -541,32 +538,28 @@ msgid "Address"
 msgstr "Adresa"
 
 #: templates/contact.html:80 templates/contact.html:107
-#, fuzzy
 msgid "Send Message"
-msgstr "Datum konce"
+msgstr "Odeslat zprávu"
 
 #: templates/contact.html:85
-#, fuzzy
 msgid "Your Name"
-msgstr "Uživatelské jméno"
+msgstr "Vaše jméno"
 
 #: templates/contact.html:90
-#, fuzzy
 msgid "Your Email"
-msgstr "Email"
+msgstr "Váš email"
 
 #: templates/contact.html:95
 msgid "Subject"
-msgstr ""
+msgstr "Předmět"
 
 #: templates/contact.html:100
 msgid "Message"
-msgstr ""
+msgstr "Zpráva"
 
 #: templates/contact.html:130
-#, fuzzy
 msgid "Contact information not available."
-msgstr "Kontaktní informace"
+msgstr "Kontaktní informace nejsou k dispozici."
 
 #: templates/contact.html:130
 msgid ""
@@ -575,9 +568,8 @@ msgid ""
 msgstr ""
 
 #: templates/contact.html:138
-#, fuzzy
 msgid "Quick Links"
-msgstr "Rychlé akce"
+msgstr "Rychlé odkazy"
 
 #: templates/contact.html:154 templates/register.html:3
 msgid "Register"
@@ -600,7 +592,6 @@ msgid "Important Notice"
 msgstr "Důležité upozornění"
 
 #: templates/gdpr.html:17
-#, fuzzy
 msgid ""
 "This privacy policy explains how we collect, use, and protect your "
 "personal data in accordance\n"
@@ -616,24 +607,20 @@ msgid "Data Controller"
 msgstr "Správce údajů"
 
 #: templates/gdpr.html:27
-#, fuzzy
 msgid "Company"
-msgstr "Jméno klienta"
+msgstr "Společnost"
 
 #: templates/gdpr.html:43
-#, fuzzy
 msgid "Your Company Address"
-msgstr "Jméno klienta"
+msgstr "Adresa vaší společnosti"
 
 #: templates/gdpr.html:44 templates/gdpr.html:188 templates/gdpr.html:258
-#, fuzzy
 msgid "Your Contact Email"
-msgstr "Email"
+msgstr "Váš kontaktní email"
 
 #: templates/gdpr.html:45 templates/gdpr.html:268
-#, fuzzy
 msgid "Your Contact Phone"
-msgstr "Kontaktní informace"
+msgstr "Váš kontaktní telefon"
 
 #: templates/gdpr.html:52
 msgid "Personal Data We Collect"
@@ -668,7 +655,6 @@ msgid "Document Images"
 msgstr "Obrázky dokladů"
 
 #: templates/gdpr.html:60
-#, fuzzy
 msgid ""
 "Photos of identification documents\n"
 "                        (temporarily stored)"
@@ -783,7 +769,6 @@ msgid "Service Providers"
 msgstr "Poskytovatelé služeb"
 
 #: templates/gdpr.html:109
-#, fuzzy
 msgid ""
 "Email services, hosting providers (under\n"
 "                        strict contracts)"
@@ -822,7 +807,6 @@ msgid "Retention periods:"
 msgstr "Doby uchovávání:"
 
 #: templates/gdpr.html:131
-#, fuzzy
 msgid ""
 "Automatically deleted immediately after\n"
 "                        approval"
@@ -833,14 +817,12 @@ msgid "Registration Data"
 msgstr "Údaje o registraci"
 
 #: templates/gdpr.html:133
-#, fuzzy
 msgid ""
 "Retained for 2 years after trip\n"
 "                        completion"
 msgstr "Uchováváno 2 roky po skončení výletu"
 
 #: templates/gdpr.html:135
-#, fuzzy
 msgid ""
 "Retained for 2 years for communication\n"
 "                        purposes"
@@ -1045,7 +1027,6 @@ msgid "Data Protection Officer"
 msgstr "Pověřenec pro ochranu osobních údajů"
 
 #: templates/gdpr.html:277
-#, fuzzy
 msgid ""
 "For complex data protection inquiries, you may also contact our Data "
 "Protection Officer at\n"
@@ -1265,7 +1246,6 @@ msgid "Select age category"
 msgstr "Vyberte věkovou kategorii"
 
 #: templates/register.html:143
-#, fuzzy
 msgid "Adult"
 msgstr "Dospělý"
 
@@ -1720,12 +1700,10 @@ msgid "Create Invoice"
 msgstr "Vytvořit fakturu"
 
 #: templates/admin/settings.html:3 templates/admin/settings.html:9
-#, fuzzy
 msgid "Admin Settings"
 msgstr "Nastavení"
 
 #: templates/admin/settings.html:23
-#, fuzzy
 msgid "Profile Settings"
 msgstr "Nastavení"
 
@@ -1734,7 +1712,6 @@ msgid "Username cannot be changed"
 msgstr ""
 
 #: templates/admin/settings.html:47
-#, fuzzy
 msgid "New Password"
 msgstr "Heslo"
 
@@ -1751,12 +1728,10 @@ msgid "Must match new password"
 msgstr ""
 
 #: templates/admin/settings.html:63
-#, fuzzy
 msgid "Account Created"
 msgstr "Vytvořeno"
 
 #: templates/admin/settings.html:73
-#, fuzzy
 msgid "Airbnb Calendar Integration"
 msgstr "Airbnb potvrzovací kód"
 
@@ -1772,7 +1747,6 @@ msgid ""
 msgstr ""
 
 #: templates/admin/settings.html:85
-#, fuzzy
 msgid "Airbnb Listing ID"
 msgstr "Airbnb potvrzovací kód"
 
@@ -1813,12 +1787,10 @@ msgid "Copy the iCal URL"
 msgstr ""
 
 #: templates/admin/settings.html:125
-#, fuzzy
 msgid "Last Sync"
 msgstr "Příjmení"
 
 #: templates/admin/settings.html:133 templates/admin/settings.html:188
-#, fuzzy
 msgid "Important"
 msgstr "Důležité informace"
 
@@ -1833,7 +1805,6 @@ msgid "Photo Upload Configuration"
 msgstr "Konfigurace nahrávání fotografií"
 
 #: templates/admin/settings.html:147
-#, fuzzy
 msgid "Photo Upload Settings"
 msgstr "Nastavení nahrávání fotografií"
 
@@ -1884,7 +1855,6 @@ msgstr ""
 "                                    identifikačního dokumentu"
 
 #: templates/admin/settings.html:188
-#, fuzzy
 msgid ""
 "Document photos are automatically deleted after\n"
 "                        registration approval for GDPR compliance."
@@ -1900,7 +1870,6 @@ msgid ""
 msgstr ""
 
 #: templates/admin/settings.html:209
-#, fuzzy
 msgid "Company Name"
 msgstr "Jméno klienta"
 
@@ -1909,7 +1878,6 @@ msgid "The company or organization name shown on public pages"
 msgstr ""
 
 #: templates/admin/settings.html:219
-#, fuzzy
 msgid "Contact Name"
 msgstr "Kontakt"
 
@@ -1922,17 +1890,14 @@ msgid "Company ICO"
 msgstr ""
 
 #: templates/admin/settings.html:233
-#, fuzzy
 msgid "Company identification number (optional)"
 msgstr "DIČ (volitelné)"
 
 #: templates/admin/settings.html:241
-#, fuzzy
 msgid "VAT identification number (optional)"
 msgstr "DIČ (volitelné)"
 
 #: templates/admin/settings.html:249
-#, fuzzy
 msgid "Phone Number"
 msgstr "Číslo faktury"
 
@@ -1941,7 +1906,6 @@ msgid "Contact phone number for guests"
 msgstr ""
 
 #: templates/admin/settings.html:260
-#, fuzzy
 msgid "Enter your full address"
 msgstr "Zadejte fakturační adresu"
 
@@ -1950,7 +1914,6 @@ msgid "Your business or property address"
 msgstr ""
 
 #: templates/admin/settings.html:273
-#, fuzzy
 msgid "Your website URL (optional)"
 msgstr "DIČ (volitelné)"
 
@@ -1973,13 +1936,11 @@ msgid ""
 msgstr ""
 
 #: templates/admin/settings.html:297
-#, fuzzy
 msgid "Custom Line 1"
 msgstr "Další řádky"
 
 #: templates/admin/settings.html:300 templates/admin/settings.html:309
 #: templates/admin/settings.html:318
-#, fuzzy
 msgid "Custom information"
 msgstr "Další informace"
 
@@ -2074,12 +2035,10 @@ msgid "Guest names (when available)"
 msgstr ""
 
 #: templates/admin/settings.html:356
-#, fuzzy
 msgid "Number of guests"
 msgstr "Maximální počet hostů"
 
 #: templates/admin/settings.html:357
-#, fuzzy
 msgid "Reservation status"
 msgstr "Stav rezervace"
 
@@ -2088,12 +2047,10 @@ msgid "What Doesn't Get Synced"
 msgstr ""
 
 #: templates/admin/settings.html:362
-#, fuzzy
 msgid "Guest contact information (for privacy)"
 msgstr "Kontaktní informace"
 
 #: templates/admin/settings.html:363
-#, fuzzy
 msgid "Payment information"
 msgstr "Informace o klientovi"
 
@@ -2106,7 +2063,6 @@ msgid "House rules and policies"
 msgstr ""
 
 #: templates/admin/settings.html:373
-#, fuzzy
 msgid "Save Settings"
 msgstr "Nastavení"
 
