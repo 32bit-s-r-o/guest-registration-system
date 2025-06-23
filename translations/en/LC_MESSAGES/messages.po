@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-06-23 02:14+0200\n"
+"POT-Creation-Date: 2025-06-23 02:38+0200\n"
 "PO-Revision-Date: 2025-06-23 01:07+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -1765,7 +1765,9 @@ msgid "Custom Lines"
 msgstr ""
 
 #: templates/admin/settings.html:235
-msgid "Additional information fields for future use. These are not displayed on public pages yet."
+msgid ""
+"Additional information fields for future use.\n"
+"                        These are not displayed on public pages yet."
 msgstr ""
 
 #: templates/admin/settings.html:242
@@ -1795,7 +1797,10 @@ msgid "Usage"
 msgstr ""
 
 #: templates/admin/settings.html:271
-msgid "This contact information can be used to create contact pages, display in guest communications, or integrate with other parts of your website."
+msgid ""
+"This contact information can be used to create contact\n"
+"                        pages, display in guest communications, or "
+"integrate with other parts of your website."
 msgstr ""
 
 #: templates/admin/settings.html:280
@@ -1811,7 +1816,9 @@ msgid "Automatic Import"
 msgstr ""
 
 #: templates/admin/settings.html:285
-msgid "When enabled, the system will fetch your Airbnb calendar regularly"
+msgid ""
+"When enabled, the system will fetch your\n"
+"                            Airbnb calendar regularly"
 msgstr ""
 
 #: templates/admin/settings.html:287
@@ -1819,11 +1826,15 @@ msgid "Reservation Detection"
 msgstr ""
 
 #: templates/admin/settings.html:287
-msgid "New reservations are automatically converted to registration forms"
+msgid ""
+"New reservations are automatically\n"
+"                            converted to registration forms"
 msgstr ""
 
 #: templates/admin/settings.html:289
-msgid "Guest names and counts are extracted from calendar events"
+msgid ""
+"Guest names and counts are extracted\n"
+"                            from calendar events"
 msgstr ""
 
 #: templates/admin/settings.html:291
@@ -1831,7 +1842,9 @@ msgid "Updates"
 msgstr ""
 
 #: templates/admin/settings.html:291
-msgid "Changes to reservations (dates, guest count) are automatically reflected"
+msgid ""
+"Changes to reservations (dates, guest count) are\n"
+"                            automatically reflected"
 msgstr ""
 
 #: templates/admin/settings.html:293
@@ -1839,7 +1852,9 @@ msgid "Manual Sync"
 msgstr ""
 
 #: templates/admin/settings.html:293
-msgid "You can also trigger manual sync from the trips page"
+msgid ""
+"You can also trigger manual sync from the\n"
+"                            trips page"
 msgstr ""
 
 #: templates/admin/settings.html:297
@@ -1945,4 +1960,34 @@ msgstr ""
 #: templates/admin/view_invoice.html:250 templates/admin/view_invoice.html:255
 msgid "Error updating status"
 msgstr ""
+
+#~ msgid ""
+#~ "Additional information fields for future "
+#~ "use. These are not displayed on "
+#~ "public pages yet."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "This contact information can be used "
+#~ "to create contact pages, display in "
+#~ "guest communications, or integrate with "
+#~ "other parts of your website."
+#~ msgstr ""
+
+#~ msgid "When enabled, the system will fetch your Airbnb calendar regularly"
+#~ msgstr ""
+
+#~ msgid "New reservations are automatically converted to registration forms"
+#~ msgstr ""
+
+#~ msgid "Guest names and counts are extracted from calendar events"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Changes to reservations (dates, guest "
+#~ "count) are automatically reflected"
+#~ msgstr ""
+
+#~ msgid "You can also trigger manual sync from the trips page"
+#~ msgstr ""
 

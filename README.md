@@ -12,6 +12,8 @@ A secure, GDPR-compliant guest registration system built with Flask and PostgreS
 - Admin dashboard with statistics and management tools
 - **Data management tools for reset and seeding**
 - **Contact information management for guest communications**
+- **Multi-language Support**: English and Czech translations with language picker
+- **Language Picker Control**: Option to disable language picker and force English
 
 ### For Guests
 - Simple registration form with document upload
@@ -100,6 +102,9 @@ MAIL_SERVER=smtp.gmail.com
 MAIL_PORT=587
 MAIL_USERNAME=your-email@gmail.com
 MAIL_PASSWORD=your-app-password
+
+# Language Picker Configuration
+LANGUAGE_PICKER_ENABLED=true
 ```
 
 ### 4. Initialize the Application
@@ -465,6 +470,7 @@ This will show:
 | `MAIL_PORT` | SMTP port | No | 587 |
 | `MAIL_USERNAME` | Email username | Yes | - |
 | `MAIL_PASSWORD` | Email password/app password | Yes | - |
+| `LANGUAGE_PICKER_ENABLED` | Enable language picker | No | true |
 
 ### File Upload Settings
 
@@ -602,3 +608,20 @@ For support and questions:
 - Secure file upload and handling
 - Mobile-responsive design
 - Comprehensive documentation 
+
+## Translation System
+
+The app supports multiple languages using Flask-Babel:
+
+- **English** (default)
+- **Czech** (Čeština)
+
+### Managing Translations
+
+1. Extract translation strings: `python extract_translations.py`
+2. Edit translation files in `translations/[lang]/LC_MESSAGES/messages.po`
+3. Compile translations: `python extract_translations.py --compile`
+
+### Language Picker
+
+The language picker allows users to switch between available languages. When disabled, the app automatically uses English and hides the language selection interface. 

@@ -51,6 +51,7 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
+                    {% if language_picker_enabled %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="langDropdown" role="button"
                             data-bs-toggle="dropdown" aria-expanded="false">
@@ -63,6 +64,7 @@
                                     Čeština</a></li>
                         </ul>
                     </li>
+                    {% endif %}
                 </ul>
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-06-23 02:14+0200\n"
+"POT-Creation-Date: 2025-06-23 02:38+0200\n"
 "PO-Revision-Date: 2025-06-23 01:07+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: cs\n"
@@ -279,7 +279,6 @@ msgid "Streamlined registration process"
 msgstr "Přezkoumat registrace"
 
 #: templates/about.html:57
-#, fuzzy
 msgid "Instant email notifications"
 msgstr "Emailová oznámení"
 
@@ -321,7 +320,6 @@ msgid "Customizable trip settings"
 msgstr ""
 
 #: templates/about.html:77
-#, fuzzy
 msgid "Multiple document types supported"
 msgstr "Vyberte typ dokumentu"
 
@@ -330,7 +328,6 @@ msgid "Scalable for any group size"
 msgstr ""
 
 #: templates/about.html:79
-#, fuzzy
 msgid "Easy admin management"
 msgstr "Správa dat"
 
@@ -354,7 +351,6 @@ msgid ""
 msgstr ""
 
 #: templates/about.html:104 templates/contact.html:3 templates/gdpr.html:311
-#, fuzzy
 msgid "Contact Us"
 msgstr "Kontakt"
 
@@ -1876,12 +1872,15 @@ msgid "Custom Lines"
 msgstr "Další řádky"
 
 #: templates/admin/settings.html:235
-msgid "Additional information fields for future use. These are not displayed on public pages yet."
+msgid ""
+"Additional information fields for future use.\n"
+"                        These are not displayed on public pages yet."
 msgstr ""
 
 #: templates/admin/settings.html:242
-msgid "Další řádek 1"
-msgstr ""
+#, fuzzy
+msgid "Custom Line 1"
+msgstr "Další řádky"
 
 #: templates/admin/settings.html:245 templates/admin/settings.html:254
 #: templates/admin/settings.html:263
@@ -1907,7 +1906,10 @@ msgid "Usage"
 msgstr ""
 
 #: templates/admin/settings.html:271
-msgid "This contact information can be used to create contact pages, display in guest communications, or integrate with other parts of your website."
+msgid ""
+"This contact information can be used to create contact\n"
+"                        pages, display in guest communications, or "
+"integrate with other parts of your website."
 msgstr ""
 
 #: templates/admin/settings.html:280
@@ -1924,7 +1926,8 @@ msgstr ""
 
 #: templates/admin/settings.html:285
 msgid ""
-"When enabled, the system will fetch your Airbnb calendar regularly"
+"When enabled, the system will fetch your\n"
+"                            Airbnb calendar regularly"
 msgstr ""
 
 #: templates/admin/settings.html:287
@@ -1933,11 +1936,14 @@ msgstr ""
 
 #: templates/admin/settings.html:287
 msgid ""
-"New reservations are automatically converted to registration forms"
+"New reservations are automatically\n"
+"                            converted to registration forms"
 msgstr ""
 
 #: templates/admin/settings.html:289
-msgid "Guest names and counts are extracted from calendar events"
+msgid ""
+"Guest names and counts are extracted\n"
+"                            from calendar events"
 msgstr ""
 
 #: templates/admin/settings.html:291
@@ -1946,7 +1952,8 @@ msgstr "Aktualizovat"
 
 #: templates/admin/settings.html:291
 msgid ""
-"Changes to reservations (dates, guest count) are automatically reflected"
+"Changes to reservations (dates, guest count) are\n"
+"                            automatically reflected"
 msgstr ""
 
 #: templates/admin/settings.html:293
@@ -1954,7 +1961,9 @@ msgid "Manual Sync"
 msgstr ""
 
 #: templates/admin/settings.html:293
-msgid "You can also trigger manual sync from the trips page"
+msgid ""
+"You can also trigger manual sync from the\n"
+"                            trips page"
 msgstr ""
 
 #: templates/admin/settings.html:297
@@ -2065,4 +2074,69 @@ msgstr "Počet položek"
 #: templates/admin/view_invoice.html:250 templates/admin/view_invoice.html:255
 msgid "Error updating status"
 msgstr "Chyba při aktualizaci stavu"
+
+#~ msgid ""
+#~ "We provide secure, GDPR-compliant guest"
+#~ " registration systems that protect personal"
+#~ "\n"
+#~ " data while streamlining the "
+#~ "registration process for trip organizers "
+#~ "and guests alike."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "To become the leading platform for "
+#~ "secure guest registration, ensuring privacy"
+#~ " and compliance while providing an "
+#~ "excellent user experience for all "
+#~ "parties involved."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Our team consists of experienced "
+#~ "developers, security experts, and travel "
+#~ "industry professionals who understand the "
+#~ "unique challenges of guest registration "
+#~ "and data protection."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "We are committed to continuous "
+#~ "improvement and regularly update our "
+#~ "systems to meet the latest security "
+#~ "standards and regulatory requirements."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Additional information fields for future "
+#~ "use. These are not displayed on "
+#~ "public pages yet."
+#~ msgstr ""
+
+#~ msgid "Další řádek 1"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "This contact information can be used "
+#~ "to create contact pages, display in "
+#~ "guest communications, or integrate with "
+#~ "other parts of your website."
+#~ msgstr ""
+
+#~ msgid "When enabled, the system will fetch your Airbnb calendar regularly"
+#~ msgstr ""
+
+#~ msgid "New reservations are automatically converted to registration forms"
+#~ msgstr ""
+
+#~ msgid "Guest names and counts are extracted from calendar events"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Changes to reservations (dates, guest "
+#~ "count) are automatically reflected"
+#~ msgstr ""
+
+#~ msgid "You can also trigger manual sync from the trips page"
+#~ msgstr ""
 

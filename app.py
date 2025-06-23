@@ -47,7 +47,14 @@ app.config['BABEL_DEFAULT_LOCALE'] = 'en'
 app.config['BABEL_SUPPORTED_LOCALES'] = ['en', 'cs']
 app.config['BABEL_TRANSLATION_DIRECTORIES'] = 'translations'
 
+# Language picker configuration
+app.config['LANGUAGE_PICKER_ENABLED'] = os.getenv('LANGUAGE_PICKER_ENABLED', 'true').lower() == 'true'
+
 def get_locale():
+    # If language picker is disabled, always return English
+    if not app.config['LANGUAGE_PICKER_ENABLED']:
+        return 'en'
+    
     # Try to get language from session, then from request, fallback to default
     from flask import session, request
     lang = session.get('lang')
@@ -60,7 +67,10 @@ babel = Babel(app, locale_selector=get_locale)
 # Make get_locale available in templates
 @app.context_processor
 def inject_get_locale():
-    return dict(get_locale=get_locale)
+    return dict(
+        get_locale=get_locale,
+        language_picker_enabled=app.config['LANGUAGE_PICKER_ENABLED']
+    )
 
 db = SQLAlchemy(app)
 mail = Mail(app)
@@ -1725,6 +1735,10 @@ def send_rejection_email(registration):
 
 @app.route('/set_language/<lang_code>')
 def set_language(lang_code):
+    # If language picker is disabled, redirect back without changing language
+    if not app.config['LANGUAGE_PICKER_ENABLED']:
+        return redirect(request.referrer or url_for('index'))
+    
     if lang_code in app.config['BABEL_SUPPORTED_LOCALES']:
         session['lang'] = lang_code
     return redirect(request.referrer or url_for('index'))
