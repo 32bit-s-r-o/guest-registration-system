@@ -364,6 +364,7 @@ class SystemManager:
             print("  clean                      - Clean Docker resources")
             print("  push [tag]                 - Push image to registry")
             print("  multi-build [platforms]    - Build for multiple platforms")
+            print("  all-platforms [tag] [push] - Build for ALL processor architectures")
             return True
         
         operation = args[0]
@@ -384,6 +385,8 @@ class SystemManager:
             return self._docker_push(args[1:] if len(args) > 1 else [])
         elif operation == 'multi-build':
             return self._docker_multi_build(args[1:] if len(args) > 1 else [])
+        elif operation == 'all-platforms':
+            return self._docker_all_platforms(args[1:] if len(args) > 1 else [])
         else:
             print(f"❌ Unknown Docker operation: {operation}")
             return False
@@ -593,6 +596,48 @@ class SystemManager:
             self.log_action("ERROR", f"Failed to push Docker image: {e}")
             return False
 
+    def _docker_all_platforms(self, args):
+        """Build Docker image for ALL supported platforms"""
+        tag = args[0] if args else 'guest-registration:latest'
+        push = args[1] if len(args) > 1 else 'false'
+        
+        print(f"🌍 Building Docker image for ALL processor architectures")
+        print(f"Tag: {tag}")
+        print(f"Push to registry: {push}")
+        
+        try:
+            # Use the dedicated script for all platforms
+            script_path = self.project_root / 'scripts' / 'build_all_platforms.sh'
+            if not script_path.exists():
+                self.log_action("ERROR", f"Script not found: build_all_platforms.sh")
+                return False
+            
+            cmd = [str(script_path), tag, push]
+            
+            self.log_action("RUNNING", f"build_all_platforms.sh {tag} {push}")
+            
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=1800)  # 30 minutes timeout
+            
+            if result.returncode == 0:
+                self.log_action("SUCCESS", f"All-platform Docker build completed successfully")
+                if result.stdout.strip():
+                    print(result.stdout)
+                return True
+            else:
+                self.log_action("FAILED", f"All-platform Docker build failed")
+                if result.stderr.strip():
+                    print("STDERR:", result.stderr)
+                if result.stdout.strip():
+                    print("STDOUT:", result.stdout)
+                return False
+                
+        except subprocess.TimeoutExpired:
+            self.log_action("TIMEOUT", f"All-platform Docker build timed out after 30 minutes")
+            return False
+        except Exception as e:
+            self.log_action("ERROR", f"All-platform Docker build failed with exception: {e}")
+            return False
+
 def main():
     """Main function with argument parsing"""
     parser = argparse.ArgumentParser(
@@ -612,6 +657,7 @@ Examples:
   python manage.py docker                  # List Docker operations
   python manage.py docker build            # Build Docker image
   python manage.py docker multi-build      # Build for multiple platforms
+  python manage.py docker all-platforms    # Build for ALL processor architectures
   python manage.py docker up               # Start Docker Compose services
   python manage.py docker down             # Stop Docker Compose services
   python manage.py docker status           # Show Docker service status

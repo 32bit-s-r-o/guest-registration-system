@@ -23,6 +23,11 @@ The Docker setup supports multiple platforms:
 - `linux/amd64` - Intel/AMD x86_64 architecture (traditional servers, desktops)
 - `linux/arm64` - ARM 64-bit (Apple Silicon, ARM servers)
 - `linux/arm/v7` - ARM 32-bit (Raspberry Pi, ARM devices)
+- `linux/arm/v6` - ARM 32-bit (older Raspberry Pi)
+- `linux/386` - x86 32-bit (Intel/AMD 32-bit)
+- `linux/ppc64le` - PowerPC 64-bit little-endian
+- `linux/s390x` - IBM S390x (mainframe)
+- `linux/riscv64` - RISC-V 64-bit
 
 **Note**: `linux/amd64` is the same as x86_64 architecture and is the default platform.
 
@@ -75,6 +80,10 @@ python manage.py docker build linux/arm64 guest-registration:v1.8.0
 # Multi-platform build (includes x86_64)
 python manage.py docker multi-build linux/amd64,linux/arm64
 
+# Build for ALL processor architectures
+python manage.py docker all-platforms guest-registration:v1.8.0
+python manage.py docker all-platforms guest-registration:v1.8.0 true  # Push to registry
+
 # Start services
 python manage.py docker up
 
@@ -105,6 +114,9 @@ docker buildx build --platform linux/arm64 --tag guest-registration:latest .
 
 # Multi-platform build (includes x86_64)
 docker buildx build --platform linux/amd64,linux/arm64 --tag guest-registration:latest .
+
+# Build for ALL platforms
+docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6,linux/386,linux/ppc64le,linux/s390x,linux/riscv64 --tag guest-registration:latest .
 
 # Start services
 docker-compose up -d
@@ -147,7 +159,7 @@ FROM --platform=$TARGETPLATFORM python:3.11-slim
 
 ### Features
 
-- **Multi-platform support** with buildx (x86_64, ARM64, ARMv7)
+- **Multi-platform support** with buildx (x86_64, ARM64, ARMv7, ARMv6, x86_32, PowerPC, S390x, RISC-V)
 - **Non-root user** for security
 - **Health checks** for monitoring
 - **Optimized layers** for faster builds
@@ -171,9 +183,14 @@ services:
 app:
   build:
     platforms:
-      - linux/amd64  # x86_64 architecture (default)
-      - linux/arm64  # ARM 64-bit
-      - linux/arm/v7 # ARM 32-bit
+      - linux/amd64   # x86_64 architecture (default)
+      - linux/arm64   # ARM 64-bit
+      - linux/arm/v7  # ARM 32-bit
+      - linux/arm/v6  # ARM 32-bit (older)
+      - linux/386     # x86 32-bit
+      - linux/ppc64le # PowerPC 64-bit
+      - linux/s390x   # IBM S390x
+      - linux/riscv64 # RISC-V 64-bit
 ```
 
 ### Key Features
@@ -436,6 +453,11 @@ docker run --rm -v guest_registration_postgres_data:/data -v $(pwd):/backup alpi
 - **linux/amd64** - Intel/AMD x86_64 architecture (traditional servers, desktops)
 - **linux/arm64** - ARM 64-bit (Apple Silicon, ARM servers)
 - **linux/arm/v7** - ARM 32-bit (Raspberry Pi, ARM devices)
+- **linux/arm/v6** - ARM 32-bit (older Raspberry Pi)
+- **linux/386** - x86 32-bit (Intel/AMD 32-bit)
+- **linux/ppc64le** - PowerPC 64-bit little-endian
+- **linux/s390x** - IBM S390x (mainframe)
+- **linux/riscv64** - RISC-V 64-bit
 
 ### Platform-Specific Builds
 
@@ -445,6 +467,9 @@ python manage.py docker build linux/amd64 guest-registration:x86_64
 
 # Build for ARM64
 python manage.py docker build linux/arm64 guest-registration:arm64
+
+# Build for ALL platforms
+python manage.py docker all-platforms guest-registration:universal
 
 # Build for multiple platforms (includes x86_64)
 python manage.py docker multi-build linux/amd64,linux/arm64,linux/arm/v7

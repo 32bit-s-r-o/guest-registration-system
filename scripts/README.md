@@ -63,6 +63,28 @@ This directory contains utility scripts for managing the Guest Registration Syst
 - Platform verification
 - Colored output and status
 
+#### `build_all_platforms.sh`
+**Purpose**: Build Docker images for ALL supported processor architectures.
+
+**Usage**:
+```bash
+./scripts/build_all_platforms.sh [tag] [push_to_registry]
+```
+
+**Example**:
+```bash
+./scripts/build_all_platforms.sh guest-registration:universal
+./scripts/build_all_platforms.sh guest-registration:universal true  # Push to registry
+```
+
+**Features**:
+- All processor architectures (x86_64, ARM64, ARMv7, ARMv6, x86_32, PowerPC, S390x, RISC-V)
+- Automatic multi-platform builder setup
+- Registry push support
+- Platform-specific descriptions
+- Comprehensive build reporting
+- Colored output and status
+
 ## Script Requirements
 
 All scripts require:
@@ -107,6 +129,21 @@ git push origin v1.9.0
 docker run -p 8000:8000 guest-registration:x86_64
 ```
 
+### Build for ALL Processor Architectures
+```bash
+# Build for all platforms with default tag
+./scripts/build_all_platforms.sh
+
+# Build for all platforms with custom tag
+./scripts/build_all_platforms.sh my-registry.com/guest-registration:universal-v1.8.0
+
+# Build and push to registry
+./scripts/build_all_platforms.sh my-registry.com/guest-registration:universal-v1.8.0 true
+
+# Run specific platform
+docker run --platform linux/arm64 -p 8000:8000 guest-registration:universal
+```
+
 ### Tag Management Commands
 ```bash
 # List all tags
@@ -128,7 +165,7 @@ These scripts integrate with the release process:
 
 1. **Prepare Release**: Update version, documentation, and changelog
 2. **Create Tag**: Use `tag_release.sh` to create the version tag
-3. **Build Docker**: Use `build_x86_64.sh` to build platform-specific images
+3. **Build Docker**: Use `build_x86_64.sh` or `build_all_platforms.sh` for platform-specific images
 4. **Push Tag**: Push the tag to the remote repository
 5. **Create GitHub Release**: Use the tag to create a GitHub release
 
@@ -158,6 +195,7 @@ When adding new scripts:
    ```bash
    chmod +x scripts/tag_release.sh
    chmod +x scripts/build_x86_64.sh
+   chmod +x scripts/build_all_platforms.sh
    ```
 
 2. **Wrong Directory**
@@ -176,6 +214,15 @@ When adding new scripts:
    ```bash
    # Enable buildx
    docker buildx create --use
+   ```
+
+5. **Multi-Platform Build Fails**
+   ```bash
+   # Create multi-platform builder
+   docker buildx create --name multi-platform-builder --use --driver docker-container
+   
+   # Bootstrap builder
+   docker buildx inspect --bootstrap
    ```
 
 ### Getting Help

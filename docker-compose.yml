@@ -47,9 +47,14 @@ services:
       context: .
       dockerfile: Dockerfile
       platforms:
-        - linux/amd64  # x86_64 architecture
-        - linux/arm64  # ARM 64-bit (Apple Silicon, ARM servers)
-        - linux/arm/v7 # ARM 32-bit (Raspberry Pi, ARM devices)
+        - linux/amd64   # x86_64 architecture (Intel/AMD 64-bit)
+        - linux/arm64   # ARM 64-bit (Apple Silicon, ARM servers)
+        - linux/arm/v7  # ARM 32-bit (Raspberry Pi, ARM devices)
+        - linux/arm/v6  # ARM 32-bit (older Raspberry Pi)
+        - linux/386     # x86 32-bit (Intel/AMD 32-bit)
+        - linux/ppc64le # PowerPC 64-bit little-endian
+        - linux/s390x   # IBM S390x (mainframe)
+        - linux/riscv64 # RISC-V 64-bit
     container_name: guest_registration_app
     environment:
       - FLASK_APP=app.py
