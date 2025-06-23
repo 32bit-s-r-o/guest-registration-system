@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Universal Management Script for Guest Registration System
-Handles tests, migrations, seeds, backups, and system operations
+Handles tests, migrations, seeds, backups, Docker operations, and system operations
 """
 
 import os
@@ -58,6 +58,7 @@ class SystemManager:
             'status': self.show_status,
             'clean': self.cleanup,
             'setup': self.setup_system,
+            'docker': self.docker_operations,
             'all': self.run_all
         }
     
@@ -348,6 +349,250 @@ class SystemManager:
         print(f"\nOverall Success: {success_count}/{total_count}")
         return success_count == total_count
 
+    def docker_operations(self, args=None):
+        """Handle Docker operations"""
+        print("🐳 Docker Operations")
+        print("=" * 50)
+        
+        if not args:
+            print("Available Docker operations:")
+            print("  build [platform] [tag]     - Build Docker image")
+            print("  up [service]               - Start Docker Compose services")
+            print("  down                       - Stop Docker Compose services")
+            print("  logs [service]             - Show Docker logs")
+            print("  status                     - Show Docker service status")
+            print("  clean                      - Clean Docker resources")
+            print("  push [tag]                 - Push image to registry")
+            print("  multi-build [platforms]    - Build for multiple platforms")
+            return True
+        
+        operation = args[0]
+        
+        if operation == 'build':
+            return self._docker_build(args[1:] if len(args) > 1 else [])
+        elif operation == 'up':
+            return self._docker_up(args[1:] if len(args) > 1 else [])
+        elif operation == 'down':
+            return self._docker_down()
+        elif operation == 'logs':
+            return self._docker_logs(args[1:] if len(args) > 1 else [])
+        elif operation == 'status':
+            return self._docker_status()
+        elif operation == 'clean':
+            return self._docker_clean()
+        elif operation == 'push':
+            return self._docker_push(args[1:] if len(args) > 1 else [])
+        elif operation == 'multi-build':
+            return self._docker_multi_build(args[1:] if len(args) > 1 else [])
+        else:
+            print(f"❌ Unknown Docker operation: {operation}")
+            return False
+
+    def _docker_build(self, args):
+        """Build Docker image"""
+        platform = args[0] if args else 'linux/amd64'
+        tag = args[1] if len(args) > 1 else 'guest-registration:latest'
+        
+        print(f"🔨 Building Docker image for {platform} with tag {tag}")
+        
+        try:
+            cmd = [
+                'docker', 'buildx', 'build',
+                '--platform', platform,
+                '--tag', tag,
+                '--file', 'Dockerfile',
+                '.'
+            ]
+            
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            
+            if result.returncode == 0:
+                self.log_action("SUCCESS", f"Docker image built successfully: {tag}")
+                print(result.stdout)
+                return True
+            else:
+                self.log_action("FAILED", f"Docker build failed")
+                print("STDERR:", result.stderr)
+                return False
+                
+        except Exception as e:
+            self.log_action("ERROR", f"Docker build failed: {e}")
+            return False
+
+    def _docker_multi_build(self, args):
+        """Build Docker image for multiple platforms"""
+        platforms = args if args else ['linux/amd64', 'linux/arm64', 'linux/arm/v7']
+        tag = 'guest-registration:latest'
+        
+        print(f"🔨 Building multi-platform Docker image: {', '.join(platforms)}")
+        
+        try:
+            # Create builder if it doesn't exist
+            subprocess.run(['docker', 'buildx', 'create', '--name', 'multi-builder', '--use'], 
+                         capture_output=True)
+            
+            # Build for multiple platforms
+            platform_arg = ','.join(platforms)
+            cmd = [
+                'docker', 'buildx', 'build',
+                '--platform', platform_arg,
+                '--tag', tag,
+                '--file', 'Dockerfile',
+                '--push',  # Push to registry if available
+                '.'
+            ]
+            
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            
+            if result.returncode == 0:
+                self.log_action("SUCCESS", f"Multi-platform Docker image built successfully: {tag}")
+                print(result.stdout)
+                return True
+            else:
+                self.log_action("FAILED", f"Multi-platform Docker build failed")
+                print("STDERR:", result.stderr)
+                return False
+                
+        except Exception as e:
+            self.log_action("ERROR", f"Multi-platform Docker build failed: {e}")
+            return False
+
+    def _docker_up(self, args):
+        """Start Docker Compose services"""
+        service = args[0] if args else None
+        
+        print("🚀 Starting Docker Compose services")
+        
+        try:
+            cmd = ['docker-compose', 'up', '-d']
+            if service:
+                cmd.append(service)
+            
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            
+            if result.returncode == 0:
+                self.log_action("SUCCESS", "Docker Compose services started")
+                print(result.stdout)
+                return True
+            else:
+                self.log_action("FAILED", "Failed to start Docker Compose services")
+                print("STDERR:", result.stderr)
+                return False
+                
+        except Exception as e:
+            self.log_action("ERROR", f"Failed to start Docker services: {e}")
+            return False
+
+    def _docker_down(self):
+        """Stop Docker Compose services"""
+        print("🛑 Stopping Docker Compose services")
+        
+        try:
+            result = subprocess.run(['docker-compose', 'down'], capture_output=True, text=True)
+            
+            if result.returncode == 0:
+                self.log_action("SUCCESS", "Docker Compose services stopped")
+                print(result.stdout)
+                return True
+            else:
+                self.log_action("FAILED", "Failed to stop Docker Compose services")
+                print("STDERR:", result.stderr)
+                return False
+                
+        except Exception as e:
+            self.log_action("ERROR", f"Failed to stop Docker services: {e}")
+            return False
+
+    def _docker_logs(self, args):
+        """Show Docker logs"""
+        service = args[0] if args else None
+        
+        print("📋 Showing Docker logs")
+        
+        try:
+            cmd = ['docker-compose', 'logs', '-f']
+            if service:
+                cmd.append(service)
+            
+            # Run without capture to show real-time logs
+            result = subprocess.run(cmd)
+            
+            if result.returncode == 0:
+                return True
+            else:
+                self.log_action("FAILED", "Failed to show Docker logs")
+                return False
+                
+        except Exception as e:
+            self.log_action("ERROR", f"Failed to show Docker logs: {e}")
+            return False
+
+    def _docker_status(self):
+        """Show Docker service status"""
+        print("📊 Docker Service Status")
+        
+        try:
+            result = subprocess.run(['docker-compose', 'ps'], capture_output=True, text=True)
+            
+            if result.returncode == 0:
+                print(result.stdout)
+                return True
+            else:
+                self.log_action("FAILED", "Failed to get Docker service status")
+                print("STDERR:", result.stderr)
+                return False
+                
+        except Exception as e:
+            self.log_action("ERROR", f"Failed to get Docker status: {e}")
+            return False
+
+    def _docker_clean(self):
+        """Clean Docker resources"""
+        print("🧹 Cleaning Docker resources")
+        
+        try:
+            # Stop and remove containers
+            subprocess.run(['docker-compose', 'down', '--volumes', '--remove-orphans'], 
+                         capture_output=True)
+            
+            # Remove unused images
+            subprocess.run(['docker', 'image', 'prune', '-f'], capture_output=True)
+            
+            # Remove unused volumes
+            subprocess.run(['docker', 'volume', 'prune', '-f'], capture_output=True)
+            
+            # Remove unused networks
+            subprocess.run(['docker', 'network', 'prune', '-f'], capture_output=True)
+            
+            self.log_action("SUCCESS", "Docker resources cleaned")
+            return True
+            
+        except Exception as e:
+            self.log_action("ERROR", f"Failed to clean Docker resources: {e}")
+            return False
+
+    def _docker_push(self, args):
+        """Push Docker image to registry"""
+        tag = args[0] if args else 'guest-registration:latest'
+        
+        print(f"📤 Pushing Docker image: {tag}")
+        
+        try:
+            result = subprocess.run(['docker', 'push', tag], capture_output=True, text=True)
+            
+            if result.returncode == 0:
+                self.log_action("SUCCESS", f"Docker image pushed: {tag}")
+                print(result.stdout)
+                return True
+            else:
+                self.log_action("FAILED", f"Failed to push Docker image: {tag}")
+                print("STDERR:", result.stderr)
+                return False
+                
+        except Exception as e:
+            self.log_action("ERROR", f"Failed to push Docker image: {e}")
+            return False
+
 def main():
     """Main function with argument parsing"""
     parser = argparse.ArgumentParser(
@@ -364,12 +609,19 @@ Examples:
   python manage.py status                  # Show system status
   python manage.py clean                   # Clean up temporary files
   python manage.py setup                   # Setup system from scratch
+  python manage.py docker                  # List Docker operations
+  python manage.py docker build            # Build Docker image
+  python manage.py docker multi-build      # Build for multiple platforms
+  python manage.py docker up               # Start Docker Compose services
+  python manage.py docker down             # Stop Docker Compose services
+  python manage.py docker status           # Show Docker service status
+  python manage.py docker logs app         # Show application logs
   python manage.py all                     # Run all operations
         """
     )
     
     parser.add_argument('command', 
-                       choices=['test', 'migrate', 'seed', 'backup', 'utility', 'status', 'clean', 'setup', 'all'],
+                       choices=['test', 'migrate', 'seed', 'backup', 'utility', 'status', 'clean', 'setup', 'docker', 'all'],
                        help='Command to execute')
     
     parser.add_argument('args', nargs='*', 

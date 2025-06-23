@@ -15,6 +15,7 @@ Welcome to the comprehensive documentation for the Guest Registration System - a
 - **[Backup System](backup-system.md)** - Backup and restore functionality
 - **[Testing Guide](testing.md)** - Comprehensive testing documentation
 - **[Tag Management](tag-management.md)** - Git tag management and release procedures
+- **[Docker Deployment](docker.md)** - Docker containerization and deployment
 
 ### 🔧 Development
 - **[API Documentation](api.md)** - REST API endpoints and usage

@@ -3913,6 +3913,27 @@ def admin_housekeeping_task_detail(task_id):
     
     return render_template('admin/housekeeping_task_detail.html', task=task, today=datetime.utcnow().date(), users=users)
 
+@app.route('/health')
+def health_check():
+    """Health check endpoint for Docker and load balancers."""
+    try:
+        # Test database connection
+        db.session.execute('SELECT 1')
+        return jsonify({
+            'status': 'healthy',
+            'timestamp': datetime.utcnow().isoformat(),
+            'version': version_manager.get_current_version(),
+            'database': 'connected'
+        }), 200
+    except Exception as e:
+        return jsonify({
+            'status': 'unhealthy',
+            'timestamp': datetime.utcnow().isoformat(),
+            'version': version_manager.get_current_version(),
+            'database': 'disconnected',
+            'error': str(e)
+        }), 503
+
 if __name__ == '__main__':
     # Parse command line arguments
     parser = argparse.ArgumentParser(description='Guest Registration System')
