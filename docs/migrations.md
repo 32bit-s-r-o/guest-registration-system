@@ -24,8 +24,8 @@ python manage.py migrate history
 
 ## Current System Status
 
-- **Database Version**: 000001 (Latest)
-- **Applied Migrations**: 2
+- **Database Version**: 1.8.0 (Latest)
+- **Applied Migrations**: 8
 - **Pending Migrations**: 0
 - **Migration System**: ✅ Fully Functional
 
@@ -134,15 +134,50 @@ DROP TABLE IF EXISTS guest_reg_user;
 
 ### Applied Migrations
 
-1. **000000 - 1.0.0_initial_schema**
+1. **1.0.0 - initial_schema**
    - Creates initial database schema
    - User, Trip, Registration, Guest tables
    - Basic indexes and constraints
 
-2. **000001 - 1.1.0_add_performance_indexes**
+2. **1.1.0 - add_performance_indexes**
    - Adds performance optimization indexes
    - Improves query performance
    - Foreign key optimizations
+
+3. **1.2.0 - add_amenity_system**
+   - Adds amenity management system
+   - Amenity and amenity_housekeeper tables
+   - Property amenity assignments
+
+4. **1.3.0 - add_calendar_system**
+   - Adds calendar management system
+   - Calendar and calendar_event tables
+   - Multi-calendar support
+
+5. **1.4.0 - add_amenity_housekeeper_system**
+   - Adds amenity-housekeeper assignments
+   - Housekeeping task management
+   - Task status tracking
+
+6. **1.5.0 - add_user_soft_delete**
+   - Adds soft delete functionality for users
+   - Preserves data integrity
+   - User retention management
+
+7. **1.6.0 - add_housekeeping_photo**
+   - Adds photo upload for housekeeping tasks
+   - Multiple photos per task
+   - Photo management system
+
+8. **1.7.0 - add_user_date_format**
+   - Adds user-specific date format preferences
+   - Customizable date display
+   - Format conversion utilities
+
+9. **1.8.0 - add_default_housekeeper_pay**
+   - Adds default housekeeper pay settings
+   - Configurable payment amounts
+   - Pay calculation system
 
 ### Pending Migrations
 

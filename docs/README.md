@@ -1,6 +1,6 @@
 # Guest Registration System Documentation
 
-Welcome to the comprehensive documentation for the Guest Registration System - a modern Flask-based web application for managing guest registrations, trips, invoices, and housekeeping tasks.
+Welcome to the comprehensive documentation for the Guest Registration System - a modern Flask-based web application for managing guest registrations, accommodations, invoices, and housekeeping tasks.
 
 ## 📚 Documentation Structure
 
@@ -23,7 +23,7 @@ Welcome to the comprehensive documentation for the Guest Registration System - a
 
 ### 📊 Features
 - **[Guest Registration](guest-registration.md)** - Guest registration workflow
-- **[Trip Management](trip-management.md)** - Creating and managing trips
+- **[Accommodation Management](accommodation-management.md)** - Creating and managing accommodations
 - **[Invoice System](invoice-system.md)** - PDF generation and email sending
 - **[Housekeeping](housekeeping.md)** - Housekeeping task management
 - **[User Management](user-management.md)** - Admin and housekeeper roles
@@ -46,23 +46,28 @@ The Guest Registration System is a comprehensive web application built with:
 - **Backend**: Python Flask with SQLAlchemy ORM
 - **Database**: PostgreSQL with migration system
 - **Frontend**: Bootstrap 5 with responsive design
-- **Internationalization**: Flask-Babel with English and Czech support
+- **Internationalization**: Flask-Babel with English, Czech, and Slovak support
 - **PDF Generation**: ReportLab for invoice generation
 - **Email**: SMTP integration with template support
 - **File Management**: Secure file uploads with validation
 
 ### Key Features
 
-✅ **Multi-language Support** - English and Czech interfaces  
+✅ **Multi-language Support** - English, Czech, and Slovak interfaces  
 ✅ **Guest Registration** - Complete registration workflow with document uploads  
-✅ **Trip Management** - Create and manage accommodation trips  
+✅ **Accommodation Management** - Create and manage accommodation bookings  
 ✅ **Invoice System** - Generate and email PDF invoices  
-✅ **Housekeeping** - Task management for cleaning staff  
-✅ **User Management** - Role-based access control  
+✅ **Housekeeping System** - Complete task management for cleaning staff  
+✅ **User Management** - Role-based access control with soft delete  
 ✅ **Data Export** - CSV and JSON export functionality  
 ✅ **Backup System** - Automated backup and restore  
 ✅ **Migration System** - Database versioning and rollbacks  
 ✅ **Universal Management** - Single command-line interface for all operations  
+✅ **Date Format Customization** - User-specific date format preferences  
+✅ **Photo Management** - Multiple photos per housekeeping task  
+✅ **Amenity System** - Manage property amenities and assignments  
+✅ **Calendar Integration** - Multi-calendar management with Airbnb sync  
+✅ **Bulk Operations** - Bulk update housekeeping tasks  
 
 ## 🚀 Quick Commands
 
@@ -84,16 +89,23 @@ python manage.py backup
 
 # Clean up system
 python manage.py clean
+
+# Test language support
+python test_language_picker.py
+python test_slovak_language.py
 ```
 
 ## 📊 Current System Status
 
-- **Database Version**: 000001 (Latest)
-- **Applied Migrations**: 2
+- **Database Version**: 1.8.0 (Latest)
+- **Applied Migrations**: 8
 - **Pending Migrations**: 0
 - **Flask Application**: ✅ Running
 - **All Tests**: ✅ Passing
 - **Management Script**: ✅ Fully Functional
+- **Language Support**: ✅ English, Czech, Slovak
+- **Housekeeping System**: ✅ Complete with photo uploads
+- **Date Formatting**: ✅ User-customizable
 
 ## 🔗 Quick Links
 
@@ -111,6 +123,6 @@ For support and questions:
 
 ---
 
-**Last Updated**: June 23, 2025  
-**Version**: 1.0.0  
+**Last Updated**: January 2025  
+**Version**: 1.8.0  
 **Status**: Production Ready ✅ 

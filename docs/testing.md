@@ -17,6 +17,13 @@ python test_backup_functionality.py
 python test_migration_system.py
 python system_test.py
 
+# Test language support
+python test_language_picker.py
+python test_slovak_language.py
+
+# Test housekeeping features
+python test_amenity_housekeeper_system.py
+
 # Check test coverage
 python -m pytest --cov=app tests/
 ```
@@ -25,9 +32,11 @@ python -m pytest --cov=app tests/
 
 - **Test Coverage**: ✅ Comprehensive
 - **All Tests Passing**: ✅ 9/9 Management Script Tests
-- **Automated Tests**: ✅ 7 Test Scripts Available
+- **Automated Tests**: ✅ 10 Test Scripts Available
 - **Manual Tests**: ✅ Documented Procedures
 - **CI/CD Ready**: ✅ GitHub Actions Compatible
+- **Language Support**: ✅ English, Czech, Slovak
+- **Housekeeping System**: ✅ Complete testing coverage
 
 ## Test Categories
 
@@ -63,8 +72,40 @@ Tests passed: 9/9
 - Database operations
 - File uploads
 - Email functionality
+- Language switching
+- Housekeeping features
 
-### 3. Backup System Tests
+### 3. Language Support Tests
+
+**Script**: `test_language_picker.py`
+
+**Coverage:**
+- Language picker configuration
+- Enable/disable functionality
+- Supported locales verification
+- Configuration instructions
+
+**Script**: `test_slovak_language.py`
+
+**Coverage:**
+- Slovak language switching
+- Language picker functionality
+- Three-language support (EN, CS, SK)
+- Navigation and UI testing
+
+### 4. Housekeeping System Tests
+
+**Script**: `test_amenity_housekeeper_system.py`
+
+**Coverage:**
+- Amenity management
+- Housekeeper assignments
+- Task creation and management
+- Photo upload functionality
+- Bulk operations
+- Status updates
+
+### 5. Backup System Tests
 
 **Script**: `test_backup_functionality.py`
 
@@ -84,7 +125,7 @@ Tests passed: 9/9
 - Response format verification
 - Authentication checks
 
-### 4. Migration System Tests
+### 6. Migration System Tests
 
 **Script**: `test_migration_system.py`
 
@@ -95,7 +136,7 @@ Tests passed: 9/9
 - Database schema changes
 - Error handling
 
-### 5. Email Functionality Tests
+### 7. Email Functionality Tests
 
 **Script**: `test_email_functionality.py`
 
@@ -106,7 +147,7 @@ Tests passed: 9/9
 - Error handling
 - SMTP configuration
 
-### 6. CSV Export Tests
+### 8. CSV Export Tests
 
 **Script**: `test_csv_export.py`
 
@@ -116,15 +157,25 @@ Tests passed: 9/9
 - File download testing
 - Data integrity verification
 
-### 7. Language Picker Tests
+### 9. Date Format Tests
 
-**Script**: `test_language_picker.py`
+**Script**: `test_date_format_settings.py`
 
 **Coverage:**
-- Language switching
-- Session management
+- User date format preferences
+- Date formatting functionality
 - Template rendering
-- URL parameter handling
+- Format conversion
+
+### 10. Airbnb Integration Tests
+
+**Script**: `test_airbnb_sync.py`
+
+**Coverage:**
+- Airbnb calendar sync
+- Reservation parsing
+- Confirmation code extraction
+- Multi-calendar support
 
 ## Test Commands
 
@@ -142,6 +193,10 @@ python test_migration_system.py
 python test_email_functionality.py
 python test_csv_export.py
 python test_language_picker.py
+python test_slovak_language.py
+python test_amenity_housekeeper_system.py
+python test_date_format_settings.py
+python test_airbnb_sync.py
 ```
 
 ### Test Specific Features
@@ -155,6 +210,19 @@ python test_migration_system.py
 
 # Test email system
 python test_email_functionality.py
+
+# Test language support
+python test_language_picker.py
+python test_slovak_language.py
+
+# Test housekeeping system
+python test_amenity_housekeeper_system.py
+
+# Test date formatting
+python test_date_format_settings.py
+
+# Test Airbnb integration
+python test_airbnb_sync.py
 ```
 
 ### Test with Coverage
@@ -341,166 +409,4 @@ jobs:
 
 ### Local CI Testing
 
-```bash
-# Run full test suite
-python manage.py test
-
-# Check system status
-python manage.py status
-
-# Verify migrations
-python manage.py migrate status
 ```
-
-## Test Coverage Analysis
-
-### Current Coverage
-
-- **Management Script**: 100% (9/9 tests passing)
-- **System Integration**: Comprehensive workflow testing
-- **Backup System**: Full functionality coverage
-- **Migration System**: Complete migration testing
-- **Email System**: SMTP and template testing
-- **Export System**: CSV and JSON export testing
-- **Language System**: Multi-language support testing
-
-### Coverage Goals
-
-- **Unit Tests**: 90%+ code coverage
-- **Integration Tests**: All major workflows
-- **System Tests**: End-to-end functionality
-- **Security Tests**: Access control verification
-
-## Performance Testing
-
-### Load Testing
-
-```bash
-# Basic load testing
-ab -n 100 -c 10 http://localhost:5000/
-
-# Database performance
-python -c "import time; start=time.time(); # test code; print(time.time()-start)"
-```
-
-### Database Performance
-
-- Migration execution time
-- Query performance
-- Backup creation time
-- Data export speed
-
-## Security Testing
-
-### Access Control Testing
-
-```bash
-# Test admin access
-curl -H "Cookie: session=admin_session" http://localhost:5000/admin/dashboard
-
-# Test unauthorized access
-curl http://localhost:5000/admin/dashboard
-```
-
-### Data Protection Testing
-
-- Guest photo exclusion
-- Sensitive data handling
-- Session management
-- CSRF protection
-
-## Troubleshooting
-
-### Common Test Issues
-
-1. **Database Connection**
-   - Check database URL
-   - Verify PostgreSQL running
-   - Test connection manually
-
-2. **Test Data Issues**
-   - Reset test data
-   - Check seed scripts
-   - Verify database state
-
-3. **Email Testing**
-   - Check SMTP configuration
-   - Verify email credentials
-   - Test email templates
-
-### Debug Commands
-
-```bash
-# Verbose test output
-python -v test_manage_script.py
-
-# Debug specific test
-python -m pdb test_manage_script.py
-
-# Check test environment
-python manage.py status
-```
-
-## Best Practices
-
-### Test Development
-
-1. **Write Tests First**
-   - TDD approach for new features
-   - Test existing functionality
-   - Maintain test coverage
-
-2. **Test Organization**
-   - Group related tests
-   - Use descriptive test names
-   - Maintain test data
-
-3. **Test Maintenance**
-   - Update tests with code changes
-   - Remove obsolete tests
-   - Keep tests fast and reliable
-
-### Test Execution
-
-1. **Regular Testing**
-   ```bash
-   # Daily testing
-   python manage.py test
-   
-   # Before deployments
-   python manage.py status
-   python manage.py test
-   ```
-
-2. **Comprehensive Testing**
-   ```bash
-   # Full test suite
-   python manage.py all
-   ```
-
-## Related Documentation
-
-- [Universal Management Script](management-script.md) - Test execution
-- [Database Migrations](migrations.md) - Migration testing
-- [Backup System](backup-system.md) - Backup testing
-- [Installation Guide](installation.md) - Test environment setup
-
-## Support
-
-For testing issues:
-
-1. Check test environment
-2. Review error logs
-3. Verify test data
-4. Run individual tests
-
-## Version History
-
-- **v1.0.0**: Initial test suite
-- **v1.1.0**: Added comprehensive testing
-- **v1.2.0**: Enhanced test coverage
-- **v1.3.0**: CI/CD integration
-
----
-
-[← Back to Documentation Index](../docs/README.md) 
