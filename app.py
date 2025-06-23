@@ -551,9 +551,27 @@ def format_date_filter(date_obj):
 @app.template_filter('registration_name')
 def registration_name(reg):
     if reg.trip and reg.trip.start_date and reg.trip.end_date:
-        # Use the format_date filter for consistent formatting
-        start_date = reg.trip.start_date.strftime(current_user.date_format or 'd.m.Y') if current_user.is_authenticated else reg.trip.start_date.strftime('d.m.Y')
-        end_date = reg.trip.end_date.strftime(current_user.date_format or 'd.m.Y') if current_user.is_authenticated else reg.trip.end_date.strftime('d.m.Y')
+        # Convert PHP/JS style to Python strftime format
+        format_map = [
+            ('d', '%d'),
+            ('j', '%-d'),
+            ('m', '%m'),
+            ('n', '%-m'),
+            ('Y', '%Y'),
+            ('y', '%y'),
+        ]
+        
+        date_format = 'd.m.Y'  # Default
+        if current_user.is_authenticated and hasattr(current_user, 'date_format') and current_user.date_format:
+            date_format = current_user.date_format
+        
+        # Convert format
+        py_format = date_format
+        for php, py in format_map:
+            py_format = py_format.replace(php, py)
+        
+        start_date = reg.trip.start_date.strftime(py_format)
+        end_date = reg.trip.end_date.strftime(py_format)
         return f"Registration - {start_date} to {end_date} (#{reg.id})"
     else:
         return f"Registration #{reg.id}"
@@ -2269,9 +2287,21 @@ def housekeeping_events_api():
         # Format the date using the user's preferred format
         try:
             date_format = current_user.date_format or 'd.m.Y'
-            formatted_date = trip_end_date.strftime(date_format)
+            # Convert PHP/JS style to Python strftime
+            format_map = [
+                ('d', '%d'),
+                ('j', '%-d'),
+                ('m', '%m'),
+                ('n', '%-m'),
+                ('Y', '%Y'),
+                ('y', '%y'),
+            ]
+            py_format = date_format
+            for php, py in format_map:
+                py_format = py_format.replace(php, py)
+            formatted_date = trip_end_date.strftime(py_format)
         except (ValueError, TypeError):
-            formatted_date = trip_end_date.strftime('d.m.Y')
+            formatted_date = trip_end_date.strftime('%d.%m.%Y')
         
         events.append({
             'id': task.id,
@@ -3762,9 +3792,24 @@ def update_task_status(task_id):
         if new_status == 'completed' and current_user.role == 'housekeeper':
             today = datetime.utcnow().date()
             if task.date != today:
+                # Convert PHP/JS style to Python strftime format
+                format_map = [
+                    ('d', '%d'),
+                    ('j', '%-d'),
+                    ('m', '%m'),
+                    ('n', '%-m'),
+                    ('Y', '%Y'),
+                    ('y', '%y'),
+                ]
+                
+                date_format = current_user.date_format or 'd.m.Y'
+                py_format = date_format
+                for php, py in format_map:
+                    py_format = py_format.replace(php, py)
+                
                 flash(_('Tasks can only be marked as completed on the task date (%(task_date)s). Today is %(today)s.', 
-                       task_date=task.date.strftime(current_user.date_format or 'd.m.Y'),
-                       today=today.strftime(current_user.date_format or 'd.m.Y')), 'error')
+                       task_date=task.date.strftime(py_format),
+                       today=today.strftime(py_format)), 'error')
                 return redirect(url_for('housekeeper_task_detail', task_id=task_id))
         
         task.status = new_status
