@@ -36,6 +36,7 @@ import zipfile
 # Add version management imports
 from version import version_manager, check_version_compatibility, get_version_changelog
 from migrations import MigrationManager
+import argparse
 
 load_dotenv()
 
@@ -2866,6 +2867,55 @@ def rollback_migration(version):
         return redirect(url_for('admin_migrations'))
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-    app.run(debug=True) 
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(description='Guest Registration System')
+    parser.add_argument('--host', default='127.0.0.1', help='Host to bind to (default: 127.0.0.1)')
+    parser.add_argument('--port', type=int, default=5000, help='Port to bind to (default: 5000)')
+    parser.add_argument('--debug', action='store_true', help='Enable debug mode')
+    parser.add_argument('--no-debug', action='store_true', help='Disable debug mode')
+    parser.add_argument('--reload', action='store_true', help='Enable auto-reload on code changes')
+    parser.add_argument('--threaded', action='store_true', help='Enable threading')
+    parser.add_argument('--ssl-context', help='SSL context for HTTPS (e.g., "adhoc" for self-signed)')
+    
+    args = parser.parse_args()
+    
+    # Determine debug mode
+    debug_mode = True  # Default to True for development
+    if args.no_debug:
+        debug_mode = False
+    elif args.debug:
+        debug_mode = True
+    
+    # SSL context
+    ssl_context = None
+    if args.ssl_context:
+        if args.ssl_context == 'adhoc':
+            try:
+                import ssl
+                ssl_context = 'adhoc'
+            except ImportError:
+                print("Warning: 'adhoc' SSL context requires 'pyOpenSSL' package. Install with: pip install pyOpenSSL")
+                ssl_context = None
+        else:
+            ssl_context = args.ssl_context
+    
+    print(f"Starting Guest Registration System...")
+    print(f"  Host: {args.host}")
+    print(f"  Port: {args.port}")
+    print(f"  Debug: {debug_mode}")
+    print(f"  Auto-reload: {args.reload}")
+    print(f"  Threaded: {args.threaded}")
+    if ssl_context:
+        print(f"  SSL: {ssl_context}")
+    print(f"  URL: http{'s' if ssl_context else ''}://{args.host}:{args.port}")
+    print()
+    
+    # Run the application
+    app.run(
+        host=args.host,
+        port=args.port,
+        debug=debug_mode,
+        use_reloader=args.reload,
+        threaded=args.threaded,
+        ssl_context=ssl_context
+    ) 

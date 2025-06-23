@@ -30,6 +30,40 @@ python manage.py setup
 python app.py
 ```
 
+### Flask App Parameters
+
+The application supports various command-line parameters for flexible deployment:
+
+```bash
+# Basic parameters
+--host HOST           # Host to bind to (default: 127.0.0.1)
+--port PORT           # Port to bind to (default: 5000)
+
+# Debug and development
+--debug               # Enable debug mode
+--no-debug            # Disable debug mode
+--reload              # Enable auto-reload on code changes
+
+# Production features
+--threaded            # Enable threading for concurrent requests
+--ssl-context SSL     # SSL context for HTTPS (e.g., "adhoc" for self-signed)
+```
+
+**Common Usage Examples:**
+```bash
+# Development with auto-reload
+python app.py --debug --reload --port 5001
+
+# Production server (accessible from network)
+python app.py --host 0.0.0.0 --port 80 --no-debug --threaded
+
+# HTTPS with self-signed certificate
+python app.py --ssl-context adhoc --port 443
+
+# Custom port for testing
+python app.py --port 8080
+```
+
 **Access the application:**
 - Main site: http://localhost:5000
 - Admin panel: http://localhost:5000/admin/login
