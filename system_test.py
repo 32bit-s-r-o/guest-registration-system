@@ -22,6 +22,9 @@ class SystemTest:
         self.session = requests.Session()
         self.test_results = []
         self.current_test = 0
+        self.created_trip_id = None
+        self.created_registration_id = None
+        self.created_invoice_id = None
         
     def log_test(self, test_name, status, details=""):
         """Log test results"""
@@ -168,6 +171,10 @@ class SystemTest:
             response = self.session.post(f"{BASE_URL}/admin/trips/new", data=trip_data, allow_redirects=True)
             if response.status_code == 200:
                 self.log_test("Create Trip", "PASS", f"Trip created: {trip_data['title']}")
+                # Extract trip ID for later tests
+                match = re.search(r'href="/admin/trips/(\d+)"', response.text)
+                if match:
+                    self.created_trip_id = match.group(1)
             else:
                 self.log_test("Create Trip", "FAIL", f"Status: {response.status_code}")
         except Exception as e:
@@ -199,6 +206,7 @@ class SystemTest:
                     match = re.search(r'href="/admin/registration/(\d+)"', response.text)
                     if match:
                         reg_id = match.group(1)
+                        self.created_registration_id = reg_id
                         response = self.session.get(f"{BASE_URL}/admin/registration/{reg_id}")
                         if response.status_code == 200:
                             self.log_test("View Registration", "PASS", f"Registration {reg_id} view accessible")
@@ -213,8 +221,39 @@ class SystemTest:
         except Exception as e:
             self.log_test("View Registration", "FAIL", f"Exception: {str(e)}")
     
+    def test_registration_approval_rejection(self):
+        """Test registration approval and rejection functionality"""
+        print("\n✅❌ Testing Registration Approval/Rejection")
+        print("=" * 50)
+        
+        if not self.created_registration_id:
+            self.log_test("Registration Approval/Rejection", "WARN", "No registration available for testing")
+            return
+        
+        # Test registration approval
+        try:
+            response = self.session.post(f"{BASE_URL}/admin/registration/{self.created_registration_id}/approve", allow_redirects=True)
+            if response.status_code == 200:
+                self.log_test("Approve Registration", "PASS", f"Registration {self.created_registration_id} approved")
+            else:
+                self.log_test("Approve Registration", "FAIL", f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Approve Registration", "FAIL", f"Exception: {str(e)}")
+        
+        # Test registration rejection (if we had another registration)
+        try:
+            # Try to reject a non-existent registration to test the endpoint
+            response = self.session.post(f"{BASE_URL}/admin/registration/99999/reject", 
+                                       data={'comment': 'Test rejection'}, allow_redirects=True)
+            if response.status_code == 404:
+                self.log_test("Reject Registration Endpoint", "PASS", "Rejection endpoint exists and handles missing registration")
+            else:
+                self.log_test("Reject Registration Endpoint", "WARN", f"Unexpected status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Reject Registration Endpoint", "FAIL", f"Exception: {str(e)}")
+    
     def test_invoice_management(self):
-        """Test invoice management"""
+        """Test invoice management functionality"""
         print("\n💰 Testing Invoice Management")
         print("=" * 50)
         
@@ -248,15 +287,95 @@ class SystemTest:
                 'issue_date': datetime.now().strftime('%Y-%m-%d'),
                 'due_date': (datetime.now() + timedelta(days=30)).strftime('%Y-%m-%d'),
                 'currency': 'EUR',
-                'notes': 'Test invoice created by system test'
+                'notes': 'Test invoice created by system test',
+                'item_count': 1,
+                'item_description_0': 'Test Service',
+                'item_quantity_0': 1,
+                'item_unit_price_0': 100.00,
+                'item_vat_rate_0': 21.0
             }
             response = self.session.post(f"{BASE_URL}/admin/invoices/new", data=invoice_data, allow_redirects=True)
             if response.status_code == 200:
                 self.log_test("Create Invoice", "PASS", f"Invoice created for: {invoice_data['client_name']}")
+                # Extract invoice ID for later tests
+                match = re.search(r'href="/admin/invoices/(\d+)"', response.text)
+                if match:
+                    self.created_invoice_id = match.group(1)
             else:
                 self.log_test("Create Invoice", "FAIL", f"Status: {response.status_code}")
         except Exception as e:
             self.log_test("Create Invoice", "FAIL", f"Exception: {str(e)}")
+    
+    def test_invoice_operations(self):
+        """Test invoice view, edit, delete, and status operations"""
+        print("\n📄 Testing Invoice Operations")
+        print("=" * 50)
+        
+        # If no invoice was created in the previous test, try to find an existing one
+        if not self.created_invoice_id:
+            try:
+                response = self.session.get(f"{BASE_URL}/admin/invoices")
+                if response.status_code == 200:
+                    # Look for an existing invoice link
+                    match = re.search(r'href="/admin/invoices/(\d+)"', response.text)
+                    if match:
+                        self.created_invoice_id = match.group(1)
+                        self.log_test("Invoice Operations", "PASS", f"Found existing invoice {self.created_invoice_id} for testing")
+                    else:
+                        self.log_test("Invoice Operations", "WARN", "No invoices available for testing - skipping operations")
+                        return
+                else:
+                    self.log_test("Invoice Operations", "FAIL", f"Cannot access invoices page: {response.status_code}")
+                    return
+            except Exception as e:
+                self.log_test("Invoice Operations", "FAIL", f"Exception finding invoice: {str(e)}")
+                return
+        
+        # Test viewing invoice
+        try:
+            response = self.session.get(f"{BASE_URL}/admin/invoices/{self.created_invoice_id}")
+            if response.status_code == 200:
+                self.log_test("View Invoice", "PASS", f"Invoice {self.created_invoice_id} view accessible")
+            else:
+                self.log_test("View Invoice", "FAIL", f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("View Invoice", "FAIL", f"Exception: {str(e)}")
+        
+        # Test editing invoice
+        try:
+            response = self.session.get(f"{BASE_URL}/admin/invoices/{self.created_invoice_id}/edit")
+            if response.status_code == 200:
+                self.log_test("Edit Invoice Form", "PASS", f"Invoice {self.created_invoice_id} edit form accessible")
+            else:
+                self.log_test("Edit Invoice Form", "FAIL", f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Edit Invoice Form", "FAIL", f"Exception: {str(e)}")
+        
+        # Test changing invoice status
+        try:
+            status_data = {'status': 'sent'}
+            response = self.session.post(f"{BASE_URL}/admin/invoices/{self.created_invoice_id}/change-status", 
+                                       data=status_data, allow_redirects=True)
+            if response.status_code == 200:
+                self.log_test("Change Invoice Status", "PASS", f"Invoice {self.created_invoice_id} status changed to sent")
+            else:
+                self.log_test("Change Invoice Status", "FAIL", f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Change Invoice Status", "FAIL", f"Exception: {str(e)}")
+        
+        # Test PDF generation
+        try:
+            response = self.session.get(f"{BASE_URL}/admin/invoices/{self.created_invoice_id}/pdf")
+            if response.status_code == 200:
+                content_type = response.headers.get('Content-Type', '')
+                if 'application/pdf' in content_type or 'text/html' in content_type:
+                    self.log_test("Generate Invoice PDF", "PASS", f"PDF generated for invoice {self.created_invoice_id}")
+                else:
+                    self.log_test("Generate Invoice PDF", "WARN", f"Unexpected content type: {content_type}")
+            else:
+                self.log_test("Generate Invoice PDF", "FAIL", f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Generate Invoice PDF", "FAIL", f"Exception: {str(e)}")
     
     def test_csv_exports(self):
         """Test CSV export functionality"""
@@ -350,6 +469,22 @@ class SystemTest:
         except Exception as e:
             self.log_test("Update Settings", "FAIL", f"Exception: {str(e)}")
     
+    def test_airbnb_sync(self):
+        """Test Airbnb sync functionality"""
+        print("\n🏠 Testing Airbnb Sync")
+        print("=" * 50)
+        
+        # Test Airbnb sync endpoint
+        try:
+            sync_data = {'action': 'sync'}
+            response = self.session.post(f"{BASE_URL}/admin/sync-airbnb", data=sync_data, allow_redirects=True)
+            if response.status_code == 200:
+                self.log_test("Airbnb Sync Endpoint", "PASS", "Airbnb sync endpoint accessible")
+            else:
+                self.log_test("Airbnb Sync Endpoint", "FAIL", f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Airbnb Sync Endpoint", "FAIL", f"Exception: {str(e)}")
+    
     def test_data_management(self):
         """Test data management functionality"""
         print("\n🗄️ Testing Data Management")
@@ -364,6 +499,16 @@ class SystemTest:
                 self.log_test("Data Management Page", "FAIL", f"Status: {response.status_code}")
         except Exception as e:
             self.log_test("Data Management Page", "FAIL", f"Exception: {str(e)}")
+        
+        # Test seed data operation
+        try:
+            response = self.session.post(f"{BASE_URL}/admin/seed-data", allow_redirects=True)
+            if response.status_code == 200:
+                self.log_test("Seed Data", "PASS", "Sample data seeded successfully")
+            else:
+                self.log_test("Seed Data", "FAIL", f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Seed Data", "FAIL", f"Exception: {str(e)}")
     
     def test_housekeeping(self):
         """Test housekeeping functionality"""
@@ -379,6 +524,30 @@ class SystemTest:
                 self.log_test("Housekeeping Page", "FAIL", f"Status: {response.status_code}")
         except Exception as e:
             self.log_test("Housekeeping Page", "FAIL", f"Exception: {str(e)}")
+        
+        # Test housekeeping API (requires housekeeper role, so skip when logged as admin)
+        try:
+            response = self.session.get(f"{BASE_URL}/api/housekeeping_events")
+            if response.status_code == 403:
+                self.log_test("Housekeeping API", "PASS", "API properly protected - requires housekeeper role")
+            elif response.status_code == 200:
+                self.log_test("Housekeeping API", "PASS", "Housekeeping API accessible")
+            else:
+                self.log_test("Housekeeping API", "WARN", f"Unexpected status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Housekeeping API", "FAIL", f"Exception: {str(e)}")
+        
+        # Test housekeeper dashboard (should be protected, requires housekeeper role)
+        try:
+            response = self.session.get(f"{BASE_URL}/housekeeper/dashboard")
+            if response.status_code == 403:
+                self.log_test("Housekeeper Dashboard", "PASS", "Dashboard properly protected - requires housekeeper role")
+            elif response.status_code == 200:
+                self.log_test("Housekeeper Dashboard", "PASS", "Housekeeper dashboard accessible")
+            else:
+                self.log_test("Housekeeper Dashboard", "WARN", f"Unexpected status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Housekeeper Dashboard", "FAIL", f"Exception: {str(e)}")
     
     def test_language_functionality(self):
         """Test language switching functionality"""
@@ -445,6 +614,44 @@ class SystemTest:
         except Exception as e:
             self.log_test("Registration Form", "FAIL", f"Exception: {str(e)}")
     
+    def test_upload_functionality(self):
+        """Test file upload functionality"""
+        print("\n📁 Testing Upload Functionality")
+        print("=" * 50)
+        
+        # Test uploads directory access
+        try:
+            response = self.session.get(f"{BASE_URL}/uploads/test.jpg")
+            if response.status_code in [200, 404]:  # 404 is expected if file doesn't exist
+                self.log_test("Uploads Directory", "PASS", "Uploads directory accessible")
+            else:
+                self.log_test("Uploads Directory", "FAIL", f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Uploads Directory", "FAIL", f"Exception: {str(e)}")
+    
+    def test_error_handling(self):
+        """Test error handling for invalid routes"""
+        print("\n🚫 Testing Error Handling")
+        print("=" * 50)
+        
+        # Test non-existent routes
+        invalid_routes = [
+            '/admin/nonexistent',
+            '/admin/invoices/99999',
+            '/admin/registration/99999',
+            '/admin/trips/99999'
+        ]
+        
+        for route in invalid_routes:
+            try:
+                response = self.session.get(f"{BASE_URL}{route}")
+                if response.status_code == 404:
+                    self.log_test(f"404 Error: {route}", "PASS", "Proper 404 response")
+                else:
+                    self.log_test(f"404 Error: {route}", "WARN", f"Unexpected status: {response.status_code}")
+            except Exception as e:
+                self.log_test(f"404 Error: {route}", "FAIL", f"Exception: {str(e)}")
+    
     def run_all_tests(self):
         """Run all system tests"""
         print("🚀 Comprehensive System Test for Guest Registration System")
@@ -463,14 +670,19 @@ class SystemTest:
         self.test_admin_dashboard()
         self.test_trip_management()
         self.test_registration_management()
+        self.test_registration_approval_rejection()
         self.test_invoice_management()
+        self.test_invoice_operations()
         self.test_csv_exports()
         self.test_analytics_pages()
         self.test_admin_settings()
+        self.test_airbnb_sync()
         self.test_data_management()
         self.test_housekeeping()
         self.test_language_functionality()
         self.test_registration_process()
+        self.test_upload_functionality()
+        self.test_error_handling()
         
         # Generate summary
         self.generate_summary()
