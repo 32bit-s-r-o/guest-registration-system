@@ -41,11 +41,34 @@ This directory contains utility scripts for managing the Guest Registration Syst
 - Checks remote tag status
 - Provides helpful commands
 
+### Docker Management
+
+#### `build_x86_64.sh`
+**Purpose**: Build Docker images specifically for x86_64 architecture.
+
+**Usage**:
+```bash
+./scripts/build_x86_64.sh [tag]
+```
+
+**Example**:
+```bash
+./scripts/build_x86_64.sh guest-registration:x86_64-v1.8.0
+```
+
+**Features**:
+- x86_64 platform-specific builds
+- Automatic buildx setup
+- Image information display
+- Platform verification
+- Colored output and status
+
 ## Script Requirements
 
 All scripts require:
 - Bash shell
-- Git repository
+- Git repository (for tag scripts)
+- Docker (for Docker scripts)
 - Project root directory (must contain `app.py`)
 
 ## Usage Examples
@@ -72,6 +95,18 @@ git log --oneline -1
 git push origin v1.9.0
 ```
 
+### Build x86_64 Docker Image
+```bash
+# Build with default tag
+./scripts/build_x86_64.sh
+
+# Build with custom tag
+./scripts/build_x86_64.sh my-registry.com/guest-registration:x86_64-v1.8.0
+
+# Run the x86_64 image
+docker run -p 8000:8000 guest-registration:x86_64
+```
+
 ### Tag Management Commands
 ```bash
 # List all tags
@@ -93,12 +128,14 @@ These scripts integrate with the release process:
 
 1. **Prepare Release**: Update version, documentation, and changelog
 2. **Create Tag**: Use `tag_release.sh` to create the version tag
-3. **Push Tag**: Push the tag to the remote repository
-4. **Create GitHub Release**: Use the tag to create a GitHub release
+3. **Build Docker**: Use `build_x86_64.sh` to build platform-specific images
+4. **Push Tag**: Push the tag to the remote repository
+5. **Create GitHub Release**: Use the tag to create a GitHub release
 
 ## Related Documentation
 
 - [Tag Management](../docs/tag-management.md) - Comprehensive tag management guide
+- [Docker Deployment](../docs/docker.md) - Docker containerization and deployment
 - [Release Process](../docs/RELEASE_NOTES.md) - Release procedures and notes
 - [Changelog](../CHANGELOG.md) - Version history and changes
 
@@ -120,6 +157,7 @@ When adding new scripts:
 1. **Permission Denied**
    ```bash
    chmod +x scripts/tag_release.sh
+   chmod +x scripts/build_x86_64.sh
    ```
 
 2. **Wrong Directory**
@@ -134,13 +172,22 @@ When adding new scripts:
    git log --oneline | grep <partial_hash>
    ```
 
+4. **Docker Buildx Not Available**
+   ```bash
+   # Enable buildx
+   docker buildx create --use
+   ```
+
 ### Getting Help
 
 - Check script usage: `./scripts/tag_release.sh`
 - View tag documentation: `docs/tag-management.md`
+- View Docker documentation: `docs/docker.md`
 - Check Git status: `git status`
+- Check Docker status: `docker version`
 
 ---
 
 **Last Updated**: January 2025  
-**Scripts Version**: 1.0.0 
+**Scripts Version**: 1.1.0  
+**Supported Platforms**: x86_64, ARM64, ARMv7 

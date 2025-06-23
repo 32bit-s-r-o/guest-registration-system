@@ -20,9 +20,11 @@ The system uses a multi-service Docker Compose setup:
 ### Multi-Platform Support
 
 The Docker setup supports multiple platforms:
-- `linux/amd64` - Intel/AMD 64-bit
+- `linux/amd64` - Intel/AMD x86_64 architecture (traditional servers, desktops)
 - `linux/arm64` - ARM 64-bit (Apple Silicon, ARM servers)
 - `linux/arm/v7` - ARM 32-bit (Raspberry Pi, ARM devices)
+
+**Note**: `linux/amd64` is the same as x86_64 architecture and is the default platform.
 
 ## 🚀 Quick Start
 
@@ -35,8 +37,11 @@ The Docker setup supports multiple platforms:
 ### 1. Build and Start
 
 ```bash
-# Build for current platform
+# Build for current platform (defaults to x86_64)
 python manage.py docker build
+
+# Build specifically for x86_64
+python manage.py docker build linux/amd64
 
 # Start all services
 python manage.py docker up
@@ -60,10 +65,14 @@ python manage.py docker status
 # List all Docker operations
 python manage.py docker
 
-# Build Docker image
-python manage.py docker build linux/amd64 guest-registration:v1.8.0
+# Build Docker image (defaults to x86_64)
+python manage.py docker build
 
-# Multi-platform build
+# Build for specific platform
+python manage.py docker build linux/amd64 guest-registration:v1.8.0
+python manage.py docker build linux/arm64 guest-registration:v1.8.0
+
+# Multi-platform build (includes x86_64)
 python manage.py docker multi-build linux/amd64,linux/arm64
 
 # Start services
@@ -88,10 +97,13 @@ python manage.py docker push guest-registration:v1.8.0
 ### Direct Docker Commands
 
 ```bash
-# Build image
+# Build for x86_64
 docker buildx build --platform linux/amd64 --tag guest-registration:latest .
 
-# Multi-platform build
+# Build for ARM64
+docker buildx build --platform linux/arm64 --tag guest-registration:latest .
+
+# Multi-platform build (includes x86_64)
 docker buildx build --platform linux/amd64,linux/arm64 --tag guest-registration:latest .
 
 # Start services
@@ -135,7 +147,7 @@ FROM --platform=$TARGETPLATFORM python:3.11-slim
 
 ### Features
 
-- **Multi-platform support** with buildx
+- **Multi-platform support** with buildx (x86_64, ARM64, ARMv7)
 - **Non-root user** for security
 - **Health checks** for monitoring
 - **Optimized layers** for faster builds
@@ -149,8 +161,19 @@ FROM --platform=$TARGETPLATFORM python:3.11-slim
 services:
   postgres:     # PostgreSQL database
   redis:        # Redis cache
-  app:          # Flask application
+  app:          # Flask application (multi-platform)
   nginx:        # Reverse proxy
+```
+
+### Platform Support
+
+```yaml
+app:
+  build:
+    platforms:
+      - linux/amd64  # x86_64 architecture (default)
+      - linux/arm64  # ARM 64-bit
+      - linux/arm/v7 # ARM 32-bit
 ```
 
 ### Key Features
@@ -277,7 +300,7 @@ docker-compose ps
 ### Development
 
 ```bash
-# Quick development setup
+# Quick development setup (x86_64)
 python manage.py docker build
 python manage.py docker up
 ```
@@ -285,7 +308,7 @@ python manage.py docker up
 ### Production
 
 ```bash
-# Production build
+# Production build (multi-platform including x86_64)
 python manage.py docker multi-build linux/amd64,linux/arm64
 
 # Production deployment
@@ -410,17 +433,20 @@ docker run --rm -v guest_registration_postgres_data:/data -v $(pwd):/backup alpi
 
 ### Supported Platforms
 
-- **linux/amd64** - Traditional servers, desktops
-- **linux/arm64** - Apple Silicon, ARM servers
-- **linux/arm/v7** - Raspberry Pi, ARM devices
+- **linux/amd64** - Intel/AMD x86_64 architecture (traditional servers, desktops)
+- **linux/arm64** - ARM 64-bit (Apple Silicon, ARM servers)
+- **linux/arm/v7** - ARM 32-bit (Raspberry Pi, ARM devices)
 
 ### Platform-Specific Builds
 
 ```bash
-# Build for specific platform
+# Build for x86_64
+python manage.py docker build linux/amd64 guest-registration:x86_64
+
+# Build for ARM64
 python manage.py docker build linux/arm64 guest-registration:arm64
 
-# Build for multiple platforms
+# Build for multiple platforms (includes x86_64)
 python manage.py docker multi-build linux/amd64,linux/arm64,linux/arm/v7
 ```
 
@@ -456,6 +482,7 @@ For Docker-related issues:
 
 **Last Updated**: January 2025  
 **Docker Version**: 20.10+  
-**Compose Version**: 2.0+
+**Compose Version**: 2.0+  
+**Supported Platforms**: x86_64, ARM64, ARMv7
 
 [← Back to Documentation Index](README.md) 

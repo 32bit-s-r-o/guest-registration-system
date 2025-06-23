@@ -390,7 +390,7 @@ class SystemManager:
 
     def _docker_build(self, args):
         """Build Docker image"""
-        platform = args[0] if args else 'linux/amd64'
+        platform = args[0] if args else 'linux/amd64'  # Default to x86_64
         tag = args[1] if len(args) > 1 else 'guest-registration:latest'
         
         print(f"🔨 Building Docker image for {platform} with tag {tag}")
@@ -421,7 +421,7 @@ class SystemManager:
 
     def _docker_multi_build(self, args):
         """Build Docker image for multiple platforms"""
-        platforms = args if args else ['linux/amd64', 'linux/arm64', 'linux/arm/v7']
+        platforms = args if args else ['linux/amd64', 'linux/arm64', 'linux/arm/v7']  # Default includes x86_64
         tag = 'guest-registration:latest'
         
         print(f"🔨 Building multi-platform Docker image: {', '.join(platforms)}")
