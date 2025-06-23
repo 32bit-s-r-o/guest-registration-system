@@ -1,0 +1,2674 @@
+# Slovak translations for PROJECT.
+# Copyright (C) 2025 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2025-06-23 13:45+0200\n"
+"PO-Revision-Date: 2025-06-23 01:07+0200\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: sk\n"
+"Language-Team: sk <LL@li.org>\n"
+"Plural-Forms: nplurals=3; plural=((n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: app.py:450
+#, python-format
+msgid "Thank you for your message, %(name)s! We will get back to you soon."
+msgstr "Ďakujeme za vašu správu, %(name)s! Čoskoro sa vám ozveme."
+
+#: app.py:477
+msgid "Please enter a confirmation code"
+msgstr "Zadajte prosím overovací kód"
+
+#: app.py:483 app.py:500
+msgid "Invalid confirmation code. Please check your code and try again."
+msgstr "Neplatný overovací kód. Skontrolujte prosím svoj kód a Skúste to znovu."
+
+#: app.py:539
+#, python-format
+msgid "Document photo is required for %(age_category)s guests"
+msgstr "Je vyžadovaná fotografia dokladu pre hostí v kategórii %(age_category)s"
+
+#: app.py:678
+msgid ""
+"Registration submitted successfully! You will receive an email once it is"
+" reviewed."
+msgstr "Registrácia bola úspešne odoslaná! Dostanete e-mail po kontrole."
+
+#: app.py:697
+msgid "Invalid username or password"
+msgstr "Nesprávne používateľské meno alebo heslo"
+
+#: app.py:760
+msgid "Settings updated successfully!"
+msgstr "Nastavenia boli úspešne aktualizované!"
+
+#: app.py:772
+#, python-format
+msgid "Airbnb sync successful: %(message)s"
+msgstr "Synchronizace s Airbnb úspěšná: %(message)s"
+
+#: app.py:774
+#, python-format
+msgid "Airbnb sync failed: %(message)s"
+msgstr "Synchronizace s Airbnb selhala: %(message)s"
+
+#: app.py:799
+msgid "Trip created successfully!"
+msgstr "Ubytovanie bylo úspěšně vytvořeno!"
+
+#: app.py:840
+msgid "Registration approved and email sent to user"
+msgstr "Registrácia schválena a e-mail odeslán uživateli"
+
+#: app.py:857
+msgid "Registration rejected and email sent to user"
+msgstr "Registrácia zamítnuta a e-mail odeslán uživateli"
+
+#: app.py:927
+msgid "Invoice created successfully!"
+msgstr "Faktura byla úspěšně vytvořena!"
+
+#: app.py:993
+msgid "Invoice updated successfully!"
+msgstr "Faktura byla úspěšně aktualizována!"
+
+#: app.py:1015
+msgid "Invoice deleted successfully!"
+msgstr "Faktura byla úspěšně smazána!"
+
+#: app.py:1031
+#, python-format
+msgid "Invoice status changed from %(old_status)s to %(new_status)s successfully!"
+msgstr "Stav faktury byl úspěšně změněn z %(old_status)s na %(new_status)s!"
+
+#: app.py:1033
+msgid "Invalid status provided."
+msgstr "Poskytnut Neplatný stav."
+
+#: app.py:1150
+msgid "No recipient email found for this invoice."
+msgstr "pre tuto fakturu nebyl nalezen příjemce e-mailu."
+
+#: app.py:1186
+#, python-format
+msgid "Your Invoice from %(company)s"
+msgstr "vaše faktura od %(company)s"
+
+#: app.py:1186 app.py:1201
+msgid "Our Company"
+msgstr "Naše společnost"
+
+#: app.py:1209
+#, python-format
+msgid "Invoice PDF sent to %(email)s"
+msgstr "Faktura PDF odeslána na %(email)s"
+
+#: app.py:1212
+#, python-format
+msgid "Failed to send invoice PDF: %(error)s"
+msgstr "Nepodařilo sa odeslat fakturu PDF: %(error)s"
+
+#: app.py:1279
+msgid "All data has been reset successfully! Admin accounts have been preserved."
+msgstr "Všechna data byla úspěšně resetována! Administrátorské účty byly zachovány."
+
+#: app.py:1633
+#, python-format
+msgid "Error seeding data: %(error)s"
+msgstr "Chyba při načítání dat: %(error)s"
+
+#: app.py:1873
+msgid "Your registration has been approved!"
+msgstr "vaše Registrácia byla schválena!"
+
+#: app.py:1905
+msgid "Registration Update Required"
+msgstr "Vyžadována aktualizace Registrácia"
+
+#: app.py:1985 app.py:1990
+msgid "No photo selected"
+msgstr "Nebyla vybrána žádná fotografia"
+
+#: app.py:2006
+#, fuzzy
+msgid "Photo uploaded successfully"
+msgstr "fotografia byla úspěšně nahrána"
+
+#: app.py:2008
+msgid "Invalid file type. Please upload JPG or PNG files only."
+msgstr "Neplatný typ souboru. Nahrajte prosím pouze soubory JPG nebo PNG."
+
+#: app.py:2058
+msgid "Housekeeping pay updated."
+msgstr "Odměna za úklid byla aktualizována."
+
+#: app.py:2078 app.py:2129 app.py:2261
+#, fuzzy
+msgid "Registration ID"
+msgstr "ID Registrácia"
+
+#: app.py:2079 app.py:2130 app.py:2262 templates/admin/trip_breakdown.html:194
+#: templates/confirm.html:31
+msgid "Trip Title"
+msgstr "Název ubytovanie"
+
+#: app.py:2080 templates/admin/edit_user.html:11
+#: templates/admin/new_user.html:11
+#: templates/admin/registration_breakdown.html:179
+#: templates/admin/users.html:11 templates/admin/view_invoice.html:56
+#: templates/admin/view_user.html:15 templates/contact.html:45
+#: templates/gdpr.html:35 templates/gdpr.html:44 templates/gdpr.html:253
+msgid "Email"
+msgstr "Email"
+
+#: app.py:2081 app.py:2258 templates/admin/housekeeping.html:76
+#: templates/admin/housekeeping.html:98
+#: templates/admin/invoice_breakdown.html:198 templates/admin/invoices.html:46
+#: templates/admin/invoices.html:106
+#: templates/admin/registration_breakdown.html:180
+#: templates/housekeeper/calendar.html:27
+#: templates/housekeeper/dashboard.html:55
+msgid "Status"
+msgstr "Stav"
+
+#: app.py:2082 templates/admin/registration_breakdown.html:182
+msgid "Language"
+msgstr "Jazyk"
+
+#: app.py:2083 app.py:2137 app.py:2185 app.py:2259
+#, fuzzy
+msgid "Created Date"
+msgstr "Datum vytvořenie"
+
+#: app.py:2084 app.py:2260
+#, fuzzy
+msgid "Updated Date"
+msgstr "Datum aktualizace"
+
+#: app.py:2085
+#, fuzzy
+msgid "Guest Count"
+msgstr "Počet hostí"
+
+#: app.py:2086
+#, fuzzy
+msgid "Admin Comment"
+msgstr "Komentář administrátora"
+
+#: app.py:2128
+#, fuzzy
+msgid "Guest ID"
+msgstr "ID hosta"
+
+#: app.py:2131 templates/register.html:128
+msgid "First Name"
+msgstr "Jméno"
+
+#: app.py:2132 templates/register.html:134
+msgid "Last Name"
+msgstr "Příjmenie"
+
+#: app.py:2133 templates/admin/guest_breakdown.html:199
+#: templates/register.html:140
+msgid "Age Category"
+msgstr "Věková kategorie"
+
+#: app.py:2134 templates/admin/guest_breakdown.html:200
+#: templates/confirm.html:70 templates/register.html:152
+msgid "Document Type"
+msgstr "Typ dokumentu"
+
+#: app.py:2135 templates/confirm.html:71 templates/register.html:163
+msgid "Document Number"
+msgstr "Číslo dokumentu"
+
+#: app.py:2136 templates/admin/guest_breakdown.html:75
+#: templates/admin/guest_breakdown.html:173
+#: templates/admin/guest_breakdown.html:202 templates/confirm.html:74
+msgid "GDPR Consent"
+msgstr "Souhlas s GDPR"
+
+#: app.py:2180 templates/admin/housekeeping.html:96
+#: templates/housekeeper/dashboard.html:54
+#, fuzzy
+msgid "Trip ID"
+msgstr "Název ubytovanie"
+
+#: app.py:2181
+#, fuzzy
+msgid "Title"
+msgstr "Název ubytovanie"
+
+#: app.py:2182 templates/confirm.html:32
+msgid "Start Date"
+msgstr "Datum začátku"
+
+#: app.py:2183 templates/confirm.html:34
+msgid "End Date"
+msgstr "Datum konce"
+
+#: app.py:2184 templates/admin/trip_breakdown.html:196
+#, fuzzy
+msgid "Max Guests"
+msgstr "Maximální počet hostí"
+
+#: app.py:2186 templates/admin/trip_breakdown.html:45
+#: templates/admin/trip_breakdown.html:148
+#: templates/admin/trip_breakdown.html:169
+#, fuzzy
+msgid "Airbnb Synced"
+msgstr "Airbnb overovací kód"
+
+#: app.py:2187
+#, fuzzy
+msgid "Airbnb Guest Name"
+msgstr "Jméno"
+
+#: app.py:2188
+#, fuzzy
+msgid "Airbnb Guest Email"
+msgstr "Email klienta"
+
+#: app.py:2189
+msgid "Airbnb Guest Count"
+msgstr ""
+
+#: app.py:2190 templates/confirm.html:39 templates/register.html:15
+msgid "Confirmation Code"
+msgstr "overovací kód"
+
+#: app.py:2191
+#, fuzzy
+msgid "Registration Count"
+msgstr "Údaje o registraci"
+
+#: app.py:2192
+msgid "Pending Count"
+msgstr ""
+
+#: app.py:2193
+msgid "Approved Count"
+msgstr ""
+
+#: app.py:2194
+#, fuzzy
+msgid "Rejected Count"
+msgstr "Počet položek"
+
+#: app.py:2247
+#, fuzzy
+msgid "Invoice ID"
+msgstr "Faktura #"
+
+#: app.py:2248 templates/admin/invoice_breakdown.html:195
+#: templates/admin/view_invoice.html:67
+msgid "Invoice Number"
+msgstr "Číslo faktury"
+
+#: app.py:2249 templates/admin/edit_invoice.html:29
+#: templates/admin/new_invoice.html:32 templates/confirm.html:96
+#: templates/register.html:70
+msgid "Client Name"
+msgstr "Jméno klienta"
+
+#: app.py:2250 templates/admin/edit_invoice.html:36
+#: templates/admin/new_invoice.html:38
+msgid "Client Email"
+msgstr "Email klienta"
+
+#: app.py:2251
+#, fuzzy
+msgid "Client VAT Number"
+msgstr "DIČ"
+
+#: app.py:2252 templates/admin/edit_invoice.html:63
+#: templates/admin/invoice_breakdown.html:200 templates/admin/invoices.html:43
+#: templates/admin/new_invoice.html:62 templates/admin/view_invoice.html:68
+msgid "Issue Date"
+msgstr "Datum vystavenie"
+
+#: app.py:2253 templates/admin/edit_invoice.html:70
+#: templates/admin/invoices.html:44 templates/admin/new_invoice.html:69
+#: templates/admin/view_invoice.html:70
+msgid "Due Date"
+msgstr "Datum splatnosti"
+
+#: app.py:2254 templates/admin/edit_invoice.html:128
+#: templates/admin/new_invoice.html:126 templates/admin/view_invoice.html:143
+msgid "Subtotal"
+msgstr "Mezisoučet"
+
+#: app.py:2255 templates/admin/edit_invoice.html:132
+#: templates/admin/new_invoice.html:130 templates/admin/view_invoice.html:147
+msgid "VAT Total"
+msgstr "Celkem DPH"
+
+#: app.py:2256 templates/admin/invoices.html:45
+msgid "Total Amount"
+msgstr "Celková částka"
+
+#: app.py:2257 templates/admin/edit_invoice.html:77
+#: templates/admin/invoice_breakdown.html:199
+#: templates/admin/new_invoice.html:75 templates/admin/view_invoice.html:72
+msgid "Currency"
+msgstr "Měna"
+
+#: app.py:2539 app.py:2586
+msgid "Username already exists"
+msgstr ""
+
+#: app.py:2543 app.py:2591
+#, fuzzy
+msgid "Email already exists"
+msgstr "Emailová adresa"
+
+#: app.py:2557
+#, fuzzy
+msgid "User created successfully!"
+msgstr "Výlet byl úspěšně vytvořen!"
+
+#: app.py:2605
+#, fuzzy
+msgid "User updated successfully!"
+msgstr "Nastavenia boli úspešne aktualizované!"
+
+#: app.py:2619
+msgid "You cannot delete your own account"
+msgstr ""
+
+#: app.py:2634
+#, fuzzy
+msgid "User deleted successfully!"
+msgstr "Faktura byla úspěšně smazána!"
+
+#: templates/about.html:3 templates/about.html:9 templates/contact.html:119
+msgid "About Us"
+msgstr "O nás"
+
+#: templates/about.html:10
+msgid "Secure and compliant guest registration solutions for modern travel"
+msgstr ""
+"Bezpečný a GDPR kompatibilní systém Registrácia hostí pre vaše výlety a "
+"ubytovanie."
+
+#: templates/about.html:17
+msgid "Our Mission"
+msgstr "Naše mise"
+
+#: templates/about.html:19
+msgid "We provide secure, GDPR-compliant guest registration systems that protect personal data while streamlining the registration process for trip organizers and guests alike."
+msgstr "Poskytujeme bezpečné systémy Registrácia hostí v souladu s GDPR, které chrání osobní údaje a zároveň zjednodušují proces Registrácia pre organizátory ubytovanie i hosty."
+
+#: templates/about.html:28
+msgid "Our Vision"
+msgstr "Naše vize"
+
+#: templates/about.html:30
+msgid "To become the leading platform for secure guest registration, ensuring privacy and compliance while providing an excellent user experience for all parties involved."
+msgstr "Stát sa přední platformou pre bezpečnou registraci hostí, zajišťující soukromí a dodržování předpisů při poskytování vynikající uživatelské zkušenosti pre všechny zúčastněné strany."
+
+#: templates/about.html:40
+msgid "Why Choose Our System?"
+msgstr "Proč si vybrat náš systém?"
+
+#: templates/about.html:45
+msgid "Security & Privacy"
+msgstr "Bezpečnost a soukromí"
+
+#: templates/about.html:47
+msgid "End-to-end encryption for all data"
+msgstr "End-to-end šifrování pre všechna data"
+
+#: templates/about.html:48
+msgid "GDPR compliance built-in"
+msgstr "Vestavěná shoda s GDPR"
+
+#: templates/about.html:49
+msgid "Automatic document deletion after approval"
+msgstr "Nahrané dokumenty budou automaticky smazány po schválenie"
+
+#: templates/about.html:50 templates/gdpr.html:205
+msgid "Secure file uploads with virus scanning"
+msgstr "Bezpečné nahrávání souborů s kontrolou virů"
+
+#: templates/about.html:54
+msgid "Efficiency"
+msgstr "Efektivita"
+
+#: templates/about.html:56
+msgid "Streamlined registration process"
+msgstr "Zjednodušený proces Registrácia"
+
+#: templates/about.html:57
+msgid "Instant email notifications"
+msgstr "Okamžitá e-mailová oznámenie"
+
+#: templates/about.html:58
+msgid "Admin dashboard for easy management"
+msgstr "Administrátorská nástěnka pre snadnou správu"
+
+#: templates/about.html:59
+msgid "Mobile-responsive design"
+msgstr "Responzivní design pre mobilní zařízenie"
+
+#: templates/about.html:65
+msgid "User Experience"
+msgstr "Uživatelská zkušenost"
+
+#: templates/about.html:67
+msgid "Intuitive interface design"
+msgstr "Intuitivní návrh rozhraní"
+
+#: templates/about.html:68
+msgid "Clear progress indicators"
+msgstr "Jasné indikátory průběhu"
+
+#: templates/about.html:69
+msgid "Helpful validation messages"
+msgstr "Užitečné validační zprávy"
+
+#: templates/about.html:70
+msgid "Accessible for all users"
+msgstr "Přístupné pre všechny uživatele"
+
+#: templates/about.html:74
+msgid "Flexibility"
+msgstr "Flexibilita"
+
+#: templates/about.html:76
+msgid "Customizable trip settings"
+msgstr "Přizpůsobitelná Nastavenia ubytovanie"
+
+#: templates/about.html:77
+msgid "Multiple document types supported"
+msgstr "Podporovány různé typy dokumentů"
+
+#: templates/about.html:78
+msgid "Scalable for any group size"
+msgstr "Škálovatelné pre jakoukoliv velikost skupiny"
+
+#: templates/about.html:79
+msgid "Easy admin management"
+msgstr "Snadná správa administrátora"
+
+#: templates/about.html:88
+msgid "Our Team"
+msgstr "Náš tým"
+
+#: templates/about.html:92
+msgid "Our team consists of experienced developers, security experts, and travel industry professionals who understand the unique challenges of guest registration and data protection."
+msgstr "Náš tým sa skládá ze zkušených vývojářů, bezpečnostních expertů a profesionálů z cestovního ruchu, kteří rozumějí jedinečným výzvám Registrácia hostí a ochrany dat."
+
+#: templates/about.html:96
+msgid "We are committed to continuous improvement and regularly update our systems to meet the latest security standards and regulatory requirements."
+msgstr "Jsme odhodláni k neustálému zlepšování a pravidelně aktualizujeme naše systémy, aby splňovaly nejnovější bezpečnostní standardy a regulační požadavky."
+
+#: templates/about.html:104 templates/contact.html:3 templates/gdpr.html:311
+msgid "Contact Us"
+msgstr "Kontakt"
+
+#: templates/base.html:71 templates/contact.html:144
+msgid "Home"
+msgstr "Domů"
+
+#: templates/base.html:74 templates/contact.html:149
+msgid "About"
+msgstr "O nás"
+
+#: templates/base.html:77 templates/contact.html:10
+msgid "Contact"
+msgstr "Kontakt"
+
+#: templates/base.html:80
+msgid "GDPR"
+msgstr "GDPR"
+
+#: templates/admin/dashboard.html:3 templates/admin/dashboard.html:9
+#: templates/base.html:87
+msgid "Admin Dashboard"
+msgstr "Administrátorská nástěnka"
+
+#: templates/base.html:89 templates/housekeeper/dashboard.html:3
+#: templates/housekeeper/dashboard.html:9
+msgid "Housekeeper Dashboard"
+msgstr "Nástěnka úklidového pracovníka"
+
+#: templates/base.html:92
+msgid "Dashboard"
+msgstr "Nástěnka"
+
+#: templates/base.html:96
+msgid "Logout"
+msgstr "Odhlásit"
+
+#: templates/admin/login.html:39 templates/base.html:100
+msgid "Login"
+msgstr "Přihlásit"
+
+#: templates/confirm.html:3
+msgid "Confirm Registration"
+msgstr "Potvrdit registraci"
+
+#: templates/confirm.html:12
+msgid "Confirm Your Registration"
+msgstr "Potvrďte svoju registraci"
+
+#: templates/confirm.html:17
+msgid "Please review your information before submitting"
+msgstr "Skontrolujte prosím svoje informace před odesláním"
+
+#: templates/confirm.html:19
+msgid "Once submitted, your registration will be reviewed by an administrator. You will receive an email notification with the result."
+msgstr "Po odeslání bude vaše Registrácia přezkoumána administrátorem. Obdržíte e-mailové oznámení s výsledkem."
+
+#: templates/confirm.html:26
+msgid "Trip Information"
+msgstr "Informace o ubytovanie"
+
+#: templates/confirm.html:37
+msgid "Maximum Guests"
+msgstr "Maximální počet hostí"
+
+#: templates/admin/settings.html:197 templates/admin/settings.html:202
+#: templates/confirm.html:49 templates/contact.html:22 templates/gdpr.html:57
+#: templates/gdpr.html:135 templates/gdpr.html:245 templates/register.html:45
+msgid "Contact Information"
+msgstr "Kontaktní informace"
+
+#: templates/admin/settings.html:37 templates/confirm.html:52
+#: templates/register.html:47
+msgid "Email Address"
+msgstr "Emailová adresa"
+
+#: templates/admin/settings.html:344 templates/confirm.html:59
+#: templates/register.html:93
+msgid "Guest Information"
+msgstr "Informace o hostech"
+
+#: templates/admin/registration_breakdown.html:312 templates/confirm.html:60
+msgid "guest(s)"
+msgstr "hosť(é)"
+
+#: templates/confirm.html:65 templates/register.html:124
+msgid "Guest"
+msgstr "hosť"
+
+#: templates/admin/guest_breakdown.html:198
+#: templates/admin/view_invoice.html:54 templates/confirm.html:68
+msgid "Name"
+msgstr "Jméno"
+
+#: templates/admin/guest_breakdown.html:221 templates/confirm.html:76
+#: templates/housekeeper/dashboard.html:76
+msgid "Yes"
+msgstr "Ano"
+
+#: templates/admin/guest_breakdown.html:223 templates/confirm.html:78
+#: templates/housekeeper/dashboard.html:76
+msgid "No"
+msgstr "Ne"
+
+#: templates/confirm.html:91 templates/register.html:57
+msgid "Invoice Request"
+msgstr "Požadavek na fakturu"
+
+#: templates/admin/settings.html:238 templates/admin/view_invoice.html:59
+#: templates/confirm.html:98 templates/register.html:77
+msgid "VAT Number"
+msgstr "DIČ"
+
+#: templates/confirm.html:103 templates/register.html:84
+msgid "Billing Address"
+msgstr "Fakturační adresa"
+
+#: templates/confirm.html:116
+msgid "Go Back"
+msgstr "Zpět"
+
+#: templates/confirm.html:119
+msgid "Submit Registration"
+msgstr "Odeslat registraci"
+
+#: templates/contact.html:12 templates/gdpr.html:28 templates/index.html:3
+msgid "Guest Registration System"
+msgstr "Systém Registrácia hostí"
+
+#: templates/contact.html:13
+msgid "Get in touch with us for any questions about your stay"
+msgstr ""
+
+#: templates/contact.html:27
+msgid "Contact Person"
+msgstr "Kontaktní osoba"
+
+#: templates/contact.html:34 templates/gdpr.html:39 templates/gdpr.html:45
+#: templates/gdpr.html:263
+msgid "Phone"
+msgstr "Telefon"
+
+#: templates/admin/settings.html:269 templates/contact.html:56
+msgid "Website"
+msgstr "Webové stránky"
+
+#: templates/admin/settings.html:258 templates/admin/view_invoice.html:62
+#: templates/contact.html:68 templates/gdpr.html:32 templates/gdpr.html:43
+msgid "Address"
+msgstr "Adresa"
+
+#: templates/contact.html:80 templates/contact.html:107
+msgid "Send Message"
+msgstr "Odeslat zprávu"
+
+#: templates/contact.html:85
+msgid "Your Name"
+msgstr "vaše jméno"
+
+#: templates/contact.html:90
+msgid "Your Email"
+msgstr "Váš e-mail"
+
+#: templates/contact.html:95
+msgid "Subject"
+msgstr "Předmět"
+
+#: templates/contact.html:100
+msgid "Message"
+msgstr "Zpráva"
+
+#: templates/contact.html:130
+msgid "Contact information not available."
+msgstr "Kontaktní informace nejsou k dispozici."
+
+#: templates/contact.html:138
+msgid "Quick Links"
+msgstr "Rychlé odkazy"
+
+#: templates/contact.html:154 templates/register.html:3
+msgid "Register"
+msgstr "Registrovat"
+
+#: templates/gdpr.html:3 templates/gdpr.html:9
+msgid "GDPR Privacy Policy"
+msgstr "Zásady ochrany osobních údajů (GDPR)"
+
+#: templates/gdpr.html:10
+msgid "Your privacy and data protection rights are important to us"
+msgstr "vaše soukromí a práva na ochranu údajů jsou pre nás důležité"
+
+#: templates/gdpr.html:11
+msgid "Last updated: December 2024"
+msgstr "Poslední aktualizace: prosinec 2024"
+
+#: templates/gdpr.html:15
+msgid "Important Notice"
+msgstr "Důležité upozornění"
+
+#: templates/gdpr.html:24
+msgid "Data Controller"
+msgstr "Správce údajů"
+
+#: templates/gdpr.html:27
+msgid "Company"
+msgstr "Společnost"
+
+#: templates/gdpr.html:43
+msgid "Your Company Address"
+msgstr "Adresa vaší společnosti"
+
+#: templates/gdpr.html:44 templates/gdpr.html:188 templates/gdpr.html:258
+msgid "Your Contact Email"
+msgstr "Váš kontaktní e-mail"
+
+#: templates/gdpr.html:45 templates/gdpr.html:268
+msgid "Your Contact Phone"
+msgstr "Váš kontaktní telefon"
+
+#: templates/gdpr.html:52
+msgid "Personal Data We Collect"
+msgstr "Osobní údaje, které shromažďujeme"
+
+#: templates/gdpr.html:55
+msgid "Information you provide:"
+msgstr "Informace, které poskytujete:"
+
+#: templates/gdpr.html:57
+msgid "Email address for communication"
+msgstr "Emailová adresa pre komunikaci"
+
+#: templates/gdpr.html:58
+msgid "Personal Details"
+msgstr "Osobní údaje"
+
+#: templates/gdpr.html:58
+msgid "First name, last name"
+msgstr "Jméno, příjmenie"
+
+#: templates/gdpr.html:59
+msgid "Identification"
+msgstr "Identifikace"
+
+#: templates/gdpr.html:59
+msgid "Document type, document number"
+msgstr "Typ dokladu, číslo dokladu"
+
+#: templates/gdpr.html:60 templates/gdpr.html:131
+msgid "Document Images"
+msgstr "Obrázky dokladů"
+
+#: templates/gdpr.html:62 templates/gdpr.html:82
+msgid "Consent"
+msgstr "Souhlas"
+
+#: templates/gdpr.html:62
+msgid "GDPR consent confirmation"
+msgstr "Potvrzení souhlasu s GDPR"
+
+#: templates/gdpr.html:65
+msgid "Automatically collected information:"
+msgstr "Automaticky shromažďované informace:"
+
+#: templates/gdpr.html:67
+msgid "Technical Data"
+msgstr "Technické údaje"
+
+#: templates/gdpr.html:67
+msgid "IP address, browser type, device information"
+msgstr "IP adresa, typ prohlížeče, informace o zařízenie"
+
+#: templates/gdpr.html:69
+msgid "Usage Data"
+msgstr "Údaje o používanie"
+
+#: templates/gdpr.html:69
+msgid "Pages visited, time spent on site"
+msgstr "Navštívené stránky, čas strávený na webu"
+
+#: templates/gdpr.html:70
+msgid "Cookies"
+msgstr "Cookies"
+
+#: templates/gdpr.html:70
+msgid "Session cookies for functionality"
+msgstr "Relační cookies pre funkčnost"
+
+#: templates/gdpr.html:77
+msgid "How We Use Your Data"
+msgstr "Jak používáme vaše údaje"
+
+#: templates/gdpr.html:80
+msgid "Legal basis for processing:"
+msgstr "Právní základ zpracování:"
+
+#: templates/gdpr.html:82
+msgid "You have given explicit consent for data processing"
+msgstr "Udělili jste výslovný souhlas sa zpracováním údajů"
+
+#: templates/gdpr.html:84
+msgid "Legitimate Interest"
+msgstr "Oprávněný zájem"
+
+#: templates/gdpr.html:84
+msgid "To provide guest registration services"
+msgstr "pre poskytování služeb Registrácia hostí"
+
+#: templates/gdpr.html:86
+msgid "Contract"
+msgstr "Smlouva"
+
+#: templates/gdpr.html:86
+msgid "To fulfill registration obligations"
+msgstr "pre splnění registračních povinností"
+
+#: templates/gdpr.html:89
+msgid "Purposes of processing:"
+msgstr "Účely zpracování:"
+
+#: templates/gdpr.html:91
+msgid "Process guest registrations for trips"
+msgstr "Zpracování registrací hostí pre ubytovanie"
+
+#: templates/gdpr.html:92
+msgid "Verify guest identities and documents"
+msgstr "Ověření totožnosti hostí a dokladů"
+
+#: templates/gdpr.html:93
+msgid "Communicate registration status and updates"
+msgstr "Komunikace stavu a aktualizací Registrácia"
+
+#: templates/gdpr.html:94
+msgid "Ensure compliance with travel regulations"
+msgstr "Zajištění souladu s cestovními předpisy"
+
+#: templates/gdpr.html:95
+msgid "Improve our services and user experience"
+msgstr "Zlepšování našich služeb a uživatelského zážitku"
+
+#: templates/gdpr.html:102
+msgid "Data Sharing and Transfers"
+msgstr "Sdílení a přenos údajů"
+
+#: templates/gdpr.html:105
+msgid "We may share your data with:"
+msgstr "vaše údaje můžeme sdílet s:"
+
+#: templates/gdpr.html:107
+msgid "Trip Organizers"
+msgstr "Organizátoři ubytovanie"
+
+#: templates/gdpr.html:107
+msgid "Only the specific admin managing your trip"
+msgstr "Pouze konkrétní administrátor spravující vaše ubytovanie"
+
+#: templates/gdpr.html:109
+msgid "Service Providers"
+msgstr "Poskytovatelé služeb"
+
+#: templates/gdpr.html:111
+msgid "Legal Authorities"
+msgstr "Právní orgány"
+
+#: templates/gdpr.html:111
+msgid "When required by law or to protect rights"
+msgstr "Pokud to vyžaduje zákon nebo k ochraně práv"
+
+#: templates/gdpr.html:115
+msgid "Data transfers:"
+msgstr "Přenosy údajů:"
+
+#: templates/gdpr.html:117
+msgid "All data is stored within the European Economic Area (EEA)"
+msgstr "Všechna data jsou uložena v rámci Evropského hospodářského prostoru (EHP)"
+
+#: templates/gdpr.html:118
+msgid "Any international transfers comply with GDPR requirements"
+msgstr "Jakékoli mezinárodní přenosy splňují požadavky GDPR"
+
+#: templates/gdpr.html:119
+msgid "We use appropriate safeguards for data protection"
+msgstr "Používáme vhodná opatření pre ochranu údajů"
+
+#: templates/gdpr.html:126
+msgid "Data Retention"
+msgstr "Doba uchovávání údajů"
+
+#: templates/gdpr.html:129
+msgid "Retention periods:"
+msgstr "Doby uchovávání:"
+
+#: templates/gdpr.html:133
+msgid "Registration Data"
+msgstr "Údaje o registraci"
+
+#: templates/gdpr.html:137
+msgid "Technical Logs"
+msgstr "Technické záznamy"
+
+#: templates/gdpr.html:137
+msgid "Retained for 90 days for security purposes"
+msgstr "Uchováváno 90 dní pre bezpečnostní účely"
+
+#: templates/gdpr.html:141
+msgid "Deletion process:"
+msgstr "Proces mazání:"
+
+#: templates/gdpr.html:143
+msgid "Automatic deletion of documents after approval"
+msgstr "Automatické smazání dokumentů po schválenie"
+
+#: templates/gdpr.html:144
+msgid "Regular review and deletion of expired data"
+msgstr "Pravidelná kontrola a mazání expirovaných dat"
+
+#: templates/gdpr.html:145
+msgid "Secure deletion methods to prevent recovery"
+msgstr "Bezpečné metody mazání pre zabránění obnovenie"
+
+#: templates/gdpr.html:152 templates/gdpr.html:300
+msgid "Your Rights"
+msgstr "vaše práva"
+
+#: templates/gdpr.html:155
+msgid "Under GDPR, you have the following rights:"
+msgstr "Podle GDPR máte následující práva:"
+
+#: templates/gdpr.html:158
+msgid "Right to Access"
+msgstr "Právo na přístup"
+
+#: templates/gdpr.html:162
+msgid "Right to Rectification"
+msgstr "Právo na opravu"
+
+#: templates/gdpr.html:163
+msgid "Request correction of inaccurate or incomplete personal data."
+msgstr "Požádejte o opravu nepřesných nebo neúplných osobních údajů."
+
+#: templates/gdpr.html:165
+msgid "Right to Erasure"
+msgstr "Právo na výmaz"
+
+#: templates/gdpr.html:166
+msgid "Request deletion of your personal data (subject to legal requirements)."
+msgstr "Požádejte o výmaz svých osobních údajů (v souladu s právními požadavky)."
+
+#: templates/gdpr.html:169
+msgid "Right to Restrict Processing"
+msgstr "Právo na omezení zpracovanie"
+
+#: templates/gdpr.html:170
+msgid "Request limitation of data processing in certain circumstances."
+msgstr "Požádejte o omezení zpracování údajů v určitých případech."
+
+#: templates/gdpr.html:172
+msgid "Right to Data Portability"
+msgstr "Právo na přenositelnost údajů"
+
+#: templates/gdpr.html:173
+msgid "Receive your data in a structured, machine-readable format."
+msgstr "Získejte svá data v strukturovaném, strojově čitelném formátu."
+
+#: templates/gdpr.html:175
+msgid "Right to Object"
+msgstr "Právo vznést námitku"
+
+#: templates/gdpr.html:176
+msgid "Object to processing based on legitimate interests."
+msgstr "Vznést námitku proti zpracování na základě oprávněného zájmu."
+
+#: templates/gdpr.html:181
+msgid "How to Exercise Your Rights"
+msgstr "Jak uplatnit svá práva"
+
+#: templates/gdpr.html:183
+msgid "To exercise any of these rights, please contact us at"
+msgstr "pre uplatnění těchto práv nás prosím kontaktujte na"
+
+#: templates/gdpr.html:191
+msgid "with your request. We will respond within 30 days."
+msgstr "sa svoju žádostí. Odpovíme do 30 dnů."
+
+#: templates/gdpr.html:199
+msgid "Data Security"
+msgstr "Bezpečnost údajů"
+
+#: templates/gdpr.html:202
+msgid "Security measures:"
+msgstr "Bezpečnostní opatření:"
+
+#: templates/gdpr.html:204
+msgid "Encryption of data in transit and at rest"
+msgstr "Šifrování dat při přenosu i uloženie"
+
+#: templates/gdpr.html:206
+msgid "Regular security audits and updates"
+msgstr "Pravidelné bezpečnostní audity a aktualizace"
+
+#: templates/gdpr.html:207
+msgid "Access controls and authentication"
+msgstr "Kontrola přístupu a autentizace"
+
+#: templates/gdpr.html:208
+msgid "Secure deletion of sensitive documents"
+msgstr "Bezpečné mazání citlivých dokumentů"
+
+#: templates/gdpr.html:211
+msgid "Incident response:"
+msgstr "Reakce na incidenty:"
+
+#: templates/gdpr.html:213
+msgid "24/7 monitoring for security incidents"
+msgstr "Nepřetržité monitorování bezpečnostních incidentů"
+
+#: templates/gdpr.html:214
+msgid "Immediate response to data breaches"
+msgstr "Okamžitá reakce na úniky dat"
+
+#: templates/gdpr.html:215
+msgid "Notification to authorities within 72 hours"
+msgstr "Oznámení úřadům do 72 hodin"
+
+#: templates/gdpr.html:216
+msgid "Communication with affected individuals"
+msgstr "Komunikace s dotčenými osobami"
+
+#: templates/gdpr.html:223
+msgid "Cookies and Tracking"
+msgstr "Cookies a sledovanie"
+
+#: templates/gdpr.html:226
+msgid "Types of cookies we use:"
+msgstr "Typy cookies, které používáme:"
+
+#: templates/gdpr.html:228
+msgid "Essential Cookies"
+msgstr "Nezbytné cookies"
+
+#: templates/gdpr.html:228
+msgid "Required for basic functionality"
+msgstr "Nezbytné pre základní funkčnost"
+
+#: templates/gdpr.html:229
+msgid "Session Cookies"
+msgstr "Relační cookies"
+
+#: templates/gdpr.html:229
+msgid "Maintain your login session"
+msgstr "Udržují vaše Prihlásenie"
+
+#: templates/gdpr.html:230
+msgid "Analytics Cookies"
+msgstr "Analytické cookies"
+
+#: templates/gdpr.html:230
+msgid "Help us improve our service (optional)"
+msgstr "Pomáhají nám zlepšovat služby (volitelné)"
+
+#: templates/gdpr.html:234
+msgid "Cookie management:"
+msgstr "Správa cookies:"
+
+#: templates/gdpr.html:236
+msgid "You can control cookies through your browser settings"
+msgstr "Cookies môžete spravovat v Nastavenia prohlížeče"
+
+#: templates/gdpr.html:237
+msgid "Essential cookies cannot be disabled"
+msgstr "Nezbytné cookies nelze vypnout"
+
+#: templates/gdpr.html:238
+msgid "Analytics cookies are optional and can be refused"
+msgstr "Analytické cookies jsou volitelné a lze je odmítnout"
+
+#: templates/gdpr.html:275
+msgid "Data Protection Officer"
+msgstr "Pověřenec pre ochranu osobních údajů"
+
+#: templates/gdpr.html:286
+msgid "Changes to This Policy"
+msgstr "Změny těchto zásad"
+
+#: templates/gdpr.html:292
+msgid "How we notify you of changes:"
+msgstr "Jak vás informujeme o změnách:"
+
+#: templates/gdpr.html:294
+msgid "We will post the updated policy on our website"
+msgstr "Aktualizované zásady zveřejníme na našem webu"
+
+#: templates/gdpr.html:295
+msgid "We will notify you by email for significant changes"
+msgstr "O významných změnách vás budeme informovat e-mailem"
+
+#: templates/gdpr.html:296
+msgid "The effective date will be clearly indicated"
+msgstr "Datum účinnosti bude jasně uvedeno"
+
+#: templates/gdpr.html:314
+msgid "Back to Home"
+msgstr "Zpět na úvodní stránku"
+
+#: templates/index.html:9 templates/register_landing.html:17
+msgid "Welcome to Guest Registration"
+msgstr "Vítejte v systému Registrácia hostí"
+
+#: templates/index.html:19
+msgid "Secure & Compliant"
+msgstr "Bezpečné a kompatibilní"
+
+#: templates/index.html:29
+msgid "Easy to Use"
+msgstr "Snadné použití"
+
+#: templates/index.html:30
+msgid "Simple registration process with mobile-friendly interface."
+msgstr "Jednoduchý registrační proces s mobilně přívětivým rozhraním."
+
+#: templates/index.html:39
+msgid "Email Notifications"
+msgstr "Emailová oznámenie"
+
+#: templates/index.html:48
+msgid "How it works:"
+msgstr "Jak to funguje:"
+
+#: templates/index.html:50
+msgid "Fill out the registration form with guest information"
+msgstr "Vyplňte registrační formulář s informacemi o hostech"
+
+#: templates/index.html:51
+msgid "Upload required identification documents"
+msgstr "Nahrajte požadované identifikační dokumenty"
+
+#: templates/index.html:52
+msgid "Review and confirm your information"
+msgstr "Zkontrolujte a potvrďte svoje informace"
+
+#: templates/index.html:53
+msgid "Submit for admin approval"
+msgstr "Odešlete ke schválení administrátorem"
+
+#: templates/index.html:54
+msgid "Receive email notification with the result"
+msgstr "Obdržíte e-mailové oznámení s výsledkem"
+
+#: templates/index.html:59
+msgid "Available Trips"
+msgstr "Dostupná ubytovanie"
+
+#: templates/index.html:65
+msgid "Start Registration"
+msgstr "Začít registraci"
+
+#: templates/index.html:67
+msgid "Have your Airbnb confirmation code ready!"
+msgstr "Mějte připravený svůj Airbnb overovací kód!"
+
+#: templates/register.html:8 templates/register_landing.html:3
+#: templates/register_landing.html:12
+msgid "Guest Registration"
+msgstr "Registrácia hostí"
+
+#: templates/register.html:13
+msgid "Maximum"
+msgstr "Maximum"
+
+#: templates/admin/dashboard.html:79 templates/register.html:13
+msgid "guests"
+msgstr "hostí"
+
+#: templates/register.html:21
+msgid "Important Information"
+msgstr "Důležité informace"
+
+#: templates/register.html:23
+msgid "All personal data is handled according to GDPR regulations"
+msgstr "Všechna osobní data jsou zpracovávána podle nařízení GDPR"
+
+#: templates/register.html:24
+msgid "Uploaded documents will be automatically deleted after approval"
+msgstr "Nahrané dokumenty budou automaticky smazány po schválenie"
+
+#: templates/register.html:25
+msgid "One email address is required for the entire group"
+msgstr "jedna e-mailová adresa je vyžadována pre celou skupinu"
+
+#: templates/register.html:26
+msgid "Each guest must provide valid identification"
+msgstr "Každý hosť musí poskytnout platnou identifikaci"
+
+#: templates/register.html:49
+msgid "Enter email address for the group"
+msgstr "Zadejte e-mailovou adresu pre skupinu"
+
+#: templates/register.html:50
+msgid "This email will be used for all communications about this registration."
+msgstr "Tento e-mail bude použit pre všechnu komunikaci ohledně této Registrácia."
+
+#: templates/register.html:62
+msgid "I would like to request an invoice for this registration"
+msgstr "Chtěl bych požádat o fakturu pre tuto registraci"
+
+#: templates/register.html:72
+msgid "Full name for invoice"
+msgstr "Celé jméno pre fakturu"
+
+#: templates/register.html:79
+msgid "VAT number (optional)"
+msgstr "DIČ (volitelné)"
+
+#: templates/register.html:86
+msgid "Enter billing address"
+msgstr "Zadejte fakturační adresu"
+
+#: templates/register.html:98
+msgid "Add Another Guest"
+msgstr "Přidat dalšího hosta"
+
+#: templates/register.html:104
+msgid "Continue to Review"
+msgstr "Pokračovat k přezkoumanie"
+
+#: templates/register.html:142
+msgid "Select age category"
+msgstr "Vyberte věkovou kategorii"
+
+#: templates/admin/guest_breakdown.html:212
+#: templates/admin/guest_breakdown.html:247 templates/register.html:143
+msgid "Adult"
+msgstr "Dospělý"
+
+#: templates/admin/guest_breakdown.html:214
+#: templates/admin/guest_breakdown.html:247 templates/register.html:144
+msgid "Child"
+msgstr "Dítě"
+
+#: templates/register.html:154
+msgid "Select document type"
+msgstr "Vyberte typ dokumentu"
+
+#: templates/register.html:155
+msgid "Passport"
+msgstr "Pas"
+
+#: templates/register.html:156
+msgid "Driving License"
+msgstr "Řidičský průkaz"
+
+#: templates/register.html:157
+msgid "Citizen ID"
+msgstr "Občanský průkaz"
+
+#: templates/register.html:169
+msgid "Document Image"
+msgstr "Obrázek dokumentu"
+
+#: templates/register.html:171 templates/register.html:202
+#: templates/register.html:212
+msgid "Upload a clear photo of the document"
+msgstr "Nahrajte jasnou fotografii dokumentu"
+
+#: templates/register.html:182
+msgid "Remove Guest"
+msgstr "Odebrat hosta"
+
+#: templates/register.html:206
+msgid "Photo upload is optional for adults"
+msgstr "Nahrání fotografia je pre dospělé nepovinné"
+
+#: templates/register.html:216
+msgid "Photo upload is optional for children"
+msgstr "Nahrání fotografia je pre děti nepovinné"
+
+#: templates/register_landing.html:38
+msgid "Airbnb Confirmation Code"
+msgstr "Airbnb overovací kód"
+
+#: templates/register_landing.html:41
+msgid "Enter your confirmation code"
+msgstr "Zadejte svůj overovací kód"
+
+#: templates/register_landing.html:45
+msgid "This is the confirmation code from your Airbnb reservation email."
+msgstr "Toto je overovací kód z vašeho Airbnb rezervačního e-mailu."
+
+#: templates/register_landing.html:51
+msgid "Continue to Registration"
+msgstr "Pokračovat k registraci"
+
+#: templates/register_landing.html:59
+msgid "Need Help?"
+msgstr "potrebujete pomoc?"
+
+#: templates/register_landing.html:65
+msgid "About This Service"
+msgstr "O této službě"
+
+#: templates/success.html:3
+msgid "Registration Submitted"
+msgstr "Registrácia odeslána"
+
+#: templates/success.html:14
+msgid "Registration Submitted Successfully!"
+msgstr "Registrácia bola úspešne odoslaná!"
+
+#: templates/success.html:22
+msgid "What happens next?"
+msgstr "Co sa stane dál?"
+
+#: templates/success.html:24
+msgid "An administrator will review your registration within 24-48 hours"
+msgstr "Administrátor přezkoumá vašu registraci do 24-48 hodin"
+
+#: templates/success.html:25
+msgid "You will receive an email notification with the approval status"
+msgstr "Obdržíte e-mailové oznámení sa stavem schválenie"
+
+#: templates/success.html:34
+msgid "Data Protection"
+msgstr "Ochrana dat"
+
+#: templates/admin/breakdowns.html:3 templates/admin/breakdowns.html:10
+#, fuzzy
+msgid "Analytics & Breakdowns"
+msgstr "Analytické cookies"
+
+#: templates/admin/breakdowns.html:12 templates/admin/invoices.html:22
+#: templates/admin/settings.html:11
+msgid "Back to Dashboard"
+msgstr "Zpět na nástěnku"
+
+#: templates/admin/breakdowns.html:25
+#: templates/admin/registration_breakdown.html:30
+#, fuzzy
+msgid "Total Registrations"
+msgstr "Začít registraci"
+
+#: templates/admin/breakdowns.html:40 templates/admin/guest_breakdown.html:30
+#: templates/admin/trip_breakdown.html:198
+#, fuzzy
+msgid "Total Guests"
+msgstr "Celkem výletů"
+
+#: templates/admin/breakdowns.html:55 templates/admin/dashboard.html:19
+#: templates/admin/trip_breakdown.html:30
+#: templates/admin/trip_breakdown.html:168
+msgid "Total Trips"
+msgstr "Celkem ubytovanie"
+
+#: templates/admin/breakdowns.html:70 templates/admin/invoice_breakdown.html:45
+#: templates/admin/invoice_breakdown.html:159
+msgid "Total Revenue"
+msgstr ""
+
+#: templates/admin/breakdowns.html:88
+#: templates/admin/registration_breakdown.html:3
+#: templates/admin/registration_breakdown.html:10
+#, fuzzy
+msgid "Registration Analytics"
+msgstr "Údaje o registraci"
+
+#: templates/admin/breakdowns.html:96
+#, fuzzy
+msgid "Monthly registration trends"
+msgstr "Odeslat registraci"
+
+#: templates/admin/breakdowns.html:97
+#, fuzzy
+msgid "Trip-wise registration analysis"
+msgstr "Analýza registrací podle ubytovanie"
+
+#: templates/admin/breakdowns.html:98
+msgid "Language preference breakdown"
+msgstr ""
+
+#: templates/admin/breakdowns.html:99
+#, fuzzy
+msgid "Guest count distribution"
+msgstr "Registrácia hostí"
+
+#: templates/admin/breakdowns.html:103
+#, fuzzy
+msgid "View Registration Analytics"
+msgstr "Přezkoumat Registrácia"
+
+#: templates/admin/breakdowns.html:113 templates/admin/guest_breakdown.html:3
+#: templates/admin/guest_breakdown.html:10
+#, fuzzy
+msgid "Guest Analytics"
+msgstr "Informace o hostech"
+
+#: templates/admin/breakdowns.html:121
+#, fuzzy
+msgid "Document type preferences"
+msgstr "Typ dokumentu"
+
+#: templates/admin/breakdowns.html:122
+#, fuzzy
+msgid "GDPR consent statistics"
+msgstr "Souhlas s GDPR"
+
+#: templates/admin/breakdowns.html:123
+#, fuzzy
+msgid "Monthly guest registration trends"
+msgstr "Registrácia hostí"
+
+#: templates/admin/breakdowns.html:124
+#, fuzzy
+msgid "Trip-wise guest distribution"
+msgstr "Rozdělení hostí podle ubytovanie"
+
+#: templates/admin/breakdowns.html:128
+#, fuzzy
+msgid "View Guest Analytics"
+msgstr "Přezkoumat Registrácia"
+
+#: templates/admin/breakdowns.html:138 templates/admin/trip_breakdown.html:3
+#: templates/admin/trip_breakdown.html:10
+#, fuzzy
+msgid "Trip Analytics"
+msgstr "Analýza ubytovanie"
+
+#: templates/admin/breakdowns.html:144
+#, fuzzy
+msgid "Registration count per trip"
+msgstr "Vyžadována aktualizace Registrácia"
+
+#: templates/admin/breakdowns.html:145
+msgid "Guest count per trip"
+msgstr ""
+
+#: templates/admin/breakdowns.html:146
+#, fuzzy
+msgid "Airbnb sync statistics"
+msgstr "Jak to funguje:"
+
+#: templates/admin/breakdowns.html:147
+msgid "Trip duration analysis"
+msgstr "Analýza délky ubytovanie"
+
+#: templates/admin/breakdowns.html:148
+msgid "Monthly trip creation trends"
+msgstr "Měsíční trendy vytváření ubytovanie"
+
+#: templates/admin/breakdowns.html:152
+#, fuzzy
+msgid "View Trip Analytics"
+msgstr "Zobrazit analýzu ubytovanie"
+
+#: templates/admin/breakdowns.html:162 templates/admin/invoice_breakdown.html:3
+#: templates/admin/invoice_breakdown.html:10
+#, fuzzy
+msgid "Invoice Analytics"
+msgstr "Seznam faktur"
+
+#: templates/admin/breakdowns.html:168
+msgid "Revenue trends and totals"
+msgstr ""
+
+#: templates/admin/breakdowns.html:169
+#, fuzzy
+msgid "Invoice status distribution"
+msgstr "Informace o faktuře"
+
+#: templates/admin/breakdowns.html:170
+#, fuzzy
+msgid "Currency breakdown"
+msgstr "Měna"
+
+#: templates/admin/breakdowns.html:171
+msgid "Monthly revenue analysis"
+msgstr ""
+
+#: templates/admin/breakdowns.html:172
+#, fuzzy
+msgid "Average invoice amounts"
+msgstr "Spravovat faktury"
+
+#: templates/admin/breakdowns.html:176
+#, fuzzy
+msgid "View Invoice Analytics"
+msgstr "Seznam faktur"
+
+#: templates/admin/breakdowns.html:189
+#, fuzzy
+msgid "Data Export"
+msgstr "Bezpečnost údajů"
+
+#: templates/admin/breakdowns.html:197
+#, fuzzy
+msgid "Export Registrations"
+msgstr "Začít registraci"
+
+#: templates/admin/breakdowns.html:202
+#, fuzzy
+msgid "Export Guests"
+msgstr "hostí"
+
+#: templates/admin/breakdowns.html:207
+#, fuzzy
+msgid "Export Trips"
+msgstr "Exportovat ubytovanie"
+
+#: templates/admin/breakdowns.html:212
+#, fuzzy
+msgid "Export Invoices"
+msgstr "Vytisknout fakturu"
+
+#: templates/admin/dashboard.html:34
+msgid "Pending Registrations"
+msgstr "Čekající Registrácia"
+
+#: templates/admin/dashboard.html:49 templates/admin/dashboard.html:101
+msgid "Quick Actions"
+msgstr "Rychlé akce"
+
+#: templates/admin/dashboard.html:50
+msgid "Manage your system"
+msgstr "Spravujte svůj systém"
+
+#: templates/admin/dashboard.html:65
+msgid "Recent Trips"
+msgstr "Poslední ubytovanie"
+
+#: templates/admin/dashboard.html:84
+msgid "No trips created yet."
+msgstr "Zatím nebyla vytvořena žádná ubytovanie."
+
+#: templates/admin/dashboard.html:88
+msgid "View All Trips"
+msgstr "Zobrazit všechna ubytovanie"
+
+#: templates/admin/dashboard.html:91
+msgid "New Trip"
+msgstr "Nové ubytovanie"
+
+#: templates/admin/dashboard.html:108
+msgid "Review Registrations"
+msgstr "Přezkoumat Registrácia"
+
+#: templates/admin/dashboard.html:114
+msgid "Manage Invoices"
+msgstr "Spravovat faktury"
+
+#: templates/admin/dashboard.html:120
+msgid "Settings"
+msgstr "Nastavenia"
+
+#: templates/admin/dashboard.html:126
+msgid "Data Management"
+msgstr "Správa dat"
+
+#: templates/admin/dashboard.html:132
+#, fuzzy
+msgid "Analytics"
+msgstr "Analytické cookies"
+
+#: templates/admin/dashboard.html:138
+msgid "Housekeeping"
+msgstr ""
+
+#: templates/admin/dashboard.html:144
+msgid "System Backup"
+msgstr "Záloha systému"
+
+#: templates/admin/dashboard.html:148 templates/admin/users.html:4
+#, fuzzy
+msgid "User Management"
+msgstr "Správa cookies:"
+
+#: templates/admin/edit_invoice.html:3 templates/admin/edit_invoice.html:9
+#: templates/admin/view_invoice.html:12
+msgid "Edit Invoice"
+msgstr "Upravit fakturu"
+
+#: templates/admin/edit_invoice.html:11
+msgid "Back to Invoice"
+msgstr "Zpět k faktuře"
+
+#: templates/admin/edit_invoice.html:17 templates/admin/new_invoice.html:17
+#: templates/admin/new_invoice.html:19
+msgid "VAT Rate"
+msgstr "DPH"
+
+#: templates/admin/edit_invoice.html:23 templates/admin/new_invoice.html:26
+#: templates/admin/view_invoice.html:28
+msgid "Invoice Details"
+msgstr "Detaily faktury"
+
+#: templates/admin/edit_invoice.html:46 templates/admin/new_invoice.html:47
+msgid "VAT Number (if applicable)"
+msgstr "DIČ (pokud je k dispozici)"
+
+#: templates/admin/edit_invoice.html:55 templates/admin/new_invoice.html:55
+msgid "Client Address"
+msgstr "Adresa klienta"
+
+#: templates/admin/edit_invoice.html:93 templates/admin/new_invoice.html:91
+#: templates/admin/view_invoice.html:81
+msgid "Invoice Items"
+msgstr "Položky faktury"
+
+#: templates/admin/edit_invoice.html:102 templates/admin/new_invoice.html:100
+msgid "Add Item"
+msgstr "Přidat položku"
+
+#: templates/admin/edit_invoice.html:111 templates/admin/new_invoice.html:109
+#: templates/admin/view_invoice.html:126
+msgid "Notes"
+msgstr "Poznámky"
+
+#: templates/admin/edit_invoice.html:115 templates/admin/new_invoice.html:113
+msgid "Additional notes or terms..."
+msgstr "Dodatečné poznámky nebo podmínky..."
+
+#: templates/admin/edit_invoice.html:124 templates/admin/new_invoice.html:122
+#: templates/admin/view_invoice.html:139
+msgid "Summary"
+msgstr "Souhrn"
+
+#: templates/admin/edit_invoice.html:137 templates/admin/housekeeping.html:20
+#: templates/admin/housekeeping.html:48 templates/admin/new_invoice.html:135
+#: templates/admin/view_invoice.html:152
+#: templates/housekeeper/dashboard.html:25
+msgid "Total"
+msgstr "Celkem"
+
+#: templates/admin/edit_invoice.html:146
+msgid "Update Invoice"
+msgstr "Aktualizovat fakturu"
+
+#: templates/admin/edit_invoice.html:149 templates/admin/edit_user.html:27
+#: templates/admin/invoices.html:166 templates/admin/new_invoice.html:146
+#: templates/admin/new_user.html:26 templates/admin/view_invoice.html:229
+#: templates/housekeeper/dashboard.html:135
+msgid "Cancel"
+msgstr "Zrušit"
+
+#: templates/admin/edit_invoice.html:172 templates/admin/new_invoice.html:168
+#: templates/admin/settings.html:278 templates/admin/view_invoice.html:89
+msgid "Description"
+msgstr "Popis"
+
+#: templates/admin/edit_invoice.html:177 templates/admin/new_invoice.html:172
+#: templates/admin/view_invoice.html:90
+msgid "Quantity"
+msgstr "Množství"
+
+#: templates/admin/edit_invoice.html:182 templates/admin/new_invoice.html:177
+#: templates/admin/view_invoice.html:91
+msgid "Unit Price"
+msgstr "Jednotková cena"
+
+#: templates/admin/edit_invoice.html:200 templates/admin/new_invoice.html:195
+#: templates/admin/view_invoice.html:93
+msgid "Line Total"
+msgstr "Řádek celkem"
+
+#: templates/admin/edit_invoice.html:203 templates/admin/new_invoice.html:198
+#: templates/admin/view_invoice.html:94
+msgid "VAT Amount"
+msgstr "Částka DPH"
+
+#: templates/admin/edit_invoice.html:206 templates/admin/new_invoice.html:201
+#: templates/admin/view_invoice.html:95
+msgid "Total with VAT"
+msgstr "Celkem s DPH"
+
+#: templates/admin/edit_user.html:4
+#, fuzzy
+msgid "Edit User"
+msgstr "Upravit"
+
+#: templates/admin/edit_user.html:7 templates/admin/login.html:30
+#: templates/admin/new_user.html:7 templates/admin/settings.html:29
+#: templates/admin/users.html:10 templates/admin/view_user.html:11
+msgid "Username"
+msgstr "Uživatelské jméno"
+
+#: templates/admin/edit_user.html:15 templates/admin/new_user.html:19
+#: templates/admin/users.html:12 templates/admin/view_user.html:19
+msgid "Role"
+msgstr ""
+
+#: templates/admin/edit_user.html:22 templates/admin/settings.html:47
+msgid "New Password"
+msgstr "Heslo"
+
+#: templates/admin/edit_user.html:24
+msgid "Leave blank to keep current password."
+msgstr ""
+
+#: templates/admin/edit_user.html:26
+#, fuzzy
+msgid "Update User"
+msgstr "Aktualizovat"
+
+#: templates/admin/guest_breakdown.html:13
+#: templates/admin/invoice_breakdown.html:13
+#: templates/admin/registration_breakdown.html:13
+#: templates/admin/trip_breakdown.html:13
+msgid "Export CSV"
+msgstr ""
+
+#: templates/admin/guest_breakdown.html:16
+#: templates/admin/invoice_breakdown.html:16
+#: templates/admin/registration_breakdown.html:16
+#: templates/admin/trip_breakdown.html:16
+#, fuzzy
+msgid "Back to Analytics"
+msgstr "Zpět k fakturám"
+
+#: templates/admin/guest_breakdown.html:45
+#: templates/admin/guest_breakdown.html:160
+#, fuzzy
+msgid "Adults"
+msgstr "Dospělý"
+
+#: templates/admin/guest_breakdown.html:60
+#: templates/admin/guest_breakdown.html:165
+#, fuzzy
+msgid "Children"
+msgstr "Dítě"
+
+#: templates/admin/guest_breakdown.html:93
+#, fuzzy
+msgid "Age Category Distribution"
+msgstr "Věková kategorie"
+
+#: templates/admin/guest_breakdown.html:105
+#, fuzzy
+msgid "Document Type Preferences"
+msgstr "Typ dokumentu"
+
+#: templates/admin/guest_breakdown.html:117
+#, fuzzy
+msgid "Monthly Guest Registration Trends"
+msgstr "Registrácia hostí"
+
+#: templates/admin/guest_breakdown.html:129
+#, fuzzy
+msgid "Guests by Trip"
+msgstr "hostí"
+
+#: templates/admin/guest_breakdown.html:141
+#, fuzzy
+msgid "GDPR Consent Status"
+msgstr "Souhlas s GDPR"
+
+#: templates/admin/guest_breakdown.html:153
+msgid "Demographics Summary"
+msgstr ""
+
+#: templates/admin/guest_breakdown.html:178
+#, fuzzy
+msgid "No GDPR Consent"
+msgstr "Souhlas s GDPR"
+
+#: templates/admin/guest_breakdown.html:191
+#, fuzzy
+msgid "Recent Guest Registrations"
+msgstr "Vítejte v systému Registrácia hostí"
+
+#: templates/admin/guest_breakdown.html:201
+#: templates/admin/registration_breakdown.html:178
+#, fuzzy
+msgid "Trip"
+msgstr "Nový výlet"
+
+#: templates/admin/guest_breakdown.html:203
+#, fuzzy
+msgid "Registration Date"
+msgstr "Údaje o registraci"
+
+#: templates/admin/guest_breakdown.html:270
+#: templates/admin/guest_breakdown.html:292
+#: templates/admin/guest_breakdown.html:316
+#: templates/admin/registration_breakdown.html:181
+#: templates/admin/trip_breakdown.html:264
+#, fuzzy
+msgid "Guests"
+msgstr "hostí"
+
+#: templates/admin/guest_breakdown.html:336
+#, fuzzy
+msgid "Consent Given"
+msgstr "Souhlas"
+
+#: templates/admin/guest_breakdown.html:336
+#, fuzzy
+msgid "No Consent"
+msgstr "Souhlas"
+
+#: templates/admin/housekeeping.html:3 templates/admin/housekeeping.html:7
+#, fuzzy
+msgid "Housekeeping Management"
+msgstr "Správa cookies:"
+
+#: templates/admin/housekeeping.html:12
+msgid "Pay Summary by Housekeeper"
+msgstr ""
+
+#: templates/admin/housekeeping.html:19 templates/admin/housekeeping.html:66
+#: templates/admin/housekeeping.html:97
+msgid "Housekeeper"
+msgstr ""
+
+#: templates/admin/housekeeping.html:21 templates/admin/housekeeping.html:52
+#: templates/admin/housekeeping.html:100
+#: templates/admin/invoice_breakdown.html:211 templates/admin/invoices.html:15
+#: templates/admin/invoices.html:80 templates/admin/invoices.html:119
+#: templates/admin/view_invoice.html:40 templates/admin/view_invoice.html:172
+#: templates/housekeeper/dashboard.html:29
+#: templates/housekeeper/dashboard.html:57
+msgid "Paid"
+msgstr "Zaplaceno"
+
+#: templates/admin/housekeeping.html:22 templates/admin/housekeeping.html:56
+#: templates/admin/housekeeping.html:79
+#: templates/admin/registration_breakdown.html:45
+#: templates/admin/registration_breakdown.html:194
+#: templates/admin/registration_breakdown.html:224
+#: templates/housekeeper/dashboard.html:33
+msgid "Pending"
+msgstr ""
+
+#: templates/admin/housekeeping.html:43
+#, fuzzy
+msgid "Grand Totals"
+msgstr "Celkem DPH"
+
+#: templates/admin/housekeeping.html:68 templates/admin/housekeeping.html:78
+msgid "All"
+msgstr ""
+
+#: templates/admin/housekeeping.html:83
+#, fuzzy
+msgid "Completed"
+msgstr "Vytvořeno"
+
+#: templates/admin/housekeeping.html:88
+msgid "Filter"
+msgstr ""
+
+#: templates/admin/housekeeping.html:95 templates/housekeeper/dashboard.html:53
+#, fuzzy
+msgid "Date"
+msgstr "Aktualizovat"
+
+#: templates/admin/housekeeping.html:99 templates/housekeeper/dashboard.html:56
+#, fuzzy
+msgid "Pay Amount"
+msgstr "Částka DPH"
+
+#: templates/admin/housekeeping.html:101
+#: templates/housekeeper/dashboard.html:58
+#, fuzzy
+msgid "Photo"
+msgstr "Telefon"
+
+#: templates/admin/housekeeping.html:102 templates/admin/invoices.html:47
+#: templates/admin/users.html:14 templates/admin/view_invoice.html:162
+#: templates/housekeeper/dashboard.html:59
+msgid "Actions"
+msgstr "Akce"
+
+#: templates/admin/housekeeping.html:125
+#: templates/housekeeper/dashboard.html:83
+msgid "View Photo"
+msgstr ""
+
+#: templates/admin/housekeeping.html:128
+#: templates/housekeeper/dashboard.html:86
+msgid "No photo"
+msgstr ""
+
+#: templates/admin/housekeeping.html:132
+msgid "Save"
+msgstr ""
+
+#: templates/admin/housekeeping.html:138
+msgid "No housekeeping tasks found."
+msgstr ""
+
+#: templates/admin/invoice_breakdown.html:30
+#: templates/admin/invoice_breakdown.html:170
+#, fuzzy
+msgid "Total Invoices"
+msgstr "Zpět k fakturám"
+
+#: templates/admin/invoice_breakdown.html:60
+#: templates/admin/invoice_breakdown.html:163
+#, fuzzy
+msgid "Average Invoice"
+msgstr "Spravovat faktury"
+
+#: templates/admin/invoice_breakdown.html:75
+#, fuzzy
+msgid "Paid Invoices"
+msgstr "Vytisknout fakturu"
+
+#: templates/admin/invoice_breakdown.html:93
+#, fuzzy
+msgid "Invoice Status Distribution"
+msgstr "Informace o faktuře"
+
+#: templates/admin/invoice_breakdown.html:105
+msgid "Monthly Revenue"
+msgstr ""
+
+#: templates/admin/invoice_breakdown.html:117
+#, fuzzy
+msgid "Monthly Invoice Creation"
+msgstr "Informace o faktuře"
+
+#: templates/admin/invoice_breakdown.html:129
+msgid "Currency Distribution"
+msgstr ""
+
+#: templates/admin/invoice_breakdown.html:141
+#, fuzzy
+msgid "Revenue by Status"
+msgstr "Stav rezervácia"
+
+#: templates/admin/invoice_breakdown.html:153
+msgid "Financial Summary"
+msgstr ""
+
+#: templates/admin/invoice_breakdown.html:175
+#, fuzzy
+msgid "Draft Invoices"
+msgstr "Aktualizovat fakturu"
+
+#: templates/admin/invoice_breakdown.html:188
+#, fuzzy
+msgid "Recent Invoices"
+msgstr "Vytisknout fakturu"
+
+#: templates/admin/invoice_breakdown.html:196 templates/admin/invoices.html:42
+msgid "Client"
+msgstr "Klient"
+
+#: templates/admin/invoice_breakdown.html:197
+#, fuzzy
+msgid "Amount"
+msgstr "Částka DPH"
+
+#: templates/admin/invoice_breakdown.html:213 templates/admin/invoices.html:14
+#: templates/admin/invoices.html:76 templates/admin/invoices.html:115
+#: templates/admin/view_invoice.html:36 templates/admin/view_invoice.html:171
+msgid "Sent"
+msgstr "Odesláno"
+
+#: templates/admin/invoice_breakdown.html:215 templates/admin/invoices.html:13
+#: templates/admin/invoices.html:72 templates/admin/invoices.html:111
+#: templates/admin/view_invoice.html:32 templates/admin/view_invoice.html:170
+msgid "Draft"
+msgstr "Koncept"
+
+#: templates/admin/invoice_breakdown.html:217 templates/admin/invoices.html:16
+#: templates/admin/invoices.html:84 templates/admin/invoices.html:124
+#: templates/admin/view_invoice.html:44 templates/admin/view_invoice.html:173
+msgid "Overdue"
+msgstr "Po splatnosti"
+
+#: templates/admin/invoice_breakdown.html:265
+#: templates/admin/invoice_breakdown.html:332
+#, fuzzy
+msgid "Revenue"
+msgstr "Odebrat hosta"
+
+#: templates/admin/invoice_breakdown.html:289
+#, fuzzy
+msgid "Invoices Created"
+msgstr "Zatím žádné faktury"
+
+#: templates/admin/invoices.html:3 templates/admin/invoices.html:9
+msgid "Invoices"
+msgstr "Faktury"
+
+#: templates/admin/invoices.html:12
+msgid "All Statuses"
+msgstr "Všechny stavy"
+
+#: templates/admin/invoices.html:19 templates/admin/new_invoice.html:3
+#: templates/admin/new_invoice.html:9
+msgid "New Invoice"
+msgstr "Nová faktura"
+
+#: templates/admin/invoices.html:33
+msgid "Invoice List"
+msgstr "Seznam faktur"
+
+#: templates/admin/invoices.html:41
+msgid "Invoice #"
+msgstr "Faktura #"
+
+#: templates/admin/invoices.html:92 templates/admin/users.html:26
+msgid "View"
+msgstr "Zobrazit"
+
+#: templates/admin/invoices.html:96
+msgid "PDF"
+msgstr "PDF"
+
+#: templates/admin/invoices.html:100 templates/admin/users.html:28
+#: templates/admin/view_user.html:27
+msgid "Edit"
+msgstr "Upravit"
+
+#: templates/admin/invoices.html:130 templates/admin/users.html:32
+msgid "Delete"
+msgstr "Smazat"
+
+#: templates/admin/invoices.html:142
+msgid "No Invoices Yet"
+msgstr "Zatím žádné faktury"
+
+#: templates/admin/invoices.html:143
+msgid "Create your first invoice to get started."
+msgstr "Vytvořte svoju první fakturu pre začátek."
+
+#: templates/admin/invoices.html:145
+msgid "Create First Invoice"
+msgstr "Vytvořit první fakturu"
+
+#: templates/admin/invoices.html:159 templates/admin/view_invoice.html:222
+msgid "Confirm Delete"
+msgstr "Potvrdit smazanie"
+
+#: templates/admin/invoices.html:169 templates/admin/view_invoice.html:197
+#: templates/admin/view_invoice.html:232
+msgid "Delete Invoice"
+msgstr "Smazat fakturu"
+
+#: templates/admin/login.html:3 templates/admin/login.html:12
+msgid "Admin Login"
+msgstr "Prihlásenie administrátora"
+
+#: templates/admin/login.html:34 templates/admin/new_user.html:15
+msgid "Password"
+msgstr "Heslo"
+
+#: templates/admin/new_invoice.html:11 templates/admin/view_invoice.html:15
+msgid "Back to Invoices"
+msgstr "Zpět k fakturám"
+
+#: templates/admin/new_invoice.html:143
+msgid "Create Invoice"
+msgstr "Vytvořit fakturu"
+
+#: templates/admin/new_user.html:4 templates/admin/users.html:5
+msgid "Add New User"
+msgstr ""
+
+#: templates/admin/new_user.html:25
+#, fuzzy
+msgid "Create User"
+msgstr "Vytvořeno"
+
+#: templates/admin/registration_breakdown.html:60
+#: templates/admin/registration_breakdown.html:196
+#: templates/admin/registration_breakdown.html:224
+msgid "Approved"
+msgstr ""
+
+#: templates/admin/registration_breakdown.html:75
+#: templates/admin/registration_breakdown.html:198
+#: templates/admin/registration_breakdown.html:224
+#, fuzzy
+msgid "Rejected"
+msgstr "Vytvořeno"
+
+#: templates/admin/registration_breakdown.html:93
+#, fuzzy
+msgid "Status Distribution"
+msgstr "Začít registraci"
+
+#: templates/admin/registration_breakdown.html:105
+#, fuzzy
+msgid "Monthly Registration Trends"
+msgstr "Odeslat registraci"
+
+#: templates/admin/registration_breakdown.html:117
+#, fuzzy
+msgid "Registrations by Trip"
+msgstr "Údaje o registraci"
+
+#: templates/admin/registration_breakdown.html:129
+msgid "Language Preferences"
+msgstr ""
+
+#: templates/admin/registration_breakdown.html:141
+#, fuzzy
+msgid "Guest Count Distribution"
+msgstr "Registrácia hostí"
+
+#: templates/admin/registration_breakdown.html:153
+msgid "Recent Activity (Last 30 Days)"
+msgstr ""
+
+#: templates/admin/registration_breakdown.html:158
+msgid "New registrations in the last 30 days"
+msgstr ""
+
+#: templates/admin/registration_breakdown.html:170
+#, fuzzy
+msgid "Recent Registrations"
+msgstr "Přezkoumat Registrácia"
+
+#: templates/admin/registration_breakdown.html:177 templates/admin/users.html:9
+#: templates/admin/view_user.html:7
+#, fuzzy
+msgid "ID"
+msgstr "Zaplaceno"
+
+#: templates/admin/registration_breakdown.html:183
+#: templates/admin/view_invoice.html:209
+msgid "Created"
+msgstr "Vytvořeno"
+
+#: templates/admin/registration_breakdown.html:247
+#: templates/admin/registration_breakdown.html:271
+#: templates/admin/registration_breakdown.html:314
+#: templates/admin/trip_breakdown.html:197
+#: templates/admin/trip_breakdown.html:242
+#, fuzzy
+msgid "Registrations"
+msgstr "Údaje o registraci"
+
+#: templates/admin/settings.html:3 templates/admin/settings.html:9
+msgid "Admin Settings"
+msgstr "Nastavenia"
+
+#: templates/admin/settings.html:23
+msgid "Profile Settings"
+msgstr "Nastavenia"
+
+#: templates/admin/settings.html:32
+msgid "Username cannot be changed"
+msgstr ""
+
+#: templates/admin/settings.html:50
+msgid "Leave blank to keep current password"
+msgstr ""
+
+#: templates/admin/settings.html:55
+msgid "Confirm New Password"
+msgstr ""
+
+#: templates/admin/settings.html:57
+msgid "Must match new password"
+msgstr ""
+
+#: templates/admin/settings.html:63
+msgid "Account Created"
+msgstr "Vytvořeno"
+
+#: templates/admin/settings.html:73
+msgid "Airbnb Calendar Integration"
+msgstr "Airbnb overovací kód"
+
+#: templates/admin/settings.html:78
+msgid "Airbnb Calendar Sync"
+msgstr ""
+
+#: templates/admin/settings.html:85
+msgid "Airbnb Listing ID"
+msgstr "Airbnb overovací kód"
+
+#: templates/admin/settings.html:88
+msgid "Your Airbnb listing ID (found in your listing URL)"
+msgstr ""
+
+#: templates/admin/settings.html:94
+msgid "Enable Sync"
+msgstr ""
+
+#: templates/admin/settings.html:100
+msgid "Enable automatic Airbnb calendar sync"
+msgstr ""
+
+#: templates/admin/settings.html:108
+msgid "Airbnb Calendar URL"
+msgstr ""
+
+#: templates/admin/settings.html:113
+msgid "How to get your calendar URL:"
+msgstr ""
+
+#: templates/admin/settings.html:115
+msgid "Go to your Airbnb listing"
+msgstr ""
+
+#: templates/admin/settings.html:116
+msgid "Click \"Calendar\" tab"
+msgstr ""
+
+#: templates/admin/settings.html:118
+msgid "Copy the iCal URL"
+msgstr ""
+
+#: templates/admin/settings.html:125
+msgid "Last Sync"
+msgstr "Příjmenie"
+
+#: templates/admin/settings.html:133 templates/admin/settings.html:188
+msgid "Important"
+msgstr "Důležité informace"
+
+#: templates/admin/settings.html:142
+msgid "Photo Upload Configuration"
+msgstr "Konfigurace nahrávání fotografií"
+
+#: templates/admin/settings.html:147
+msgid "Photo Upload Settings"
+msgstr "Nastavenia nahrávání fotografií"
+
+#: templates/admin/settings.html:154
+msgid "Adults Photo Requirement"
+msgstr "Požadavek na fotografia dospělých"
+
+#: templates/admin/settings.html:161
+msgid "Require document photos for adult guests"
+msgstr "Vyžadovat fotografia dokumentů pre dospělé hosty"
+
+#: templates/admin/settings.html:177
+msgid "Require document photos for child guests"
+msgstr "Vyžadovat fotografia dokumentů pre dětské hosty"
+
+#: templates/admin/settings.html:209
+msgid "Company Name"
+msgstr "Jméno klienta"
+
+#: templates/admin/settings.html:213
+msgid "The company or organization name shown on public pages"
+msgstr ""
+
+#: templates/admin/settings.html:219
+msgid "Contact Name"
+msgstr "Kontakt"
+
+#: templates/admin/settings.html:222
+msgid "The name to display for contact purposes"
+msgstr ""
+
+#: templates/admin/settings.html:230
+msgid "Company ICO"
+msgstr ""
+
+#: templates/admin/settings.html:233
+msgid "Company identification number (optional)"
+msgstr "DIČ (volitelné)"
+
+#: templates/admin/settings.html:241
+msgid "VAT identification number (optional)"
+msgstr "DIČ (volitelné)"
+
+#: templates/admin/settings.html:249
+msgid "Phone Number"
+msgstr "Číslo faktury"
+
+#: templates/admin/settings.html:253
+msgid "Contact phone number for guests"
+msgstr ""
+
+#: templates/admin/settings.html:260
+msgid "Enter your full address"
+msgstr "Zadejte fakturační adresu"
+
+#: templates/admin/settings.html:261
+msgid "Your business or property address"
+msgstr ""
+
+#: templates/admin/settings.html:273
+msgid "Your website URL (optional)"
+msgstr "DIČ (volitelné)"
+
+#: templates/admin/settings.html:281
+msgid "Brief description about your property or business"
+msgstr ""
+
+#: templates/admin/settings.html:282
+msgid "A brief description for contact pages"
+msgstr ""
+
+#: templates/admin/settings.html:290
+msgid "Custom Lines"
+msgstr "Další řádky"
+
+#: templates/admin/settings.html:297
+msgid "Custom Line 1"
+msgstr "Další řádky"
+
+#: templates/admin/settings.html:300 templates/admin/settings.html:309
+#: templates/admin/settings.html:318
+msgid "Custom information"
+msgstr "Další informace"
+
+#: templates/admin/settings.html:301 templates/admin/settings.html:310
+#: templates/admin/settings.html:319
+msgid "Additional information field"
+msgstr "Kontaktní informace"
+
+#: templates/admin/settings.html:306
+msgid "Custom Line 2"
+msgstr ""
+
+#: templates/admin/settings.html:315
+msgid "Custom Line 3"
+msgstr ""
+
+#: templates/admin/settings.html:326
+msgid "Usage"
+msgstr ""
+
+#: templates/admin/settings.html:335
+msgid "Sync Information"
+msgstr "Informace o faktuře"
+
+#: templates/admin/settings.html:338
+msgid "How Airbnb Sync Works"
+msgstr "Jak to funguje:"
+
+#: templates/admin/settings.html:340
+msgid "Automatic Import"
+msgstr ""
+
+#: templates/admin/settings.html:342
+msgid "Reservation Detection"
+msgstr ""
+
+#: templates/admin/settings.html:346
+msgid "Updates"
+msgstr "Aktualizovat"
+
+#: templates/admin/settings.html:348
+msgid "Manual Sync"
+msgstr ""
+
+#: templates/admin/settings.html:352
+msgid "What Gets Synced"
+msgstr ""
+
+#: templates/admin/settings.html:354
+msgid "Reservation dates (check-in/check-out)"
+msgstr ""
+
+#: templates/admin/settings.html:355
+msgid "Guest names (when available)"
+msgstr ""
+
+#: templates/admin/settings.html:356
+msgid "Number of guests"
+msgstr "Maximální počet hostí"
+
+#: templates/admin/settings.html:357
+msgid "Reservation status"
+msgstr "Stav rezervácia"
+
+#: templates/admin/settings.html:360
+msgid "What Doesn't Get Synced"
+msgstr ""
+
+#: templates/admin/settings.html:362
+msgid "Guest contact information (for privacy)"
+msgstr "Kontaktní informace"
+
+#: templates/admin/settings.html:363
+msgid "Payment information"
+msgstr "Informace o klientovi"
+
+#: templates/admin/settings.html:364
+msgid "Messages and reviews"
+msgstr ""
+
+#: templates/admin/settings.html:365
+msgid "House rules and policies"
+msgstr ""
+
+#: templates/admin/settings.html:373
+msgid "Save Settings"
+msgstr "Nastavenia"
+
+#: templates/admin/settings.html:389
+msgid "Passwords do not match"
+msgstr ""
+
+#: templates/admin/trip_breakdown.html:60
+#: templates/admin/trip_breakdown.html:171
+#: templates/admin/trip_breakdown.html:216
+#: templates/admin/trip_breakdown.html:308
+#, fuzzy
+msgid "Not Synced"
+msgstr "Příjmenie"
+
+#: templates/admin/trip_breakdown.html:75
+msgid "Avg Duration"
+msgstr ""
+
+#: templates/admin/trip_breakdown.html:76
+#: templates/admin/trip_breakdown.html:174
+#: templates/admin/trip_breakdown.html:219
+msgid "days"
+msgstr ""
+
+#: templates/admin/trip_breakdown.html:93
+#, fuzzy
+msgid "Registrations per Trip"
+msgstr "Údaje o registraci"
+
+#: templates/admin/trip_breakdown.html:105
+#, fuzzy
+msgid "Guests per Trip"
+msgstr "Registrácia hostí"
+
+#: templates/admin/trip_breakdown.html:117
+msgid "Monthly Trip Creation"
+msgstr ""
+
+#: templates/admin/trip_breakdown.html:129
+#, fuzzy
+msgid "Airbnb Sync Status"
+msgstr "Jak to funguje:"
+
+#: templates/admin/trip_breakdown.html:141
+msgid "Trip Performance Summary"
+msgstr ""
+
+#: templates/admin/trip_breakdown.html:152
+msgid "Avg Duration (days)"
+msgstr ""
+
+#: templates/admin/trip_breakdown.html:163
+#, fuzzy
+msgid "Trip Overview"
+msgstr "Název ubytovanie"
+
+#: templates/admin/trip_breakdown.html:173
+msgid "Average Duration"
+msgstr ""
+
+#: templates/admin/trip_breakdown.html:187
+#, fuzzy
+msgid "Trip Details"
+msgstr "Název ubytovanie"
+
+#: templates/admin/trip_breakdown.html:195
+#, fuzzy
+msgid "Dates"
+msgstr "Aktualizovat"
+
+#: templates/admin/trip_breakdown.html:199
+#, fuzzy
+msgid "Airbnb Sync"
+msgstr "Jak to funguje:"
+
+#: templates/admin/trip_breakdown.html:200
+#, fuzzy
+msgid "Duration"
+msgstr "Akce"
+
+#: templates/admin/trip_breakdown.html:214
+#: templates/admin/trip_breakdown.html:308
+msgid "Synced"
+msgstr ""
+
+#: templates/admin/trip_breakdown.html:286
+#, fuzzy
+msgid "Trips Created"
+msgstr "Zatím nebyly vytvořeny žádné výlety."
+
+#: templates/admin/users.html:13 templates/admin/view_user.html:23
+#, fuzzy
+msgid "Created At"
+msgstr "Vytvořeno"
+
+#: templates/admin/users.html:31
+#, fuzzy
+msgid "Are you sure you want to delete this user?"
+msgstr "Opravdu chcete smazat tuto fakturu? Tuto akci nelze vrátit zpět."
+
+#: templates/admin/view_invoice.html:3 templates/admin/view_invoice.html:9
+msgid "Invoice"
+msgstr "Faktura"
+
+#: templates/admin/view_invoice.html:53
+msgid "Client Information"
+msgstr "Informace o klientovi"
+
+#: templates/admin/view_invoice.html:66
+msgid "Invoice Information"
+msgstr "Informace o faktuře"
+
+#: templates/admin/view_invoice.html:92
+#, fuzzy
+msgid "VAT"
+msgstr "DPH"
+
+#: templates/admin/view_invoice.html:116
+msgid "No items found for this invoice."
+msgstr "pre tuto fakturu nebyly nalezeny žádné položky."
+
+#: templates/admin/view_invoice.html:167
+msgid "Change Status"
+msgstr "Změnit stav"
+
+#: templates/admin/view_invoice.html:177
+msgid "Update"
+msgstr "Aktualizovat"
+
+#: templates/admin/view_invoice.html:186
+msgid "Send PDF by Email"
+msgstr "Odeslat PDF e-mailem"
+
+#: templates/admin/view_invoice.html:191
+msgid "Download PDF"
+msgstr "Stáhnout PDF"
+
+#: templates/admin/view_invoice.html:194
+msgid "Print Invoice"
+msgstr "Vytisknout fakturu"
+
+#: templates/admin/view_invoice.html:206
+msgid "Invoice Info"
+msgstr "Informace o faktuře"
+
+#: templates/admin/view_invoice.html:210
+msgid "Last Updated"
+msgstr "Naposledy aktualizováno"
+
+#: templates/admin/view_invoice.html:211
+msgid "Items Count"
+msgstr "Počet položek"
+
+#: templates/admin/view_invoice.html:256 templates/admin/view_invoice.html:261
+msgid "Error updating status"
+msgstr "Chyba při aktualizaci stavu"
+
+#: templates/admin/view_user.html:4
+#, fuzzy
+msgid "User Details"
+msgstr "Název výletu"
+
+#: templates/admin/view_user.html:28
+#, fuzzy
+msgid "Back to Users"
+msgstr "Zpět na úvodní stránku"
+
+#: templates/housekeeper/calendar.html:3 templates/housekeeper/calendar.html:7
+msgid "Housekeeper Calendar"
+msgstr ""
+
+#: templates/housekeeper/dashboard.html:10
+msgid "View Calendar"
+msgstr ""
+
+#: templates/housekeeper/dashboard.html:17
+#, fuzzy
+msgid "Your Pay Summary"
+msgstr "Adresa vaší společnosti"
+
+#: templates/housekeeper/dashboard.html:45
+msgid "Housekeeping Tasks"
+msgstr ""
+
+#: templates/housekeeper/dashboard.html:92
+#: templates/housekeeper/dashboard.html:136
+msgid "Upload Photo"
+msgstr ""
+
+#: templates/housekeeper/dashboard.html:103
+msgid "No housekeeping tasks assigned."
+msgstr ""
+
+#: templates/housekeeper/dashboard.html:119
+msgid "Upload Amenity Photo"
+msgstr ""
+
+#: templates/housekeeper/dashboard.html:125
+#, python-format
+msgid "Upload a photo of the amenity for Trip #%(trip_id)s on %(date)s"
+msgstr ""
+
+#: templates/housekeeper/dashboard.html:128
+msgid "Select Photo"
+msgstr ""
+
+#: templates/housekeeper/dashboard.html:131
+msgid "Accepted formats: JPG, PNG, GIF. Max size: 16MB"
+msgstr ""
+
+#: templates/admin/settings.html:290
+msgid "Date Format Settings"
+msgstr "Nastavenia formátu data"
+
+msgid "Tasks can only be marked as completed on the task date (%(task_date)s). Today is %(today)s."
+msgstr "Úkoly lze označit jako dokončené pouze v den úkolu (%(task_date)s). dnes je %(today)s."
+
+msgid "Not available today"
+msgstr "dnes není dostupné"
+
+msgid "Default Housekeeper Pay per Task"
+msgstr "Výchozí odměna za úklidový úkol"
+
+msgid "This amount will be used as the default pay for new housekeeping tasks."
+msgstr "Tato částka bude použita jako výchozí odměna pre nové úklidové úkoly."
+
+msgid "Bulk Update Tasks"
+msgstr "Hromadná aktualizace úkolů"
+
+msgid "Admin Actions"
+msgstr "Akce administrátora"
+
+msgid "New Status"
+msgstr "Nový stav"
+
+msgid "Select All"
+msgstr "Vybrat vše"
+
+msgid "Deselect All"
+msgstr "Odznačit vše"
+
+msgid "Update Selected Tasks"
+msgstr "Aktualizovat vybrané úkoly"
+
+msgid "No tasks selected"
+msgstr "Nebyly vybrány žádné úkoly"
+
+msgid "Tasks updated successfully"
+msgstr "Úkoly byly úspěšně aktualizovány"
+
+msgid "Update Status"
+msgstr "Aktualizovat stav"
+
+msgid "Reassign"
+msgstr "Přeřadit"
+
+msgid "Reassign Task"
+msgstr "Přeřadit úkol"
+
+msgid "Select New Housekeeper"
+msgstr "Vybrat nového úklidového pracovníka"
+
+msgid "Confirm Reassignment"
+msgstr "Potvrdit přeřazenie"
+
+msgid "Task reassigned successfully"
+msgstr "Úkol byl úspěšně přeřazen"
+
+msgid "Confirm Deletion"
+msgstr "Potvrdit smazanie"
+
+msgid "Are you sure you want to delete this task?"
+msgstr "Opravdu chcete smazat tento úkol?"
+
+msgid "Task deleted successfully"
+msgstr "Úkol byl úspěšně smazán"
