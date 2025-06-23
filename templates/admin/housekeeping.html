@@ -62,7 +62,7 @@
         </div>
     </div>
     <form class="row g-3 mb-4" method="get">
-        <div class="col-md-4">
+        <div class="col-md-3">
             <label for="housekeeper_id" class="form-label">{{ _('Housekeeper') }}</label>
             <select class="form-select" id="housekeeper_id" name="housekeeper_id">
                 <option value="">{{ _('All') }}</option>
@@ -72,7 +72,7 @@
                 {% endfor %}
             </select>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <label for="status" class="form-label">{{ _('Status') }}</label>
             <select class="form-select" id="status" name="status">
                 <option value="">{{ _('All') }}</option>
@@ -84,7 +84,17 @@
                 </option>
             </select>
         </div>
-        <div class="col-md-4 align-self-end">
+        <div class="col-md-3">
+            <label for="amenity_id" class="form-label">{{ _('Amenity') }}</label>
+            <select class="form-select" id="amenity_id" name="amenity_id">
+                <option value="">{{ _('All') }}</option>
+                {% for amenity in amenities %}
+                <option value="{{ amenity.id }}" {% if selected_amenity==amenity.id %}selected{% endif %}>{{
+                    amenity.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3 align-self-end">
             <button type="submit" class="btn btn-primary">{{ _('Filter') }}</button>
         </div>
     </form>
@@ -94,6 +104,7 @@
                 <tr>
                     <th>{{ _('Date') }}</th>
                     <th>{{ _('Trip ID') }}</th>
+                    <th>{{ _('Amenity') }}</th>
                     <th>{{ _('Housekeeper') }}</th>
                     <th>{{ _('Status') }}</th>
                     <th>{{ _('Pay Amount') }}</th>
@@ -108,6 +119,7 @@
                 <tr>
                     <td>{{ task.date.strftime('%Y-%m-%d') }}</td>
                     <td>{{ task.trip_id }}</td>
+                    <td>{{ task.trip.amenity.name if task.trip.amenity else 'N/A' }}</td>
                     <td>{{ task.housekeeper.username }}</td>
                     <td>{{ task.status }}</td>
                     <td>
@@ -148,7 +160,7 @@
                 {% endfor %}
                 {% else %}
                 <tr>
-                    <td colspan="8" class="text-center">{{ _('No housekeeping tasks found.') }}</td>
+                    <td colspan="9" class="text-center">{{ _('No housekeeping tasks found.') }}</td>
                 </tr>
                 {% endif %}
             </tbody>

@@ -2250,13 +2250,21 @@ def admin_housekeeping():
     # Filtering
     housekeeper_id = request.args.get('housekeeper_id', type=int)
     status = request.args.get('status')
-    query = Housekeeping.query
+    amenity_id = request.args.get('amenity_id', type=int)
+    query = Housekeeping.query.join(Trip)
+    
     if housekeeper_id:
         query = query.filter_by(housekeeper_id=housekeeper_id)
     if status:
         query = query.filter_by(status=status)
+    if amenity_id:
+        query = query.filter(Trip.amenity_id == amenity_id)
+    
     tasks = query.order_by(Housekeeping.date.desc()).all()
     housekeepers = User.query.filter_by(role='housekeeper').all()
+    
+    # Get amenities for filtering
+    amenities = Amenity.query.filter_by(admin_id=current_user.id).order_by(Amenity.name).all()
 
     # Pay summaries
     pay_summary = {}
@@ -2284,9 +2292,9 @@ def admin_housekeeping():
             task.paid_date = datetime.utcnow()
         db.session.commit()
         flash(_('Housekeeping pay updated.'), 'success')
-        return redirect(url_for('admin_housekeeping', housekeeper_id=housekeeper_id, status=status))
+        return redirect(url_for('admin_housekeeping', housekeeper_id=housekeeper_id, status=status, amenity_id=amenity_id))
 
-    return render_template('admin/housekeeping.html', tasks=tasks, housekeepers=housekeepers, selected_housekeeper=housekeeper_id, selected_status=status, pay_summary=pay_summary, grand_total=grand_total, grand_paid=grand_paid, grand_pending=grand_pending)
+    return render_template('admin/housekeeping.html', tasks=tasks, housekeepers=housekeepers, amenities=amenities, selected_housekeeper=housekeeper_id, selected_status=status, selected_amenity=amenity_id, pay_summary=pay_summary, grand_total=grand_total, grand_paid=grand_paid, grand_pending=grand_pending)
 
 # CSV Export Routes
 @app.route('/admin/export/registrations')
@@ -3088,6 +3096,50 @@ def rollback_migration(version):
         flash(_('Rollback error: %(error)s', error=str(e)), 'error')
         return redirect(url_for('admin_migrations'))
 
+def create_missing_housekeeping_tasks_for_calendar(calendar_id):
+    """Create housekeeping tasks for all trips in a calendar that don't already have one."""
+    calendar = Calendar.query.get(calendar_id)
+    if not calendar:
+        return 0
+    
+    # Find default housekeeper for the amenity
+    default_assignment = AmenityHousekeeper.query.filter_by(
+        amenity_id=calendar.amenity_id, is_default=True).first()
+    
+    if not default_assignment and calendar.amenity.default_housekeeper_id:
+        # Fallback to legacy default housekeeper
+        housekeeper_id = calendar.amenity.default_housekeeper_id
+    elif default_assignment:
+        housekeeper_id = default_assignment.housekeeper_id
+    else:
+        housekeeper_id = None
+    
+    if not housekeeper_id:
+        return 0  # No default housekeeper assigned
+    
+    trips = Trip.query.filter_by(calendar_id=calendar_id).all()
+    created = 0
+    
+    for trip in trips:
+        # Check if a housekeeping task already exists for this trip
+        existing_task = Housekeeping.query.filter_by(trip_id=trip.id).first()
+        if not existing_task:
+            task = Housekeeping(
+                trip_id=trip.id,
+                housekeeper_id=housekeeper_id,
+                date=trip.end_date + timedelta(days=1),
+                status='pending',
+                pay_amount=50.00,
+                paid=False
+            )
+            db.session.add(task)
+            created += 1
+    
+    if created > 0:
+        db.session.commit()
+    
+    return created
+
 def sync_calendar_reservations(calendar_id):
     """Sync reservations for a specific calendar, ensuring unique confirmation codes."""
     calendar = Calendar.query.get(calendar_id)
@@ -3191,15 +3243,19 @@ def sync_calendar_reservations(calendar_id):
                 
                 synced_count += 1
         
+        # Create housekeeping tasks for any existing trips that don't have them
+        missing_tasks_created = create_missing_housekeeping_tasks_for_calendar(calendar_id)
+        total_housekeeping_tasks = housekeeping_tasks_created + missing_tasks_created
+        
         # Update calendar last sync time
         calendar.last_sync = datetime.utcnow()
         db.session.commit()
         
         message = f"Synced {synced_count} new reservations, updated {updated_count} existing reservations"
-        if housekeeping_tasks_created > 0:
-            message += f", created {housekeeping_tasks_created} housekeeping tasks"
+        if total_housekeeping_tasks > 0:
+            message += f", created {total_housekeeping_tasks} housekeeping tasks"
         
-        return {'success': True, 'message': message, 'synced': synced_count, 'updated': updated_count, 'housekeeping_tasks': housekeeping_tasks_created}
+        return {'success': True, 'message': message, 'synced': synced_count, 'updated': updated_count, 'housekeeping_tasks': total_housekeeping_tasks}
         
     except Exception as e:
         db.session.rollback()
@@ -3548,42 +3604,16 @@ def create_housekeeping_tasks_from_calendar(calendar_id):
         flash(_('Access denied'), 'error')
         return redirect(url_for('admin_calendars'))
     
-    trips = Trip.query.filter_by(calendar_id=calendar_id).all()
-    created = 0
-    skipped_no_housekeeper = 0
-    
-    # Find default housekeeper for the amenity
+    # Check if there's a default housekeeper assigned
     default_assignment = AmenityHousekeeper.query.filter_by(
         amenity_id=calendar.amenity_id, is_default=True).first()
     
-    if not default_assignment and calendar.amenity.default_housekeeper_id:
-        # Fallback to legacy default housekeeper
-        housekeeper_id = calendar.amenity.default_housekeeper_id
-    elif default_assignment:
-        housekeeper_id = default_assignment.housekeeper_id
-    else:
-        housekeeper_id = None
-    
-    if not housekeeper_id:
+    if not default_assignment and not calendar.amenity.default_housekeeper_id:
         flash(_('No default housekeeper assigned to this amenity. Please assign a default housekeeper first.'), 'error')
         return redirect(url_for('admin_calendars'))
     
-    for trip in trips:
-        # Check if a housekeeping task already exists for this trip
-        existing_task = Housekeeping.query.filter_by(trip_id=trip.id).first()
-        if not existing_task:
-            task = Housekeeping(
-                trip_id=trip.id,
-                housekeeper_id=housekeeper_id,
-                date=trip.end_date + timedelta(days=1),
-                status='pending',
-                pay_amount=50.00,
-                paid=False
-            )
-            db.session.add(task)
-            created += 1
-    
-    db.session.commit()
+    # Use the helper function to create missing tasks
+    created = create_missing_housekeeping_tasks_for_calendar(calendar_id)
     
     if created > 0:
         flash(_('%(num)d housekeeping tasks created from calendar.', num=created), 'success')
