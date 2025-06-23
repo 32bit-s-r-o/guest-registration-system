@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ _('User Details') }}</h2>
+    <table class="table table-bordered">
+        <tr>
+            <th>{{ _('ID') }}</th>
+            <td>{{ user.id }}</td>
+        </tr>
+        <tr>
+            <th>{{ _('Username') }}</th>
+            <td>{{ user.username }}</td>
+        </tr>
+        <tr>
+            <th>{{ _('Email') }}</th>
+            <td>{{ user.email }}</td>
+        </tr>
+        <tr>
+            <th>{{ _('Role') }}</th>
+            <td>{{ user.role }}</td>
+        </tr>
+        <tr>
+            <th>{{ _('Created At') }}</th>
+            <td>{{ user.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+        </tr>
+    </table>
+    <a href="{{ url_for('edit_user', user_id=user.id) }}" class="btn btn-warning">{{ _('Edit') }}</a>
+    <a href="{{ url_for('admin_users') }}" class="btn btn-secondary">{{ _('Back to Users') }}</a>
+</div>
+{% endblock %}

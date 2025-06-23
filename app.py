@@ -132,6 +132,14 @@ class User(UserMixin, db.Model):
     custom_line_1 = db.Column(db.String(200))
     custom_line_2 = db.Column(db.String(200))
     custom_line_3 = db.Column(db.String(200))
+    
+    def set_password(self, password):
+        """Set password hash for the user."""
+        self.password_hash = generate_password_hash(password)
+    
+    def check_password(self, password):
+        """Check if the provided password matches the hash."""
+        return check_password_hash(self.password_hash, password)
 
 class Trip(db.Model):
     __tablename__ = f"{app.config['TABLE_PREFIX']}trip"
@@ -680,7 +688,7 @@ def admin_login():
         password = request.form.get('password')
         
         admin = User.query.filter_by(username=username).first()
-        if admin and check_password_hash(admin.password_hash, password):
+        if admin and admin.check_password(password):
             login_user(admin)
             return redirect(url_for('admin_dashboard'))
         else:
@@ -744,7 +752,7 @@ def admin_settings():
         # Update password if provided
         new_password = request.form.get('new_password')
         if new_password:
-            current_user.password_hash = generate_password_hash(new_password)
+            current_user.set_password(new_password)
         
         db.session.commit()
         flash(_('Settings updated successfully!'), 'success')
@@ -2407,6 +2415,126 @@ def invoice_breakdown():
     }
     
     return render_template('admin/invoice_breakdown.html', stats=stats, invoices=invoices)
+
+# User Management Routes
+@app.route('/admin/users')
+@login_required
+@role_required('admin')
+def admin_users():
+    """Admin users list page."""
+    users = User.query.order_by(User.created_at.desc()).all()
+    return render_template('admin/users.html', users=users)
+
+@app.route('/admin/users/new', methods=['GET', 'POST'])
+@login_required
+@role_required('admin')
+def new_user():
+    """Create a new user."""
+    if request.method == 'POST':
+        username = request.form.get('username')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        role = request.form.get('role', 'admin')
+        
+        # Check if username or email already exists
+        if User.query.filter_by(username=username).first():
+            flash(_('Username already exists'), 'error')
+            return render_template('admin/new_user.html')
+        
+        if User.query.filter_by(email=email).first():
+            flash(_('Email already exists'), 'error')
+            return render_template('admin/new_user.html')
+        
+        # Create new user
+        user = User(
+            username=username,
+            email=email,
+            role=role
+        )
+        user.set_password(password)
+        
+        db.session.add(user)
+        db.session.commit()
+        
+        flash(_('User created successfully!'), 'success')
+        return redirect(url_for('admin_users'))
+    
+    return render_template('admin/new_user.html')
+
+@app.route('/admin/users/<int:user_id>')
+@login_required
+@role_required('admin')
+def view_user(user_id):
+    """View a specific user."""
+    user = User.query.get_or_404(user_id)
+    return render_template('admin/view_user.html', user=user)
+
+@app.route('/admin/users/<int:user_id>/edit', methods=['GET', 'POST'])
+@login_required
+@role_required('admin')
+def edit_user(user_id):
+    """Edit an existing user."""
+    user = User.query.get_or_404(user_id)
+    
+    if request.method == 'POST':
+        username = request.form.get('username')
+        email = request.form.get('email')
+        role = request.form.get('role', 'admin')
+        new_password = request.form.get('new_password')
+        
+        # Check if username or email already exists (excluding current user)
+        existing_user = User.query.filter_by(username=username).first()
+        if existing_user and existing_user.id != user.id:
+            flash(_('Username already exists'), 'error')
+            return render_template('admin/edit_user.html', user=user)
+        
+        existing_user = User.query.filter_by(email=email).first()
+        if existing_user and existing_user.id != user.id:
+            flash(_('Email already exists'), 'error')
+            return render_template('admin/edit_user.html', user=user)
+        
+        # Update user
+        user.username = username
+        user.email = email
+        user.role = role
+        
+        # Update password if provided
+        if new_password:
+            user.set_password(new_password)
+        
+        db.session.commit()
+        
+        flash(_('User updated successfully!'), 'success')
+        return redirect(url_for('view_user', user_id=user.id))
+    
+    return render_template('admin/edit_user.html', user=user)
+
+@app.route('/admin/users/<int:user_id>/delete', methods=['POST'])
+@login_required
+@role_required('admin')
+def delete_user(user_id):
+    """Delete a user."""
+    user = User.query.get_or_404(user_id)
+    
+    # Prevent deleting the current user
+    if user.id == current_user.id:
+        flash(_('You cannot delete your own account'), 'error')
+        return redirect(url_for('admin_users'))
+    
+    # Check if user has associated data
+    has_trips = Trip.query.filter_by(admin_id=user.id).first() is not None
+    has_invoices = Invoice.query.filter_by(admin_id=user.id).first() is not None
+    has_housekeeping = Housekeeping.query.filter_by(housekeeper_id=user.id).first() is not None
+    
+    if has_trips or has_invoices or has_housekeeping:
+        flash(_('Cannot delete user with associated data. Please reassign or delete associated records first.'), 'error')
+        return redirect(url_for('admin_users'))
+    
+    db.session.delete(user)
+    db.session.commit()
+    
+    flash(_('User deleted successfully!'), 'success')
+    return redirect(url_for('admin_users'))
 
 if __name__ == '__main__':
     with app.app_context():

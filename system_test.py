@@ -25,6 +25,7 @@ class SystemTest:
         self.created_trip_id = None
         self.created_registration_id = None
         self.created_invoice_id = None
+        self.created_user_id = None
         
     def log_test(self, test_name, status, details=""):
         """Log test results"""
@@ -185,6 +186,9 @@ class SystemTest:
         print("\n📝 Testing Registration Management")
         print("=" * 50)
         
+        # Ensure we have a registration to test with
+        reg_id = self.ensure_registration_exists()
+        
         # Test registrations list
         try:
             response = self.session.get(f"{BASE_URL}/admin/registrations")
@@ -197,27 +201,15 @@ class SystemTest:
         
         # Test viewing a specific registration (if any exist)
         try:
-            # First check if any registrations exist
-            response = self.session.get(f"{BASE_URL}/admin/registrations")
-            if response.status_code == 200:
-                # Look for a registration link in the response
-                if 'href="/admin/registration/' in response.text:
-                    # Extract the first registration ID from the page
-                    match = re.search(r'href="/admin/registration/(\d+)"', response.text)
-                    if match:
-                        reg_id = match.group(1)
-                        self.created_registration_id = reg_id
-                        response = self.session.get(f"{BASE_URL}/admin/registration/{reg_id}")
-                        if response.status_code == 200:
-                            self.log_test("View Registration", "PASS", f"Registration {reg_id} view accessible")
-                        else:
-                            self.log_test("View Registration", "FAIL", f"Status: {response.status_code}")
-                    else:
-                        self.log_test("View Registration", "WARN", "No registration links found on page")
+            if reg_id:
+                self.created_registration_id = reg_id
+                response = self.session.get(f"{BASE_URL}/admin/registration/{reg_id}")
+                if response.status_code == 200:
+                    self.log_test("View Registration", "PASS", f"Registration {reg_id} view accessible")
                 else:
-                    self.log_test("View Registration", "WARN", "No registrations exist in database")
+                    self.log_test("View Registration", "FAIL", f"Status: {response.status_code}")
             else:
-                self.log_test("View Registration", "FAIL", f"Registrations page status: {response.status_code}")
+                self.log_test("View Registration", "FAIL", "No registration could be created for testing")
         except Exception as e:
             self.log_test("View Registration", "FAIL", f"Exception: {str(e)}")
     
@@ -226,15 +218,18 @@ class SystemTest:
         print("\n✅❌ Testing Registration Approval/Rejection")
         print("=" * 50)
         
-        if not self.created_registration_id:
-            self.log_test("Registration Approval/Rejection", "WARN", "No registration available for testing")
+        # Ensure we have a registration to test with
+        reg_id = getattr(self, 'created_registration_id', None) or self.ensure_registration_exists()
+        
+        if not reg_id:
+            self.log_test("Registration Approval/Rejection", "FAIL", "No registration available for testing")
             return
         
         # Test registration approval
         try:
-            response = self.session.post(f"{BASE_URL}/admin/registration/{self.created_registration_id}/approve", allow_redirects=True)
+            response = self.session.post(f"{BASE_URL}/admin/registration/{reg_id}/approve", allow_redirects=True)
             if response.status_code == 200:
-                self.log_test("Approve Registration", "PASS", f"Registration {self.created_registration_id} approved")
+                self.log_test("Approve Registration", "PASS", f"Registration {reg_id} approved")
             else:
                 self.log_test("Approve Registration", "FAIL", f"Status: {response.status_code}")
         except Exception as e:
@@ -652,6 +647,185 @@ class SystemTest:
             except Exception as e:
                 self.log_test(f"404 Error: {route}", "FAIL", f"Exception: {str(e)}")
     
+    def test_user_management(self):
+        """Test user management functionality (admin only)"""
+        print("\n👤 Testing User Management")
+        print("=" * 50)
+        # List users
+        try:
+            response = self.session.get(f"{BASE_URL}/admin/users")
+            if response.status_code == 200 and 'User Management' in response.text:
+                self.log_test("User List", "PASS", "User list page accessible")
+            else:
+                self.log_test("User List", "FAIL", f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("User List", "FAIL", f"Exception: {str(e)}")
+        # Create user
+        try:
+            username = f"testuser_{datetime.now().strftime('%H%M%S')}"
+            email = f"{username}@example.com"
+            user_data = {
+                'username': username,
+                'email': email,
+                'password': 'TestPass123!',
+                'role': 'housekeeper'
+            }
+            response = self.session.post(f"{BASE_URL}/admin/users/new", data=user_data, allow_redirects=True)
+            if response.status_code == 200 and username in response.text:
+                self.log_test("Create User", "PASS", f"User {username} created")
+                # Extract user ID for later tests
+                match = re.search(r'/admin/users/(\d+)/edit', response.text)
+                if match:
+                    user_id = match.group(1)
+                    self.created_user_id = user_id
+                else:
+                    # Fallback: find user in list
+                    match = re.search(r'/admin/users/(\d+)">'+username, response.text)
+                    if match:
+                        self.created_user_id = match.group(1)
+            else:
+                self.log_test("Create User", "FAIL", f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Create User", "FAIL", f"Exception: {str(e)}")
+        # View user
+        if hasattr(self, 'created_user_id'):
+            try:
+                response = self.session.get(f"{BASE_URL}/admin/users/{self.created_user_id}")
+                if response.status_code == 200:
+                    self.log_test("View User", "PASS", f"User {self.created_user_id} view accessible")
+                else:
+                    self.log_test("View User", "FAIL", f"Status: {response.status_code}")
+            except Exception as e:
+                self.log_test("View User", "FAIL", f"Exception: {str(e)}")
+        # Edit user
+        if hasattr(self, 'created_user_id'):
+            try:
+                edit_data = {
+                    'username': f"edited_{username}",
+                    'email': f"edited_{email}",
+                    'role': 'admin',
+                    'new_password': ''
+                }
+                response = self.session.post(f"{BASE_URL}/admin/users/{self.created_user_id}/edit", data=edit_data, allow_redirects=True)
+                if response.status_code == 200 and 'edited_' in response.text:
+                    self.log_test("Edit User", "PASS", f"User {self.created_user_id} edited")
+                else:
+                    self.log_test("Edit User", "FAIL", f"Status: {response.status_code}")
+            except Exception as e:
+                self.log_test("Edit User", "FAIL", f"Exception: {str(e)}")
+        # Delete user
+        if hasattr(self, 'created_user_id'):
+            try:
+                response = self.session.post(f"{BASE_URL}/admin/users/{self.created_user_id}/delete", allow_redirects=True)
+                if response.status_code == 200 and 'User deleted successfully' in response.text:
+                    self.log_test("Delete User", "PASS", f"User {self.created_user_id} deleted")
+                else:
+                    self.log_test("Delete User", "FAIL", f"Status: {response.status_code}")
+            except Exception as e:
+                self.log_test("Delete User", "FAIL", f"Exception: {str(e)}")
+    
+    def ensure_trip_exists(self):
+        """Ensure at least one trip exists for testing"""
+        # First check if any trips already exist
+        response = self.session.get(f"{BASE_URL}/admin/trips")
+        if response.status_code == 200:
+            match = re.search(r'href="/register/id/(\d+)"', response.text)
+            if match:
+                return match.group(1)
+        
+        # If no trips exist, create one
+        trip_data = {
+            'title': f'SystemTest Trip {datetime.now().strftime("%Y%m%d_%H%M%S")}',
+            'start_date': (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d'),
+            'end_date': (datetime.now() + timedelta(days=2)).strftime('%Y-%m-%d'),
+            'max_guests': 2
+        }
+        
+        response = self.session.post(f"{BASE_URL}/admin/trips/new", data=trip_data, allow_redirects=True)
+        if response.status_code == 200:
+            # Try again to get trip_id
+            response = self.session.get(f"{BASE_URL}/admin/trips")
+            match = re.search(r'href="/register/id/(\d+)"', response.text)
+            if match:
+                return match.group(1)
+        
+        return None
+
+    def ensure_registration_exists(self):
+        """Ensure at least one registration exists for testing"""
+        # First check if any registrations already exist
+        response = self.session.get(f"{BASE_URL}/admin/registrations")
+        if response.status_code == 200 and 'href="/admin/registration/' in response.text:
+            # Extract the first registration ID from the page
+            match = re.search(r'href="/admin/registration/(\d+)"', response.text)
+            if match:
+                return match.group(1)
+        
+        # If no registrations exist, create one
+        # First, ensure we have a trip
+        trip_id = self.ensure_trip_exists()
+        if not trip_id:
+            return None
+        
+        # Get the registration form
+        response = self.session.get(f"{BASE_URL}/register/id/{trip_id}")
+        if response.status_code != 200:
+            return None
+        
+        # Submit the registration form (this redirects to confirmation)
+        # The form requires at least one guest, and the JavaScript adds the first guest form
+        # We need to include all the required fields for guest 1
+        registration_data = {
+            'email': 'test@example.com',
+            'first_name_1': 'Test',
+            'last_name_1': 'Guest',
+            'age_category_1': 'adult',
+            'document_type_1': 'passport',
+            'document_number_1': 'TEST123456',
+            'gdpr_consent_1': 'on'
+        }
+        
+        # Check if photos are required for adults
+        if 'photo_required_adults' in response.text and 'true' in response.text:
+            # If photos are required, we need to upload a file
+            # For testing, we'll use a simple approach - create a test image
+            test_image_path = os.path.join('static', 'sample_images', 'sample_passport.jpg')
+            if os.path.exists(test_image_path):
+                with open(test_image_path, 'rb') as f:
+                    files = {'document_image_1': ('sample_passport.jpg', f, 'image/jpeg')}
+                    response = self.session.post(f"{BASE_URL}/register/id/{trip_id}", 
+                                               data=registration_data, files=files, allow_redirects=False)
+            else:
+                # If no sample image, try without photo (might fail if required)
+                response = self.session.post(f"{BASE_URL}/register/id/{trip_id}", 
+                                           data=registration_data, allow_redirects=False)
+        else:
+            # Photos not required, submit without file
+            response = self.session.post(f"{BASE_URL}/register/id/{trip_id}", 
+                                       data=registration_data, allow_redirects=False)
+        
+        if response.status_code != 302:  # Should redirect to confirmation
+            return None
+        
+        # Follow the redirect to confirmation page
+        response = self.session.get(f"{BASE_URL}/confirm")
+        if response.status_code != 200:
+            return None
+        
+        # Submit the confirmation (this creates the registration)
+        response = self.session.post(f"{BASE_URL}/submit", allow_redirects=False)
+        if response.status_code != 302:  # Should redirect to success
+            return None
+        
+        # Now check for the created registration
+        response = self.session.get(f"{BASE_URL}/admin/registrations")
+        if response.status_code == 200 and 'href="/admin/registration/' in response.text:
+            match = re.search(r'href="/admin/registration/(\d+)"', response.text)
+            if match:
+                return match.group(1)
+        
+        return None
+    
     def run_all_tests(self):
         """Run all system tests"""
         print("🚀 Comprehensive System Test for Guest Registration System")
@@ -683,6 +857,7 @@ class SystemTest:
         self.test_registration_process()
         self.test_upload_functionality()
         self.test_error_handling()
+        self.test_user_management()
         
         # Generate summary
         self.generate_summary()
