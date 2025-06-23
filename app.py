@@ -3718,15 +3718,22 @@ def create_housekeeping_tasks_from_calendar(calendar_id):
 
 @app.route('/housekeeper/task/<int:task_id>')
 @login_required
-@role_required('housekeeper')
 def housekeeper_task_detail(task_id):
     """Display detailed view of a housekeeping task."""
     task = Housekeeping.query.get_or_404(task_id)
     
-    # Check if the current housekeeper has access to this task
-    if task.housekeeper_id != current_user.id:
+    # Check access: either the housekeeper assigned to the task or admin who owns the amenity
+    if current_user.role == 'housekeeper':
+        if task.housekeeper_id != current_user.id:
+            flash(_('Access denied'), 'error')
+            return redirect(url_for('housekeeper_dashboard'))
+    elif current_user.role == 'admin':
+        if task.trip.amenity.admin_id != current_user.id:
+            flash(_('Access denied'), 'error')
+            return redirect(url_for('admin_housekeeping'))
+    else:
         flash(_('Access denied'), 'error')
-        return redirect(url_for('housekeeper_dashboard'))
+        return redirect(url_for('admin_dashboard'))
     
     return render_template('housekeeper/task_detail.html', task=task, today=datetime.utcnow().date())
 
@@ -3800,6 +3807,23 @@ def delete_housekeeping_photo(photo_id):
     db.session.commit()
     flash(_('Photo deleted successfully'), 'success')
     return redirect(url_for('housekeeper_task_detail', task_id=task.id))
+
+@app.route('/admin/housekeeping/task/<int:task_id>')
+@login_required
+@role_required('admin')
+def admin_housekeeping_task_detail(task_id):
+    """Admin view of housekeeping task details."""
+    task = Housekeeping.query.get_or_404(task_id)
+    
+    # Check if admin has access to this task (through amenity ownership)
+    if task.trip.amenity.admin_id != current_user.id:
+        flash(_('Access denied'), 'error')
+        return redirect(url_for('admin_housekeeping'))
+    
+    # Get all users for the reassignment dropdown
+    users = User.query.filter_by(is_deleted=False).all()
+    
+    return render_template('admin/housekeeping_task_detail.html', task=task, today=datetime.utcnow().date(), users=users)
 
 if __name__ == '__main__':
     # Parse command line arguments
