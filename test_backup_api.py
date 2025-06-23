@@ -156,7 +156,7 @@ def test_access_control():
     
     # Test system backup without authentication
     try:
-        response = session.get(f"{BASE_URL}/admin/backup")
+        response = session.get(f"{BASE_URL}/admin/backup", allow_redirects=False)
         if response.status_code == 302:  # Redirect to login
             log_test("System Backup Access Control", "PASS", "Properly redirects to login")
         else:
@@ -166,7 +166,7 @@ def test_access_control():
     
     # Test monthly guest backup without authentication
     try:
-        response = session.get(f"{BASE_URL}/api/backup/guests?year=2024&month=1")
+        response = session.get(f"{BASE_URL}/api/backup/guests?year=2024&month=1", allow_redirects=False)
         if response.status_code == 302:  # Redirect to login
             log_test("Monthly Backup Access Control", "PASS", "Properly redirects to login")
         else:

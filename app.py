@@ -708,7 +708,10 @@ def role_required(role):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            if not current_user.is_authenticated or current_user.role != role:
+            if not current_user.is_authenticated:
+                # Let Flask-Login handle the redirect
+                return login_manager.unauthorized()
+            if current_user.role != role:
                 abort(403)
             return f(*args, **kwargs)
         return decorated_function
