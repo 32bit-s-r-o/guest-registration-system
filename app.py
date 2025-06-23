@@ -3739,20 +3739,27 @@ def housekeeper_task_detail(task_id):
 
 @app.route('/housekeeper/task/<int:task_id>/update-status', methods=['POST'])
 @login_required
-@role_required('housekeeper')
 def update_task_status(task_id):
     """Update the status of a housekeeping task."""
     task = Housekeeping.query.get_or_404(task_id)
     
-    # Check if the current housekeeper has access to this task
-    if task.housekeeper_id != current_user.id:
+    # Check access: either the housekeeper assigned to the task or admin who owns the amenity
+    if current_user.role == 'housekeeper':
+        if task.housekeeper_id != current_user.id:
+            flash(_('Access denied'), 'error')
+            return redirect(url_for('housekeeper_dashboard'))
+    elif current_user.role == 'admin':
+        if task.trip.amenity.admin_id != current_user.id:
+            flash(_('Access denied'), 'error')
+            return redirect(url_for('admin_housekeeping'))
+    else:
         flash(_('Access denied'), 'error')
-        return redirect(url_for('housekeeper_dashboard'))
+        return redirect(url_for('admin_dashboard'))
     
     new_status = request.form.get('status')
     if new_status in ['pending', 'in_progress', 'completed']:
-        # Check if trying to mark as completed
-        if new_status == 'completed':
+        # Check if trying to mark as completed - only apply date restriction to housekeepers
+        if new_status == 'completed' and current_user.role == 'housekeeper':
             today = datetime.utcnow().date()
             if task.date != today:
                 flash(_('Tasks can only be marked as completed on the task date (%(task_date)s). Today is %(today)s.', 
@@ -3767,7 +3774,43 @@ def update_task_status(task_id):
     else:
         flash(_('Invalid status'), 'error')
     
-    return redirect(url_for('housekeeper_task_detail', task_id=task_id))
+    # Redirect based on user role
+    if current_user.role == 'admin':
+        return redirect(url_for('admin_housekeeping_task_detail', task_id=task_id))
+    else:
+        return redirect(url_for('housekeeper_task_detail', task_id=task_id))
+
+@app.route('/admin/housekeeping/bulk-update-status', methods=['POST'])
+@login_required
+@role_required('admin')
+def bulk_update_housekeeping_status():
+    """Bulk update status for multiple housekeeping tasks."""
+    task_ids = request.form.getlist('task_ids')
+    new_status = request.form.get('status')
+    
+    if not task_ids:
+        flash(_('No tasks selected'), 'error')
+        return redirect(url_for('admin_housekeeping'))
+    
+    if new_status not in ['pending', 'in_progress', 'completed']:
+        flash(_('Invalid status'), 'error')
+        return redirect(url_for('admin_housekeeping'))
+    
+    updated_count = 0
+    for task_id in task_ids:
+        task = Housekeeping.query.get(task_id)
+        if task and task.trip.amenity.admin_id == current_user.id:
+            task.status = new_status
+            task.updated_at = datetime.utcnow()
+            updated_count += 1
+    
+    if updated_count > 0:
+        db.session.commit()
+        flash(_('%(count)d tasks updated successfully', count=updated_count), 'success')
+    else:
+        flash(_('No tasks were updated'), 'error')
+    
+    return redirect(url_for('admin_housekeeping'))
 
 @app.route('/housekeeper/task/<int:task_id>/add-notes', methods=['POST'])
 @login_required

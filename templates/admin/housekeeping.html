@@ -2,6 +2,30 @@
 
 {% block title %}{{ _('Housekeeping Management') }}{% endblock %}
 
+{% block head %}
+<style>
+    .action-buttons {
+        min-width: 80px;
+    }
+
+    .action-buttons .btn {
+        font-size: 0.7rem !important;
+        padding: 0.2rem 0.4rem !important;
+        margin-bottom: 0.1rem;
+    }
+
+    .table-responsive {
+        font-size: 0.9rem;
+    }
+
+    .table th,
+    .table td {
+        vertical-align: middle;
+        padding: 0.5rem;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container mt-4">
     <h1>{{ _('Housekeeping Management') }}</h1>
@@ -61,6 +85,42 @@
             </div>
         </div>
     </div>
+
+    <!-- Bulk Update Form -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-warning text-dark">
+            <h5 class="mb-0"><i class="fas fa-tasks"></i> {{ _('Bulk Update Tasks') }}</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('bulk_update_housekeeping_status') }}" id="bulkUpdateForm">
+                <div class="row align-items-end">
+                    <div class="col-md-4">
+                        <label for="bulk_status" class="form-label">{{ _('New Status') }}</label>
+                        <select class="form-select" id="bulk_status" name="status" required>
+                            <option value="">{{ _('Select status...') }}</option>
+                            <option value="pending">{{ _('Pending') }}</option>
+                            <option value="in_progress">{{ _('In Progress') }}</option>
+                            <option value="completed">{{ _('Completed') }}</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-warning" id="bulkUpdateBtn" disabled>
+                            <i class="fas fa-save"></i> {{ _('Update Selected Tasks') }}
+                        </button>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="button" class="btn btn-outline-secondary" onclick="toggleAllTasks()">
+                            <i class="fas fa-check-square"></i> {{ _('Select All') }}
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" onclick="deselectAllTasks()">
+                            <i class="fas fa-square"></i> {{ _('Deselect All') }}
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <form class="row g-3 mb-4" method="get">
         <div class="col-md-3">
             <label for="housekeeper_id" class="form-label">{{ _('Housekeeper') }}</label>
@@ -102,6 +162,9 @@
         <table class="table table-bordered table-hover align-middle">
             <thead class="table-dark">
                 <tr>
+                    <th>
+                        <input type="checkbox" id="selectAll" onchange="toggleAllTasks()">
+                    </th>
                     <th>{{ _('Date') }}</th>
                     <th>{{ _('Trip ID') }}</th>
                     <th>{{ _('Amenity') }}</th>
@@ -117,6 +180,10 @@
                 {% if tasks %}
                 {% for task in tasks %}
                 <tr>
+                    <td>
+                        <input type="checkbox" name="task_ids" value="{{ task.id }}" class="task-checkbox"
+                            onchange="updateBulkUpdateBtn()">
+                    </td>
                     <td>{{ task.date|format_date }}</td>
                     <td>{{ task.trip_id }}</td>
                     <td>{{ task.trip.amenity.name if task.trip.amenity else 'N/A' }}</td>
@@ -142,23 +209,27 @@
                         {% endif %}
                     </td>
                     <td>
-                        <button type="submit" class="btn btn-sm btn-success">{{ _('Save') }}</button>
-                        </form>
-                        <a href="{{ url_for('admin_housekeeping_task_detail', task_id=task.id) }}"
-                            class="btn btn-sm btn-info">
-                            <i class="fas fa-eye"></i> {{ _('View Details') }}
-                        </a>
-                        <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal"
-                            data-bs-target="#reassignModal{{ task.id }}">
-                            <i class="fas fa-exchange-alt"></i> {{ _('Reassign') }}
-                        </button>
-                        <form method="POST" action="{{ url_for('delete_housekeeping_task', task_id=task.id) }}"
-                            style="display:inline;">
-                            <button type="submit" class="btn btn-sm btn-danger"
-                                onclick="return confirm('{{ _('Are you sure you want to delete this housekeeping task?') }}');">
-                                <i class="fas fa-trash"></i> {{ _('Delete') }}
+                        <div class="d-flex flex-column gap-1 action-buttons">
+                            <button type="submit" class="btn btn-sm btn-success">
+                                <i class="fas fa-save"></i> {{ _('Save') }}
                             </button>
-                        </form>
+                            </form>
+                            <a href="{{ url_for('admin_housekeeping_task_detail', task_id=task.id) }}"
+                                class="btn btn-sm btn-info">
+                                <i class="fas fa-eye"></i> {{ _('View') }}
+                            </a>
+                            <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal"
+                                data-bs-target="#reassignModal{{ task.id }}">
+                                <i class="fas fa-exchange-alt"></i> {{ _('Reassign') }}
+                            </button>
+                            <form method="POST" action="{{ url_for('delete_housekeeping_task', task_id=task.id) }}"
+                                style="display:inline;">
+                                <button type="submit" class="btn btn-sm btn-danger"
+                                    onclick="return confirm('{{ _('Are you sure you want to delete this housekeeping task?') }}');">
+                                    <i class="fas fa-trash"></i> {{ _('Delete') }}
+                                </button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
@@ -209,3 +280,65 @@
 </div>
 {% endfor %}
 {% endblock %}
+
+<script>
+    function toggleAllTasks() {
+        const selectAll = document.getElementById('selectAll');
+        const checkboxes = document.querySelectorAll('.task-checkbox');
+
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = selectAll.checked;
+        });
+
+        updateBulkUpdateBtn();
+    }
+
+    function deselectAllTasks() {
+        const selectAll = document.getElementById('selectAll');
+        const checkboxes = document.querySelectorAll('.task-checkbox');
+
+        selectAll.checked = false;
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+
+        updateBulkUpdateBtn();
+    }
+
+    function updateBulkUpdateBtn() {
+        const checkboxes = document.querySelectorAll('.task-checkbox:checked');
+        const bulkUpdateBtn = document.getElementById('bulkUpdateBtn');
+        const bulkStatus = document.getElementById('bulk_status');
+
+        if (checkboxes.length > 0 && bulkStatus.value) {
+            bulkUpdateBtn.disabled = false;
+            bulkUpdateBtn.textContent = `Update ${checkboxes.length} Selected Task${checkboxes.length > 1 ? 's' : ''}`;
+        } else {
+            bulkUpdateBtn.disabled = true;
+            bulkUpdateBtn.textContent = 'Update Selected Tasks';
+        }
+    }
+
+    // Update button state when status changes
+    document.getElementById('bulk_status').addEventListener('change', updateBulkUpdateBtn);
+
+    // Update select all checkbox when individual checkboxes change
+    document.querySelectorAll('.task-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function () {
+            const checkboxes = document.querySelectorAll('.task-checkbox');
+            const selectAll = document.getElementById('selectAll');
+            const checkedCount = document.querySelectorAll('.task-checkbox:checked').length;
+
+            if (checkedCount === 0) {
+                selectAll.checked = false;
+                selectAll.indeterminate = false;
+            } else if (checkedCount === checkboxes.length) {
+                selectAll.checked = true;
+                selectAll.indeterminate = false;
+            } else {
+                selectAll.checked = false;
+                selectAll.indeterminate = true;
+            }
+        });
+    });
+</script>

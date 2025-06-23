@@ -86,6 +86,25 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6">
+                            <h6 class="text-muted">{{ _('Update Status') }}</h6>
+                            <form method="POST" action="{{ url_for('update_task_status', task_id=task.id) }}">
+                                <div class="mb-3">
+                                    <label for="status" class="form-label">{{ _('Status') }}</label>
+                                    <select class="form-select" id="status" name="status" required>
+                                        <option value="pending" {% if task.status=='pending' %}selected{% endif %}>{{
+                                            _('Pending') }}</option>
+                                        <option value="in_progress" {% if task.status=='in_progress' %}selected{% endif
+                                            %}>{{ _('In Progress') }}</option>
+                                        <option value="completed" {% if task.status=='completed' %}selected{% endif %}>
+                                            {{ _('Completed') }}</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-warning">
+                                    <i class="fas fa-save"></i> {{ _('Update Status') }}
+                                </button>
+                            </form>
+                        </div>
+                        <div class="col-md-6">
                             <h6 class="text-muted">{{ _('Reassign Task') }}</h6>
                             <form method="POST" action="{{ url_for('reassign_housekeeping_task', task_id=task.id) }}">
                                 <div class="mb-3">
@@ -102,11 +121,14 @@
                                         {% endfor %}
                                     </select>
                                 </div>
-                                <button type="submit" class="btn btn-warning">
+                                <button type="submit" class="btn btn-info">
                                     <i class="fas fa-user-edit"></i> {{ _('Reassign Task') }}
                                 </button>
                             </form>
                         </div>
+                    </div>
+                    <hr>
+                    <div class="row">
                         <div class="col-md-6">
                             <h6 class="text-muted">{{ _('Delete Task') }}</h6>
                             <p class="text-muted small">{{ _('This action cannot be undone.') }}</p>
