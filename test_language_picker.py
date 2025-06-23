@@ -27,9 +27,12 @@ def test_language_picker_config():
         from app import app
         with app.app_context():
             enabled = app.config['LANGUAGE_PICKER_ENABLED']
+            supported_locales = app.config['BABEL_SUPPORTED_LOCALES']
             print(f"   Language picker enabled: {enabled}")
+            print(f"   Supported locales: {supported_locales}")
             print("   ✓ Language picker will be visible in navigation")
-            print("   ✓ Users can switch between English and Czech")
+            print("   ✓ Users can switch between English, Czech, and Slovak")
+            print("   ✓ Available languages: English (en), Czech (cs), Slovak (sk)")
     except Exception as e:
         print(f"   ✗ Error: {e}")
     
@@ -69,6 +72,11 @@ def test_language_picker_config():
     print("LANGUAGE_PICKER_ENABLED=true")
     print()
     print("Or simply omit the variable to use the default (enabled)")
+    print()
+    print("=== Supported Languages ===")
+    print("- English (en): Default language")
+    print("- Czech (cs): Secondary language") 
+    print("- Slovak (sk): Third language option")
 
 if __name__ == '__main__':
     test_language_picker_config() 

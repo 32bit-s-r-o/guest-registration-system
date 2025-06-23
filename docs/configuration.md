@@ -326,6 +326,7 @@ LANGUAGE_PICKER_ENABLED=false
 
 - **English (en)**: Default language
 - **Czech (cs)**: Secondary language
+- **Slovak (sk)**: Third language option
 
 ### Adding New Languages
 
@@ -341,7 +342,7 @@ LANGUAGE_PICKER_ENABLED=false
 
 3. **Add language to configuration**
    ```python
-   app.config['BABEL_SUPPORTED_LOCALES'] = ['en', 'cs', 'xx']
+   app.config['BABEL_SUPPORTED_LOCALES'] = ['en', 'cs', 'sk', 'xx']
    ```
 
 ## Table Prefix Configuration

@@ -55,13 +55,16 @@
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="langDropdown" role="button"
                             data-bs-toggle="dropdown" aria-expanded="false">
-                            {% if get_locale() == 'cs' %}🇨🇿 Čeština{% else %}🇬🇧 English{% endif %}
+                            {% if get_locale() == 'cs' %}🇨🇿 Čeština{% elif get_locale() == 'sk' %}🇸🇰 Slovenčina{%
+                            else %}🇬🇧 English{% endif %}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="langDropdown">
                             <li><a class="dropdown-item" href="{{ url_for('set_language', lang_code='en') }}">🇬🇧
                                     English</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('set_language', lang_code='cs') }}">🇨🇿
                                     Čeština</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('set_language', lang_code='sk') }}">🇸🇰
+                                    Slovenčina</a></li>
                         </ul>
                     </li>
                     {% endif %}

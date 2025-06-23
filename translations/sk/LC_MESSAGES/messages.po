@@ -395,89 +395,97 @@ msgstr "O nás"
 
 #: templates/about.html:10
 msgid "Secure and compliant guest registration solutions for modern travel"
-msgstr ""
-"Bezpečný a GDPR kompatibilní systém Registrácia hostí pre vaše výlety a "
-"ubytovanie."
+msgstr "Bezpečné a kompatibilné riešenia registrácie hostí pre moderné cestovanie"
 
 #: templates/about.html:17
 msgid "Our Mission"
-msgstr "Naše mise"
+msgstr "Naša misia"
 
 #: templates/about.html:19
-msgid "We provide secure, GDPR-compliant guest registration systems that protect personal data while streamlining the registration process for trip organizers and guests alike."
-msgstr "Poskytujeme bezpečné systémy Registrácia hostí v souladu s GDPR, které chrání osobní údaje a zároveň zjednodušují proces Registrácia pre organizátory ubytovanie i hosty."
+msgid ""
+"We provide secure, GDPR-compliant guest registration systems that protect"
+" personal\n"
+"                            data while streamlining the registration "
+"process for trip organizers and guests alike."
+msgstr ""
+"Poskytujeme bezpečné systémy registrácie hostí v súlade s GDPR, ktoré chránia osobné údaje a zároveň zjednodušujú proces registrácie pre organizátorov ubytovania aj hostí."
 
 #: templates/about.html:28
 msgid "Our Vision"
-msgstr "Naše vize"
+msgstr "Naša vízia"
 
 #: templates/about.html:30
-msgid "To become the leading platform for secure guest registration, ensuring privacy and compliance while providing an excellent user experience for all parties involved."
-msgstr "Stát sa přední platformou pre bezpečnou registraci hostí, zajišťující soukromí a dodržování předpisů při poskytování vynikající uživatelské zkušenosti pre všechny zúčastněné strany."
+msgid ""
+"To become the leading platform for secure guest registration, ensuring "
+"privacy and\n"
+"                            compliance while providing an excellent user "
+"experience for all parties involved."
+msgstr ""
+"Stať sa poprednou platformou pre bezpečnú registráciu hostí, zabezpečujúc súkromie a dodržiavanie predpisov pri poskytovaní vynikajúcej používateľskej skúsenosti pre všetky zúčastnené strany."
 
 #: templates/about.html:40
 msgid "Why Choose Our System?"
-msgstr "Proč si vybrat náš systém?"
+msgstr "Prečo si vybrať náš systém?"
 
 #: templates/about.html:45
 msgid "Security & Privacy"
-msgstr "Bezpečnost a soukromí"
+msgstr "Bezpečnosť a súkromie"
 
 #: templates/about.html:47
 msgid "End-to-end encryption for all data"
-msgstr "End-to-end šifrování pre všechna data"
+msgstr "End-to-end šifrovanie pre všetky dáta"
 
 #: templates/about.html:48
 msgid "GDPR compliance built-in"
-msgstr "Vestavěná shoda s GDPR"
+msgstr "Vstavaná súladnosť s GDPR"
 
 #: templates/about.html:49
 msgid "Automatic document deletion after approval"
-msgstr "Nahrané dokumenty budou automaticky smazány po schválenie"
+msgstr "Automatické mazanie dokumentov po schválení"
 
 #: templates/about.html:50 templates/gdpr.html:205
 msgid "Secure file uploads with virus scanning"
-msgstr "Bezpečné nahrávání souborů s kontrolou virů"
+msgstr "Bezpečné nahrávanie súborov s kontrolou vírusov"
 
 #: templates/about.html:54
 msgid "Efficiency"
-msgstr "Efektivita"
+msgstr "Efektívnosť"
 
 #: templates/about.html:56
 msgid "Streamlined registration process"
-msgstr "Zjednodušený proces Registrácia"
+msgstr "Zjednodušený proces registrácie"
 
 #: templates/about.html:57
 msgid "Instant email notifications"
-msgstr "Okamžitá e-mailová oznámenie"
+msgstr "Okamžité e-mailové oznámenia"
 
 #: templates/about.html:58
 msgid "Admin dashboard for easy management"
-msgstr "Administrátorská nástěnka pre snadnou správu"
+msgstr "Administrátorská nástenná doska pre jednoduchú správu"
 
 #: templates/about.html:59
 msgid "Mobile-responsive design"
-msgstr "Responzivní design pre mobilní zařízenie"
+msgstr "Responzívny dizajn pre mobilné zariadenia"
 
 #: templates/about.html:65
 msgid "User Experience"
-msgstr "Uživatelská zkušenost"
+msgstr "Používateľská skúsenosť"
 
 #: templates/about.html:67
 msgid "Intuitive interface design"
-msgstr "Intuitivní návrh rozhraní"
+msgstr "Intuitívny dizajn rozhrania"
 
 #: templates/about.html:68
 msgid "Clear progress indicators"
-msgstr "Jasné indikátory průběhu"
+msgstr "Jasné indikátory priebehu"
 
 #: templates/about.html:69
 msgid "Helpful validation messages"
-msgstr "Užitečné validační zprávy"
+msgstr "Užitočné validačné správy"
 
 #: templates/about.html:70
 msgid "Accessible for all users"
-msgstr "Přístupné pre všechny uživatele"
+msgstr "Dostupné pre všetkých používateľov"
 
 #: templates/about.html:74
 msgid "Flexibility"
@@ -485,31 +493,40 @@ msgstr "Flexibilita"
 
 #: templates/about.html:76
 msgid "Customizable trip settings"
-msgstr "Přizpůsobitelná Nastavenia ubytovanie"
+msgstr "Prispôsobiteľné nastavenia ubytovania"
 
 #: templates/about.html:77
 msgid "Multiple document types supported"
-msgstr "Podporovány různé typy dokumentů"
+msgstr "Podporované rôzne typy dokumentov"
 
 #: templates/about.html:78
 msgid "Scalable for any group size"
-msgstr "Škálovatelné pre jakoukoliv velikost skupiny"
+msgstr "Škálovateľné pre akúkoľvek veľkosť skupiny"
 
 #: templates/about.html:79
 msgid "Easy admin management"
-msgstr "Snadná správa administrátora"
+msgstr "Jednoduchá správa administrátora"
 
 #: templates/about.html:88
 msgid "Our Team"
-msgstr "Náš tým"
+msgstr "Náš tím"
 
 #: templates/about.html:92
-msgid "Our team consists of experienced developers, security experts, and travel industry professionals who understand the unique challenges of guest registration and data protection."
-msgstr "Náš tým sa skládá ze zkušených vývojářů, bezpečnostních expertů a profesionálů z cestovního ruchu, kteří rozumějí jedinečným výzvám Registrácia hostí a ochrany dat."
+msgid ""
+"Our team consists of experienced developers, security experts, and travel"
+" industry\n"
+"                    professionals who understand the unique challenges of"
+" guest registration and data protection."
+msgstr ""
+"Náš tím sa skladá zo skúsených vývojárov, bezpečnostných expertov a profesionálov z cestovného ruchu, ktorí rozumejú jedinečným výzvam registrácie hostí a ochrany dát."
 
 #: templates/about.html:96
-msgid "We are committed to continuous improvement and regularly update our systems to meet the latest security standards and regulatory requirements."
-msgstr "Jsme odhodláni k neustálému zlepšování a pravidelně aktualizujeme naše systémy, aby splňovaly nejnovější bezpečnostní standardy a regulační požadavky."
+msgid ""
+"We are committed to continuous improvement and regularly update our "
+"systems to meet the latest\n"
+"                    security standards and regulatory requirements."
+msgstr ""
+"Sme odhodlaní k neustálému zlepšovaniu a pravidelne aktualizujeme naše systémy, aby spĺňali najnovšie bezpečnostné štandardy a regulačné požiadavky."
 
 #: templates/about.html:104 templates/contact.html:3 templates/gdpr.html:311
 msgid "Contact Us"

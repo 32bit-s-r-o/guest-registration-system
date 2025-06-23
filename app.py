@@ -62,7 +62,7 @@ app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
 
 # Flask-Babel setup
 app.config['BABEL_DEFAULT_LOCALE'] = 'en'
-app.config['BABEL_SUPPORTED_LOCALES'] = ['en', 'cs']
+app.config['BABEL_SUPPORTED_LOCALES'] = ['en', 'cs', 'sk']
 app.config['BABEL_TRANSLATION_DIRECTORIES'] = 'translations'
 
 # Language picker configuration
