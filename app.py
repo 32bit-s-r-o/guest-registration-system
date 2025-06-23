@@ -2128,6 +2128,27 @@ def set_language(lang_code):
         session['lang'] = lang_code
     return redirect(request.referrer or url_for('index'))
 
+@app.route('/housekeeper')
+def housekeeper_landing():
+    """Housekeeper landing page."""
+    return render_template('housekeeper/landing.html')
+
+@app.route('/housekeeper/login', methods=['GET', 'POST'])
+def housekeeper_login():
+    """Housekeeper login page."""
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        user = User.query.filter_by(username=username).first()
+        if user and user.check_password(password) and user.role == 'housekeeper':
+            login_user(user)
+            return redirect(url_for('housekeeper_dashboard'))
+        else:
+            flash(_('Invalid username or password'), 'error')
+    
+    return render_template('housekeeper/login.html')
+
 @app.route('/housekeeper/dashboard')
 @login_required
 @role_required('housekeeper')
