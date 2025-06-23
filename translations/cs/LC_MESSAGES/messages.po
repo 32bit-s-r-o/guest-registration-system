@@ -3103,3 +3103,9 @@ msgstr "Úkoly lze označit jako dokončené pouze v den úkolu (%(task_date)s).
 
 msgid "Not available today"
 msgstr "Dnes není dostupné"
+
+msgid "Default Housekeeper Pay per Task"
+msgstr "Výchozí odměna za úklidový úkol"
+
+msgid "This amount will be used as the default pay for new housekeeping tasks."
+msgstr "Tato částka bude použita jako výchozí odměna pro nové úklidové úkoly."

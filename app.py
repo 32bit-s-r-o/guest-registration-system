@@ -139,6 +139,8 @@ class User(UserMixin, db.Model):
     custom_line_3 = db.Column(db.String(200))
     # Preferred date format
     date_format = db.Column(db.String(32), default='d.m.Y')
+    # Default housekeeper pay
+    default_housekeeper_pay = db.Column(db.Numeric(10, 2), default=20)
     # Soft delete flag
     is_deleted = db.Column(db.Boolean, default=False)
     
@@ -892,6 +894,11 @@ def admin_settings():
         
         # Update date format setting
         current_user.date_format = request.form.get('date_format', 'd.m.Y')
+        # Update default housekeeper pay
+        try:
+            current_user.default_housekeeper_pay = float(request.form.get('default_housekeeper_pay', 20))
+        except Exception:
+            current_user.default_housekeeper_pay = 20
         
         # Update password if provided
         new_password = request.form.get('new_password')
@@ -3206,12 +3213,15 @@ def create_missing_housekeeping_tasks_for_calendar(calendar_id):
         # Check if a housekeeping task already exists for this trip
         existing_task = Housekeeping.query.filter_by(trip_id=trip.id).first()
         if not existing_task:
+            # Get the housekeeper's default pay
+            housekeeper = User.query.get(housekeeper_id)
+            pay = float(housekeeper.default_housekeeper_pay) if housekeeper and housekeeper.default_housekeeper_pay else 20
             task = Housekeeping(
                 trip_id=trip.id,
                 housekeeper_id=housekeeper_id,
                 date=trip.end_date + timedelta(days=1),
                 status='pending',
-                pay_amount=50.00,
+                pay_amount=pay,
                 paid=False
             )
             db.session.add(task)
@@ -3311,13 +3321,15 @@ def sync_calendar_reservations(calendar_id):
                     default_housekeeper_id = None
                 
                 if default_housekeeper_id:
-                    # Create housekeeping task for the day after the trip ends
+                    # Get the housekeeper's default pay
+                    housekeeper = User.query.get(default_housekeeper_id)
+                    pay = float(housekeeper.default_housekeeper_pay) if housekeeper and housekeeper.default_housekeeper_pay else 20
                     housekeeping_task = Housekeeping(
                         trip_id=trip.id,
                         housekeeper_id=default_housekeeper_id,
                         date=reservation['end_date'] + timedelta(days=1),
                         status='pending',
-                        pay_amount=50.00,  # Default pay amount
+                        pay_amount=pay,  # Default pay amount
                         paid=False
                     )
                     db.session.add(housekeeping_task)

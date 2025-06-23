@@ -465,6 +465,20 @@
                 </div>
             </div>
 
+            <!-- Default Housekeeper Pay -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="default_housekeeper_pay" class="form-label">{{ _('Default Housekeeper Pay per Task')
+                            }}</label>
+                        <input type="number" step="0.01" min="0" class="form-control" id="default_housekeeper_pay"
+                            name="default_housekeeper_pay" value="{{ current_user.default_housekeeper_pay or 20 }}">
+                        <div class="form-text">{{ _('This amount will be used as the default pay for new housekeeping
+                            tasks.') }}</div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Save Button -->
             <div class="d-grid gap-2">
                 <button type="submit" class="btn btn-primary btn-lg">
