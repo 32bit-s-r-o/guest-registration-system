@@ -33,6 +33,10 @@ import calendar
 import subprocess
 import zipfile
 
+# Add version management imports
+from version import version_manager, check_version_compatibility, get_version_changelog
+from migrations import migration_manager
+
 load_dotenv()
 
 app = Flask(__name__)
@@ -2770,6 +2774,93 @@ def admin_system_backup():
         as_attachment=True,
         download_name=os.path.basename(backup_zip_path)
     )
+
+@app.route('/api/version')
+def api_version():
+    """Get application version information"""
+    return jsonify(version_manager.get_version_info())
+
+@app.route('/api/version/compatibility')
+def api_version_compatibility():
+    """Check version compatibility"""
+    current_db_version = migration_manager.get_current_version()
+    app_version = version_manager.get_current_version()
+    
+    compat = check_version_compatibility(app_version, current_db_version)
+    return jsonify(compat)
+
+@app.route('/api/version/changelog/<version>')
+def api_version_changelog(version):
+    """Get changelog for specific version"""
+    changelog = get_version_changelog(version)
+    if changelog:
+        return jsonify(changelog)
+    else:
+        return jsonify({'error': 'Version not found'}), 404
+
+@app.route('/admin/migrations')
+@login_required
+@role_required('admin')
+def admin_migrations():
+    """Migration management page"""
+    current_version = migration_manager.get_current_version()
+    app_version = version_manager.get_current_version()
+    applied_migrations = migration_manager.get_applied_migrations()
+    pending_migrations = migration_manager.get_pending_migrations()
+    
+    # Check compatibility
+    compat = check_version_compatibility(app_version, current_version)
+    
+    return render_template('admin/migrations.html',
+                         current_version=current_version,
+                         app_version=app_version,
+                         applied_migrations=applied_migrations,
+                         pending_migrations=pending_migrations,
+                         compatibility=compat)
+
+@app.route('/admin/migrations/run', methods=['POST'])
+@login_required
+@role_required('admin')
+def run_migrations():
+    """Run pending migrations"""
+    try:
+        # Create backup before migration
+        backup_file = migration_manager.create_backup_before_migration()
+        
+        # Run migrations
+        success = migration_manager.migrate()
+        
+        if success:
+            flash(_('Migrations completed successfully!'), 'success')
+            if backup_file:
+                flash(_('Backup created before migration: %(file)s', file=backup_file), 'info')
+        else:
+            flash(_('Migration failed!'), 'error')
+        
+        return redirect(url_for('admin_migrations'))
+        
+    except Exception as e:
+        flash(_('Migration error: %(error)s', error=str(e)), 'error')
+        return redirect(url_for('admin_migrations'))
+
+@app.route('/admin/migrations/rollback/<version>', methods=['POST'])
+@login_required
+@role_required('admin')
+def rollback_migration(version):
+    """Rollback specific migration"""
+    try:
+        success = migration_manager.rollback_migration(version)
+        
+        if success:
+            flash(_('Migration %(version)s rolled back successfully!', version=version), 'success')
+        else:
+            flash(_('Failed to rollback migration %(version)s', version=version), 'error')
+        
+        return redirect(url_for('admin_migrations'))
+        
+    except Exception as e:
+        flash(_('Rollback error: %(error)s', error=str(e)), 'error')
+        return redirect(url_for('admin_migrations'))
 
 if __name__ == '__main__':
     with app.app_context():

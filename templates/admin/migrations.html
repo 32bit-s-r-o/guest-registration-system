@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Migration Management') }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">
+                <i class="fas fa-database"></i> {{ _('Migration Management') }}
+            </h1>
+        </div>
+    </div>
+
+    <!-- Version Information -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> {{ _('Version Information') }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <strong>{{ _('Application Version') }}:</strong><br>
+                            <span class="badge bg-primary">{{ app_version }}</span>
+                        </div>
+                        <div class="col-6">
+                            <strong>{{ _('Database Version') }}:</strong><br>
+                            <span class="badge bg-secondary">{{ current_version }}</span>
+                        </div>
+                    </div>
+
+                    {% if not compatibility.compatible %}
+                    <div class="alert alert-warning mt-3">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>{{ _('Version Compatibility Warning') }}</strong><br>
+                        {{ _('Database version is not compatible with application version.') }}
+                        <br><small>{{ _('Minimum required database version') }}: {{ compatibility.minimum_required_db
+                            }}</small>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-success mt-3">
+                        <i class="fas fa-check-circle"></i>
+                        <strong>{{ _('Version Compatible') }}</strong><br>
+                        {{ _('Application and database versions are compatible.') }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-tasks"></i> {{ _('Migration Actions') }}</h5>
+                </div>
+                <div class="card-body">
+                    {% if pending_migrations %}
+                    <form method="POST" action="{{ url_for('run_migrations') }}" class="d-inline">
+                        <button type="submit" class="btn btn-success btn-sm">
+                            <i class="fas fa-play"></i> {{ _('Run Pending Migrations') }} ({{ pending_migrations|length
+                            }})
+                        </button>
+                    </form>
+                    {% else %}
+                    <button class="btn btn-success btn-sm" disabled>
+                        <i class="fas fa-check"></i> {{ _('No Pending Migrations') }}
+                    </button>
+                    {% endif %}
+
+                    <hr>
+
+                    <a href="{{ url_for('admin_backup') }}" class="btn btn-info btn-sm">
+                        <i class="fas fa-download"></i> {{ _('Create Backup') }}
+                    </a>
+
+                    <a href="{{ url_for('admin_data_management') }}" class="btn btn-warning btn-sm">
+                        <i class="fas fa-cog"></i> {{ _('Data Management') }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Applied Migrations -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history"></i> {{ _('Applied Migrations') }}
+                        <span class="badge bg-success">{{ applied_migrations|length }}</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if applied_migrations %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>{{ _('Version') }}</th>
+                                    <th>{{ _('Name') }}</th>
+                                    <th>{{ _('Applied At') }}</th>
+                                    <th>{{ _('Actions') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for migration in applied_migrations %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-primary">{{ migration.version }}</span>
+                                    </td>
+                                    <td>{{ migration.name }}</td>
+                                    <td>{{ migration.applied_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                    <td>
+                                        <form method="POST"
+                                            action="{{ url_for('rollback_migration', version=migration.version) }}"
+                                            class="d-inline"
+                                            onsubmit="return confirm('{{ _('Are you sure you want to rollback this migration? This action cannot be undone.') }}')">
+                                            <button type="submit" class="btn btn-danger btn-sm">
+                                                <i class="fas fa-undo"></i> {{ _('Rollback') }}
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted">
+                        <i class="fas fa-inbox fa-3x mb-3"></i>
+                        <p>{{ _('No migrations have been applied yet.') }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Migrations -->
+    {% if pending_migrations %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clock"></i> {{ _('Pending Migrations') }}
+                        <span class="badge bg-warning">{{ pending_migrations|length }}</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>{{ _('Filename') }}</th>
+                                    <th>{{ _('Version') }}</th>
+                                    <th>{{ _('Status') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for migration in pending_migrations %}
+                                <tr>
+                                    <td>{{ migration }}</td>
+                                    <td>
+                                        <span class="badge bg-warning">{{ migration.split('_')[1] }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-warning">{{ _('Pending') }}</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Migration Information -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-question-circle"></i> {{ _('Migration Information') }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>{{ _('What are migrations?') }}</h6>
+                            <p class="text-muted">
+                                {{ _('Migrations are version-controlled database schema changes that allow you to evolve
+                                your database structure over time in a safe and organized way.') }}
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>{{ _('Migration Safety') }}</h6>
+                            <ul class="text-muted">
+                                <li>{{ _('Always create a backup before running migrations') }}</li>
+                                <li>{{ _('Test migrations in a development environment first') }}</li>
+                                <li>{{ _('Rollbacks are available but use with caution') }}</li>
+                                <li>{{ _('Monitor migration logs for any errors') }}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Migration Status Modal -->
+<div class="modal fade" id="migrationStatusModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ _('Migration Status') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="migrationStatusContent">
+                    <!-- Migration status will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Close') }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Auto-refresh migration status every 30 seconds
+    setInterval(function () {
+        // You can add AJAX calls here to refresh migration status
+    }, 30000);
+
+    // Confirm migration actions
+    document.addEventListener('DOMContentLoaded', function () {
+        const migrationForms = document.querySelectorAll('form[action*="migrations"]');
+        migrationForms.forEach(form => {
+            form.addEventListener('submit', function (e) {
+                if (!confirm('{{ _("Are you sure you want to proceed with this migration action?") }}')) {
+                    e.preventDefault();
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
