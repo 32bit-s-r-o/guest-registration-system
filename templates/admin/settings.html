@@ -136,6 +136,61 @@
                 </div>
             </div>
 
+            <!-- Photo Upload Configuration -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0"><i class="fas fa-camera"></i> {{ _('Photo Upload Configuration') }}</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info" role="alert">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>{{ _('Photo Upload Settings') }}:</strong> {{ _('Configure whether document photos are
+                        required for adult and child guests during registration.') }}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="photo_required_adults" class="form-label">{{ _('Adults Photo Requirement')
+                                    }}</label>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="photo_required_adults"
+                                        name="photo_required_adults" {% if current_user.photo_required_adults
+                                        %}checked{% endif %}>
+                                    <label class="form-check-label" for="photo_required_adults">
+                                        {{ _('Require document photos for adult guests') }}
+                                    </label>
+                                </div>
+                                <div class="form-text">{{ _('When enabled, adult guests must upload a photo of their
+                                    identification document') }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="photo_required_children" class="form-label">{{ _('Children Photo
+                                    Requirement') }}</label>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="photo_required_children"
+                                        name="photo_required_children" {% if current_user.photo_required_children
+                                        %}checked{% endif %}>
+                                    <label class="form-check-label" for="photo_required_children">
+                                        {{ _('Require document photos for child guests') }}
+                                    </label>
+                                </div>
+                                <div class="form-text">{{ _('When enabled, child guests must upload a photo of their
+                                    identification document') }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-warning" role="alert">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>{{ _('Important') }}:</strong> {{ _('Document photos are automatically deleted after
+                        registration approval for GDPR compliance.') }}
+                    </div>
+                </div>
+            </div>
+
             <!-- Contact Information -->
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-warning text-dark">

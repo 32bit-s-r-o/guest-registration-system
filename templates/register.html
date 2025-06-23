@@ -111,6 +111,10 @@
     // JavaScript for dynamic guest forms
     let guestCount = 0;
 
+    // Admin settings for photo requirements
+    const photoRequiredAdults = {{ admin.photo_required_adults|default (true) | tojson }};
+    const photoRequiredChildren = {{ admin.photo_required_children|default (true) | tojson }};
+
     function addGuestForm() {
         guestCount++;
         const container = document.getElementById('guests-container');
@@ -119,16 +123,26 @@
         guestDiv.innerHTML = `
             <h5>{{ _('Guest') }} ${guestCount}</h5>
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <div class="mb-3">
                         <label for="first_name_${guestCount}" class="form-label">{{ _('First Name') }} *</label>
                         <input type="text" class="form-control" id="first_name_${guestCount}" name="first_name_${guestCount}" required>
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <div class="mb-3">
                         <label for="last_name_${guestCount}" class="form-label">{{ _('Last Name') }} *</label>
                         <input type="text" class="form-control" id="last_name_${guestCount}" name="last_name_${guestCount}" required>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="age_category_${guestCount}" class="form-label">{{ _('Age Category') }} *</label>
+                        <select class="form-select" id="age_category_${guestCount}" name="age_category_${guestCount}" required onchange="updatePhotoRequirement(${guestCount})">
+                            <option value="">{{ _('Select age category') }}</option>
+                            <option value="adult">{{ _('Adult') }}</option>
+                            <option value="child">{{ _('Child') }}</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -151,10 +165,10 @@
                     </div>
                 </div>
             </div>
-            <div class="mb-3">
-                <label for="document_image_${guestCount}" class="form-label">{{ _('Document Image') }} *</label>
-                <input type="file" class="form-control" id="document_image_${guestCount}" name="document_image_${guestCount}" accept="image/*" required>
-                <div class="form-text">{{ _('Upload a clear photo of the document') }}</div>
+            <div class="mb-3" id="photo_upload_${guestCount}">
+                <label for="document_image_${guestCount}" class="form-label">{{ _('Document Image') }} <span id="photo_required_${guestCount}">*</span></label>
+                <input type="file" class="form-control" id="document_image_${guestCount}" name="document_image_${guestCount}" accept="image/*">
+                <div class="form-text" id="photo_help_${guestCount}">{{ _('Upload a clear photo of the document') }}</div>
             </div>
             <div class="mb-3">
                 <div class="form-check">
@@ -173,6 +187,35 @@
 
     function removeGuest(button) {
         button.closest('.guest-form').remove();
+    }
+
+    function updatePhotoRequirement(guestIndex) {
+        const ageCategory = document.getElementById(`age_category_${guestIndex}`).value;
+        const photoInput = document.getElementById(`document_image_${guestIndex}`);
+        const photoRequired = document.getElementById(`photo_required_${guestIndex}`);
+        const photoHelp = document.getElementById(`photo_help_${guestIndex}`);
+
+        if (ageCategory === 'adult') {
+            if (photoRequiredAdults) {
+                photoInput.required = true;
+                photoRequired.textContent = '*';
+                photoHelp.textContent = '{{ _("Upload a clear photo of the document") }}';
+            } else {
+                photoInput.required = false;
+                photoRequired.textContent = '';
+                photoHelp.textContent = '{{ _("Photo upload is optional for adults") }}';
+            }
+        } else if (ageCategory === 'child') {
+            if (photoRequiredChildren) {
+                photoInput.required = true;
+                photoRequired.textContent = '*';
+                photoHelp.textContent = '{{ _("Upload a clear photo of the document") }}';
+            } else {
+                photoInput.required = false;
+                photoRequired.textContent = '';
+                photoHelp.textContent = '{{ _("Photo upload is optional for children") }}';
+            }
+        }
     }
 
     // Add first guest form on page load

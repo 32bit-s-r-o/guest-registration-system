@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-06-23 02:38+0200\n"
+"POT-Creation-Date: 2025-06-23 11:22+0200\n"
 "PO-Revision-Date: 2025-06-23 01:07+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: cs\n"
@@ -18,83 +18,88 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: app.py:396
+#: app.py:411
 #, python-format
 msgid "Thank you for your message, %(name)s! We will get back to you soon."
 msgstr "Děkujeme za vaši zprávu, %(name)s! Budeme vás kontaktovat brzy."
 
-#: app.py:423
+#: app.py:438
 msgid "Please enter a confirmation code"
 msgstr "Prosím zadejte potvrzovací kód"
 
-#: app.py:429 app.py:445
+#: app.py:444 app.py:461
 msgid "Invalid confirmation code. Please check your code and try again."
 msgstr "Neplatný potvrzovací kód. Prosím zkontrolujte svůj kód a zkuste to znovu."
 
-#: app.py:597
+#: app.py:500
+#, python-format
+msgid "Document photo is required for %(age_category)s guests"
+msgstr ""
+
+#: app.py:639
 msgid ""
 "Registration submitted successfully! You will receive an email once it is"
 " reviewed."
 msgstr "Registrace byla úspěšně odeslána! Obdržíte email po jejím přezkoumání."
 
-#: app.py:616
+#: app.py:658
 msgid "Invalid username or password"
 msgstr "Neplatné uživatelské jméno nebo heslo"
 
-#: app.py:663
+#: app.py:709
 msgid "Settings updated successfully!"
 msgstr "Nastavení bylo úspěšně aktualizováno!"
 
-#: app.py:675
+#: app.py:721
 #, python-format
 msgid "Airbnb sync successful: %(message)s"
 msgstr "Synchronizace s Airbnb úspěšná: %(message)s"
 
-#: app.py:677
+#: app.py:723
 #, python-format
 msgid "Airbnb sync failed: %(message)s"
 msgstr "Synchronizace s Airbnb selhala: %(message)s"
 
-#: app.py:700
+#: app.py:746
 msgid "Trip created successfully!"
 msgstr "Výlet byl úspěšně vytvořen!"
 
-#: app.py:738
+#: app.py:784
 msgid "Registration approved and email sent to user"
 msgstr "Registrace schválena a email odeslán uživateli"
 
-#: app.py:754
+#: app.py:800
 msgid "Registration rejected and email sent to user"
 msgstr "Registrace zamítnuta a email odeslán uživateli"
 
-#: app.py:822
+#: app.py:868
 msgid "Invoice created successfully!"
 msgstr "Faktura byla úspěšně vytvořena!"
 
-#: app.py:887
+#: app.py:933
 msgid "Invoice updated successfully!"
 msgstr "Faktura byla úspěšně aktualizována!"
 
-#: app.py:909
+#: app.py:955
 msgid "Invoice deleted successfully!"
 msgstr "Faktura byla úspěšně smazána!"
 
-#: app.py:925
+#: app.py:971
 #, python-format
 msgid "Invoice status changed from %(old_status)s to %(new_status)s successfully!"
 msgstr "Stav faktury byl úspěšně změněn z %(old_status)s na %(new_status)s!"
 
-#: app.py:927
+#: app.py:973
 msgid "Invalid status provided."
 msgstr "Poskytnut neplatný stav."
 
-#: app.py:1093
+#: app.py:1139
 msgid "All data has been reset successfully! Admin accounts have been preserved."
 msgstr ""
 "Všechna data byla úspěšně resetována! Administrátorské účty byly "
 "zachovány."
 
-#: app.py:1098
+#: app.py:1144
 #, python-format
 msgid ""
 "Error resetting data: %(error)s. Please use the command line tool: python"
@@ -103,7 +108,7 @@ msgstr ""
 "Chyba při resetování dat: %(error)s. Použijte prosím příkazový řádek: "
 "python quick_reset.py --confirm"
 
-#: app.py:1443
+#: app.py:1490
 msgid ""
 "Sample data has been seeded successfully! Created 5 trips, 7 "
 "registrations (including 1 single-person pending), 3 invoices with "
@@ -113,12 +118,12 @@ msgstr ""
 "(včetně 1 čekající jednotlivce), 3 faktury s realistickými daty a "
 "aktualizovány kontaktní informace administrátora."
 
-#: app.py:1446
+#: app.py:1493
 #, python-format
 msgid "Error seeding data: %(error)s"
 msgstr "Chyba při načítání dat: %(error)s"
 
-#: app.py:1668
+#: app.py:1716
 msgid ""
 "Database has been reset and seeded with sample data successfully! Admin "
 "accounts have been preserved. Created 5 trips and 6 registrations with "
@@ -130,7 +135,7 @@ msgstr ""
 " různými stavy. Ukázkové obrázky dokumentů byly zkopírovány do složky "
 "uploads."
 
-#: app.py:1673
+#: app.py:1721
 #, python-format
 msgid ""
 "Error during reset and seed: %(error)s. Please use the command line tool:"
@@ -139,11 +144,11 @@ msgstr ""
 "Chyba během resetování a načítání: %(error)s. Použijte prosím příkazový "
 "řádek: python quick_reset.py --reset-seed"
 
-#: app.py:1680
+#: app.py:1728
 msgid "Your registration has been approved!"
 msgstr "Vaše registrace byla schválena!"
 
-#: app.py:1684
+#: app.py:1732
 #, python-format
 msgid ""
 "\n"
@@ -174,11 +179,11 @@ msgstr ""
 "        Administrátorský tým\n"
 "        "
 
-#: app.py:1704
+#: app.py:1752
 msgid "Registration Update Required"
 msgstr "Vyžadována aktualizace registrace"
 
-#: app.py:1708
+#: app.py:1756
 #, python-format
 msgid ""
 "\n"
@@ -354,32 +359,32 @@ msgstr ""
 msgid "Contact Us"
 msgstr "Kontakt"
 
-#: templates/base.html:69 templates/contact.html:144
+#: templates/base.html:71 templates/contact.html:144
 msgid "Home"
 msgstr "Domů"
 
-#: templates/base.html:72 templates/contact.html:149
+#: templates/base.html:74 templates/contact.html:149
 msgid "About"
 msgstr "O nás"
 
-#: templates/base.html:75 templates/contact.html:10
+#: templates/base.html:77 templates/contact.html:10
 msgid "Contact"
 msgstr "Kontakt"
 
-#: templates/base.html:78
+#: templates/base.html:80
 msgid "GDPR"
 msgstr "GDPR"
 
-#: templates/base.html:84
+#: templates/base.html:86
 msgid "Dashboard"
 msgstr "Nástěnka"
 
-#: templates/base.html:87
+#: templates/base.html:89
 msgid "Logout"
 msgstr "Odhlásit"
 
 #: templates/admin/login.html:3 templates/admin/login.html:12
-#: templates/base.html:91
+#: templates/base.html:93
 msgid "Admin Login"
 msgstr "Přihlášení administrátora"
 
@@ -428,7 +433,7 @@ msgstr "Maximální počet hostů"
 msgid "Confirmation Code"
 msgstr "Potvrzovací kód"
 
-#: templates/admin/settings.html:142 templates/admin/settings.html:147
+#: templates/admin/settings.html:197 templates/admin/settings.html:202
 #: templates/confirm.html:49 templates/contact.html:22 templates/gdpr.html:57
 #: templates/gdpr.html:135 templates/gdpr.html:245 templates/register.html:45
 msgid "Contact Information"
@@ -439,7 +444,7 @@ msgstr "Kontaktní informace"
 msgid "Email Address"
 msgstr "Emailová adresa"
 
-#: templates/admin/settings.html:289 templates/confirm.html:59
+#: templates/admin/settings.html:344 templates/confirm.html:59
 #: templates/register.html:93
 msgid "Guest Information"
 msgstr "Informace o hostech"
@@ -448,7 +453,7 @@ msgstr "Informace o hostech"
 msgid "guest(s)"
 msgstr "host(é)"
 
-#: templates/confirm.html:65 templates/register.html:120
+#: templates/confirm.html:65 templates/register.html:124
 msgid "Guest"
 msgstr "Host"
 
@@ -456,11 +461,11 @@ msgstr "Host"
 msgid "Name"
 msgstr "Jméno"
 
-#: templates/confirm.html:70 templates/register.html:138
+#: templates/confirm.html:70 templates/register.html:152
 msgid "Document Type"
 msgstr "Typ dokumentu"
 
-#: templates/confirm.html:71 templates/register.html:149
+#: templates/confirm.html:71 templates/register.html:163
 msgid "Document Number"
 msgstr "Číslo dokumentu"
 
@@ -485,7 +490,7 @@ msgstr "Požadavek na fakturu"
 msgid "Client Name"
 msgstr "Jméno klienta"
 
-#: templates/admin/settings.html:183 templates/admin/view_invoice.html:59
+#: templates/admin/settings.html:238 templates/admin/view_invoice.html:59
 #: templates/confirm.html:98 templates/register.html:77
 msgid "VAT Number"
 msgstr "DIČ"
@@ -526,11 +531,11 @@ msgstr "Domů"
 msgid "Email"
 msgstr "Email"
 
-#: templates/admin/settings.html:214 templates/contact.html:56
+#: templates/admin/settings.html:269 templates/contact.html:56
 msgid "Website"
 msgstr ""
 
-#: templates/admin/settings.html:203 templates/admin/view_invoice.html:62
+#: templates/admin/settings.html:258 templates/admin/view_invoice.html:62
 #: templates/contact.html:68 templates/gdpr.html:32 templates/gdpr.html:43
 msgid "Address"
 msgstr "Adresa"
@@ -1243,47 +1248,73 @@ msgstr "Přidat dalšího hosta"
 msgid "Continue to Review"
 msgstr "Pokračovat k přezkoumání"
 
-#: templates/register.html:124
+#: templates/register.html:128
 msgid "First Name"
 msgstr "Jméno"
 
-#: templates/register.html:130
+#: templates/register.html:134
 msgid "Last Name"
 msgstr "Příjmení"
 
 #: templates/register.html:140
+msgid "Age Category"
+msgstr "Věková kategorie"
+
+#: templates/register.html:142
+msgid "Select age category"
+msgstr "Vyberte věkovou kategorii"
+
+#: templates/register.html:143
+#, fuzzy
+msgid "Adult"
+msgstr "Dospělý"
+
+#: templates/register.html:144
+msgid "Child"
+msgstr "Dítě"
+
+#: templates/register.html:154
 msgid "Select document type"
 msgstr "Vyberte typ dokumentu"
 
-#: templates/register.html:141
+#: templates/register.html:155
 msgid "Passport"
 msgstr "Pas"
 
-#: templates/register.html:142
+#: templates/register.html:156
 msgid "Driving License"
 msgstr "Řidičský průkaz"
 
-#: templates/register.html:143
+#: templates/register.html:157
 msgid "Citizen ID"
 msgstr "Občanský průkaz"
 
-#: templates/register.html:155
+#: templates/register.html:169
 msgid "Document Image"
 msgstr "Obrázek dokumentu"
 
-#: templates/register.html:157
+#: templates/register.html:171 templates/register.html:202
+#: templates/register.html:212
 msgid "Upload a clear photo of the document"
 msgstr "Nahrajte jasnou fotografii dokumentu"
 
-#: templates/register.html:163
+#: templates/register.html:177
 msgid ""
 "I consent to the processing of my personal data according to GDPR "
 "regulations"
 msgstr "Souhlasím se zpracováním mých osobních údajů podle nařízení GDPR"
 
-#: templates/register.html:168
+#: templates/register.html:182
 msgid "Remove Guest"
 msgstr "Odebrat hosta"
+
+#: templates/register.html:206
+msgid "Photo upload is optional for adults"
+msgstr "Nahrání fotografie je pro dospělé nepovinné"
+
+#: templates/register.html:216
+msgid "Photo upload is optional for children"
+msgstr "Nahrání fotografie je pro děti nepovinné"
 
 #: templates/register_landing.html:19
 msgid ""
@@ -1526,7 +1557,7 @@ msgid "Cancel"
 msgstr "Zrušit"
 
 #: templates/admin/edit_invoice.html:170 templates/admin/new_invoice.html:163
-#: templates/admin/settings.html:223 templates/admin/view_invoice.html:89
+#: templates/admin/settings.html:278 templates/admin/view_invoice.html:89
 msgid "Description"
 msgstr "Popis"
 
@@ -1786,7 +1817,7 @@ msgstr ""
 msgid "Last Sync"
 msgstr "Příjmení"
 
-#: templates/admin/settings.html:133
+#: templates/admin/settings.html:133 templates/admin/settings.html:188
 #, fuzzy
 msgid "Important"
 msgstr "Důležité informace"
@@ -1797,225 +1828,289 @@ msgid ""
 "                        Keep it secure and don't share it publicly."
 msgstr ""
 
+#: templates/admin/settings.html:142
+msgid "Photo Upload Configuration"
+msgstr "Konfigurace nahrávání fotografií"
+
 #: templates/admin/settings.html:147
+#, fuzzy
+msgid "Photo Upload Settings"
+msgstr "Nastavení nahrávání fotografií"
+
+#: templates/admin/settings.html:147
+msgid ""
+"Configure whether document photos are\n"
+"                        required for adult and child guests during "
+"registration."
+msgstr ""
+"Nakonfigurujte, zda jsou fotografie dokumentů\n"
+"                        povinné pro dospělé a dětské hosty během "
+"registrace."
+
+#: templates/admin/settings.html:154
+msgid "Adults Photo Requirement"
+msgstr "Požadavek na fotografie dospělých"
+
+#: templates/admin/settings.html:161
+msgid "Require document photos for adult guests"
+msgstr "Vyžadovat fotografie dokumentů pro dospělé hosty"
+
+#: templates/admin/settings.html:164
+msgid ""
+"When enabled, adult guests must upload a photo of their\n"
+"                                    identification document"
+msgstr ""
+"Když je povoleno, dospělí hosté musí nahrát fotografii svého\n"
+"                                    identifikačního dokumentu"
+
+#: templates/admin/settings.html:170
+msgid ""
+"Children Photo\n"
+"                                    Requirement"
+msgstr ""
+"Požadavek na fotografie\n"
+"                                    dětí"
+
+#: templates/admin/settings.html:177
+msgid "Require document photos for child guests"
+msgstr "Vyžadovat fotografie dokumentů pro dětské hosty"
+
+#: templates/admin/settings.html:180
+msgid ""
+"When enabled, child guests must upload a photo of their\n"
+"                                    identification document"
+msgstr ""
+"Když je povoleno, dětské hosty musí nahrát fotografii svého\n"
+"                                    identifikačního dokumentu"
+
+#: templates/admin/settings.html:188
+#, fuzzy
+msgid ""
+"Document photos are automatically deleted after\n"
+"                        registration approval for GDPR compliance."
+msgstr ""
+"Pokud bude schválena, vaše nahrané dokumenty budou automaticky smazány "
+"pro GDPR kompatibilitu"
+
+#: templates/admin/settings.html:202
 msgid ""
 "This information can be displayed on\n"
 "                        contact pages or used in communications with "
 "guests."
 msgstr ""
 
-#: templates/admin/settings.html:154
+#: templates/admin/settings.html:209
 #, fuzzy
 msgid "Company Name"
 msgstr "Jméno klienta"
 
-#: templates/admin/settings.html:158
+#: templates/admin/settings.html:213
 msgid "The company or organization name shown on public pages"
 msgstr ""
 
-#: templates/admin/settings.html:164
+#: templates/admin/settings.html:219
 #, fuzzy
 msgid "Contact Name"
 msgstr "Kontakt"
 
-#: templates/admin/settings.html:167
+#: templates/admin/settings.html:222
 msgid "The name to display for contact purposes"
 msgstr ""
 
-#: templates/admin/settings.html:175
+#: templates/admin/settings.html:230
 msgid "Company ICO"
 msgstr ""
 
-#: templates/admin/settings.html:178
+#: templates/admin/settings.html:233
 #, fuzzy
 msgid "Company identification number (optional)"
 msgstr "DIČ (volitelné)"
 
-#: templates/admin/settings.html:186
+#: templates/admin/settings.html:241
 #, fuzzy
 msgid "VAT identification number (optional)"
 msgstr "DIČ (volitelné)"
 
-#: templates/admin/settings.html:194
+#: templates/admin/settings.html:249
 #, fuzzy
 msgid "Phone Number"
 msgstr "Číslo faktury"
 
-#: templates/admin/settings.html:198
+#: templates/admin/settings.html:253
 msgid "Contact phone number for guests"
 msgstr ""
 
-#: templates/admin/settings.html:205
+#: templates/admin/settings.html:260
 #, fuzzy
 msgid "Enter your full address"
 msgstr "Zadejte fakturační adresu"
 
-#: templates/admin/settings.html:206
+#: templates/admin/settings.html:261
 msgid "Your business or property address"
 msgstr ""
 
-#: templates/admin/settings.html:218
+#: templates/admin/settings.html:273
 #, fuzzy
 msgid "Your website URL (optional)"
 msgstr "DIČ (volitelné)"
 
-#: templates/admin/settings.html:226
+#: templates/admin/settings.html:281
 msgid "Brief description about your property or business"
 msgstr ""
 
-#: templates/admin/settings.html:227
+#: templates/admin/settings.html:282
 msgid "A brief description for contact pages"
 msgstr ""
 
-#: templates/admin/settings.html:235
+#: templates/admin/settings.html:290
 msgid "Custom Lines"
 msgstr "Další řádky"
 
-#: templates/admin/settings.html:235
+#: templates/admin/settings.html:290
 msgid ""
 "Additional information fields for future use.\n"
 "                        These are not displayed on public pages yet."
 msgstr ""
 
-#: templates/admin/settings.html:242
+#: templates/admin/settings.html:297
 #, fuzzy
 msgid "Custom Line 1"
 msgstr "Další řádky"
 
-#: templates/admin/settings.html:245 templates/admin/settings.html:254
-#: templates/admin/settings.html:263
+#: templates/admin/settings.html:300 templates/admin/settings.html:309
+#: templates/admin/settings.html:318
 #, fuzzy
 msgid "Custom information"
 msgstr "Další informace"
 
-#: templates/admin/settings.html:246 templates/admin/settings.html:255
-#: templates/admin/settings.html:264
+#: templates/admin/settings.html:301 templates/admin/settings.html:310
+#: templates/admin/settings.html:319
 msgid "Additional information field"
 msgstr "Kontaktní informace"
 
-#: templates/admin/settings.html:251
+#: templates/admin/settings.html:306
 msgid "Custom Line 2"
 msgstr ""
 
-#: templates/admin/settings.html:260
+#: templates/admin/settings.html:315
 msgid "Custom Line 3"
 msgstr ""
 
-#: templates/admin/settings.html:271
+#: templates/admin/settings.html:326
 msgid "Usage"
 msgstr ""
 
-#: templates/admin/settings.html:271
+#: templates/admin/settings.html:326
 msgid ""
 "This contact information can be used to create contact\n"
 "                        pages, display in guest communications, or "
 "integrate with other parts of your website."
 msgstr ""
 
-#: templates/admin/settings.html:280
+#: templates/admin/settings.html:335
 msgid "Sync Information"
 msgstr "Informace o faktuře"
 
-#: templates/admin/settings.html:283
+#: templates/admin/settings.html:338
 msgid "How Airbnb Sync Works"
 msgstr "Jak to funguje:"
 
-#: templates/admin/settings.html:285
+#: templates/admin/settings.html:340
 msgid "Automatic Import"
 msgstr ""
 
-#: templates/admin/settings.html:285
+#: templates/admin/settings.html:340
 msgid ""
 "When enabled, the system will fetch your\n"
 "                            Airbnb calendar regularly"
 msgstr ""
 
-#: templates/admin/settings.html:287
+#: templates/admin/settings.html:342
 msgid "Reservation Detection"
 msgstr ""
 
-#: templates/admin/settings.html:287
+#: templates/admin/settings.html:342
 msgid ""
 "New reservations are automatically\n"
 "                            converted to registration forms"
 msgstr ""
 
-#: templates/admin/settings.html:289
+#: templates/admin/settings.html:344
 msgid ""
 "Guest names and counts are extracted\n"
 "                            from calendar events"
 msgstr ""
 
-#: templates/admin/settings.html:291
+#: templates/admin/settings.html:346
 msgid "Updates"
 msgstr "Aktualizovat"
 
-#: templates/admin/settings.html:291
+#: templates/admin/settings.html:346
 msgid ""
 "Changes to reservations (dates, guest count) are\n"
 "                            automatically reflected"
 msgstr ""
 
-#: templates/admin/settings.html:293
+#: templates/admin/settings.html:348
 msgid "Manual Sync"
 msgstr ""
 
-#: templates/admin/settings.html:293
+#: templates/admin/settings.html:348
 msgid ""
 "You can also trigger manual sync from the\n"
 "                            trips page"
 msgstr ""
 
-#: templates/admin/settings.html:297
+#: templates/admin/settings.html:352
 msgid "What Gets Synced"
 msgstr ""
 
-#: templates/admin/settings.html:299
+#: templates/admin/settings.html:354
 msgid "Reservation dates (check-in/check-out)"
 msgstr ""
 
-#: templates/admin/settings.html:300
+#: templates/admin/settings.html:355
 msgid "Guest names (when available)"
 msgstr ""
 
-#: templates/admin/settings.html:301
+#: templates/admin/settings.html:356
 #, fuzzy
 msgid "Number of guests"
 msgstr "Maximální počet hostů"
 
-#: templates/admin/settings.html:302
+#: templates/admin/settings.html:357
 #, fuzzy
 msgid "Reservation status"
 msgstr "Stav rezervace"
 
-#: templates/admin/settings.html:305
+#: templates/admin/settings.html:360
 msgid "What Doesn't Get Synced"
 msgstr ""
 
-#: templates/admin/settings.html:307
+#: templates/admin/settings.html:362
 #, fuzzy
 msgid "Guest contact information (for privacy)"
 msgstr "Kontaktní informace"
 
-#: templates/admin/settings.html:308
+#: templates/admin/settings.html:363
 #, fuzzy
 msgid "Payment information"
 msgstr "Informace o klientovi"
 
-#: templates/admin/settings.html:309
+#: templates/admin/settings.html:364
 msgid "Messages and reviews"
 msgstr ""
 
-#: templates/admin/settings.html:310
+#: templates/admin/settings.html:365
 msgid "House rules and policies"
 msgstr ""
 
-#: templates/admin/settings.html:318
+#: templates/admin/settings.html:373
 #, fuzzy
 msgid "Save Settings"
 msgstr "Nastavení"
 
-#: templates/admin/settings.html:334
+#: templates/admin/settings.html:389
 msgid "Passwords do not match"
 msgstr ""
 

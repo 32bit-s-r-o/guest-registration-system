@@ -116,6 +116,9 @@ class Admin(UserMixin, db.Model):
     contact_address = db.Column(db.Text)
     contact_website = db.Column(db.String(200))
     contact_description = db.Column(db.Text)
+    # Photo upload configuration
+    photo_required_adults = db.Column(db.Boolean, default=True)  # Require photos for adults
+    photo_required_children = db.Column(db.Boolean, default=True)  # Require photos for children
     # Additional custom lines (for future use)
     custom_line_1 = db.Column(db.String(200))
     custom_line_2 = db.Column(db.String(200))
@@ -150,6 +153,7 @@ class Registration(db.Model):
     email = db.Column(db.String(120), nullable=False)
     status = db.Column(db.String(20), default='pending')  # pending, approved, rejected
     admin_comment = db.Column(db.Text)
+    language = db.Column(db.String(10), default='en')  # Store selected language
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     guests = db.relationship('Guest', backref='registration', lazy=True, cascade='all, delete-orphan')
@@ -161,6 +165,7 @@ class Guest(db.Model):
     registration_id = db.Column(db.Integer, db.ForeignKey(f'{app.config["TABLE_PREFIX"]}registration.id'), nullable=False)
     first_name = db.Column(db.String(100), nullable=False)
     last_name = db.Column(db.String(100), nullable=False)
+    age_category = db.Column(db.String(20), nullable=False, default='adult')  # adult, child
     document_type = db.Column(db.String(50), nullable=False)  # passport, driving_license, citizen_id
     document_number = db.Column(db.String(100), nullable=False)
     document_image = db.Column(db.String(255))  # File path to uploaded image
@@ -445,7 +450,8 @@ def submit_confirm_code():
 def register(trip_id):
     """Registration form for a specific trip."""
     trip = Trip.query.get_or_404(trip_id)
-    return render_template('register.html', trip=trip)
+    admin = Admin.query.get(trip.admin_id)
+    return render_template('register.html', trip=trip, admin=admin)
 
 @app.route('/register/<confirm_code>')
 def register_by_code(confirm_code):
@@ -455,61 +461,85 @@ def register_by_code(confirm_code):
         flash(_('Invalid confirmation code. Please check your code and try again.'), 'error')
         return redirect(url_for('register_landing'))
     
-    return render_template('register.html', trip=trip)
+    admin = Admin.query.get(trip.admin_id)
+    return render_template('register.html', trip=trip, admin=admin)
 
 @app.route('/register/id/<int:trip_id>', methods=['POST'])
 def submit_registration(trip_id):
     trip = Trip.query.get_or_404(trip_id)
+    admin = Admin.query.get(trip.admin_id)
     
     # Get form data
     email = request.form.get('email')
+    language = session.get('lang', 'en')  # Get current language from session
     guests_data = []
     
     # Collect guest data
-    for i in range(trip.max_guests):
-        first_name = request.form.get(f'first_name_{i}')
-        last_name = request.form.get(f'last_name_{i}')
-        document_type = request.form.get(f'document_type_{i}')
-        document_number = request.form.get(f'document_number_{i}')
-        gdpr_consent = request.form.get(f'gdpr_consent_{i}') == 'on'
+    guest_index = 1
+    while True:
+        first_name = request.form.get(f'first_name_{guest_index}')
+        last_name = request.form.get(f'last_name_{guest_index}')
+        age_category = request.form.get(f'age_category_{guest_index}')
+        document_type = request.form.get(f'document_type_{guest_index}')
+        document_number = request.form.get(f'document_number_{guest_index}')
+        gdpr_consent = request.form.get(f'gdpr_consent_{guest_index}') == 'on'
         
-        if first_name and last_name:  # Only add if guest data is provided
-            guests_data.append({
-                'first_name': first_name,
-                'last_name': last_name,
-                'document_type': document_type,
-                'document_number': document_number,
-                'gdpr_consent': gdpr_consent
-            })
+        if not first_name or not last_name:  # Stop if no more guest data
+            break
+            
+        # Check photo requirement based on age category and admin settings
+        photo_required = False
+        if age_category == 'adult' and admin.photo_required_adults:
+            photo_required = True
+        elif age_category == 'child' and admin.photo_required_children:
+            photo_required = True
+        
+        # Check if photo is uploaded when required
+        document_image = request.files.get(f'document_image_{guest_index}')
+        if photo_required and (not document_image or not document_image.filename):
+            flash(_('Document photo is required for %(age_category)s guests', age_category=age_category), 'error')
+            return redirect(request.url)
+        
+        guests_data.append({
+            'first_name': first_name,
+            'last_name': last_name,
+            'age_category': age_category,
+            'document_type': document_type,
+            'document_number': document_number,
+            'gdpr_consent': gdpr_consent,
+            'photo_required': photo_required
+        })
+        
+        guest_index += 1
     
     # Handle file uploads
-    files = request.files.getlist('document_images')
     uploaded_files = []
-    
-    for file in files:
-        if file and file.filename:
-            filename = secure_filename(f"{uuid.uuid4()}_{file.filename}")
+    for i, guest_data in enumerate(guests_data):
+        document_image = request.files.get(f'document_image_{i+1}')
+        if document_image and document_image.filename:
+            filename = secure_filename(f"{uuid.uuid4()}_{document_image.filename}")
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(file_path)
+            document_image.save(file_path)
             uploaded_files.append(filename)
+        else:
+            uploaded_files.append(None)
     
     # Handle invoice request
-    invoice_request = request.form.get('request_invoice') == 'on'
+    invoice_request = request.form.get('invoice_request') == 'on'
     invoice_data = None
     
     if invoice_request:
         invoice_data = {
-            'company_name': request.form.get('invoice_company_name'),
-            'vat_number': request.form.get('invoice_vat_number'),
-            'address': request.form.get('invoice_address'),
-            'currency': request.form.get('invoice_currency', 'EUR'),
-            'notes': request.form.get('invoice_notes')
+            'client_name': request.form.get('invoice_name'),
+            'vat_number': request.form.get('invoice_vat'),
+            'address': request.form.get('invoice_address')
         }
     
     # Store in session for confirmation
     session['registration_data'] = {
         'trip_id': trip_id,
         'email': email,
+        'language': language,
         'guests': guests_data,
         'uploaded_files': uploaded_files,
         'invoice_request': invoice_request,
@@ -539,7 +569,8 @@ def submit_for_approval():
     # Create registration
     registration = Registration(
         trip_id=data['trip_id'],
-        email=data['email']
+        email=data['email'],
+        language=data.get('language', 'en')
     )
     db.session.add(registration)
     db.session.flush()  # Get the registration ID
@@ -550,6 +581,7 @@ def submit_for_approval():
             registration_id=registration.id,
             first_name=guest_data['first_name'],
             last_name=guest_data['last_name'],
+            age_category=guest_data['age_category'],
             document_type=guest_data['document_type'],
             document_number=guest_data['document_number'],
             document_image=data['uploaded_files'][i] if i < len(data['uploaded_files']) else None,
@@ -563,7 +595,7 @@ def submit_for_approval():
         invoice_number = f"INV-{datetime.now().strftime('%Y%m%d')}-{Invoice.query.filter_by(admin_id=trip.admin_id).count() + 1:03d}"
         
         # Determine client name
-        client_name = data['invoice_data']['company_name'] if data['invoice_data']['company_name'] else f"{data['guests'][0]['first_name']} {data['guests'][0]['last_name']}"
+        client_name = data['invoice_data']['client_name'] if data['invoice_data']['client_name'] else f"{data['guests'][0]['first_name']} {data['guests'][0]['last_name']}"
         
         # Create draft invoice
         invoice = Invoice(
@@ -663,6 +695,10 @@ def admin_settings():
         current_user.airbnb_listing_id = request.form.get('airbnb_listing_id')
         current_user.airbnb_calendar_url = request.form.get('airbnb_calendar_url')
         current_user.airbnb_sync_enabled = request.form.get('airbnb_sync_enabled') == 'on'
+        
+        # Update photo upload settings
+        current_user.photo_required_adults = request.form.get('photo_required_adults') == 'on'
+        current_user.photo_required_children = request.form.get('photo_required_children') == 'on'
         
         # Update password if provided
         new_password = request.form.get('new_password')
@@ -1330,6 +1366,7 @@ def seed_data():
                     registration_id=registration.id,
                     first_name=guest_data['first_name'],
                     last_name=guest_data['last_name'],
+                    age_category=guest_data['age_category'],
                     document_type=guest_data['document_type'],
                     document_number=guest_data['document_number'],
                     document_image=image_filename,  # Use copied image filename
@@ -1665,6 +1702,7 @@ def seed_reset():
                     registration_id=registration.id,
                     first_name=guest_data['first_name'],
                     last_name=guest_data['last_name'],
+                    age_category=guest_data['age_category'],
                     document_type=guest_data['document_type'],
                     document_number=guest_data['document_number'],
                     document_image=image_filename,  # Use copied image filename
