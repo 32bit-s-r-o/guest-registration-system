@@ -1,5 +1,7 @@
 # Universal Management Script Documentation
 
+[← Back to Documentation Index](../docs/README.md)
+
 ## Overview
 
 The `manage.py` script is a comprehensive management tool for the Guest Registration System that provides unified access to all system operations including tests, migrations, seeds, backups, and utilities.
@@ -64,6 +66,8 @@ python manage.py migrate rollback
 python manage.py migrate history
 ```
 
+**Related Documentation:** [Database Migrations](migrations.md)
+
 ### 3. Seed Operations (`seed`)
 
 Runs seed data scripts to populate the database with sample data.
@@ -91,6 +95,8 @@ python manage.py backup
 # Run backup with specific parameters
 python manage.py backup --full
 ```
+
+**Related Documentation:** [Backup System](backup-system.md)
 
 ### 5. Utility Operations (`utility`)
 
@@ -343,6 +349,22 @@ Use the status command for monitoring:
 python manage.py status | grep -q "SUCCESS" && echo "System OK" || echo "System Issues"
 ```
 
+## Current System Status
+
+- **Database Version**: 000001 (Latest)
+- **Applied Migrations**: 2
+- **Pending Migrations**: 0
+- **Flask Application**: ✅ Running
+- **All Tests**: ✅ Passing (9/9)
+- **Management Script**: ✅ Fully Functional
+
+## Related Documentation
+
+- [Database Migrations](migrations.md) - Migration system details
+- [Backup System](backup-system.md) - Backup functionality
+- [Testing Guide](testing.md) - Comprehensive testing
+- [Installation Guide](installation.md) - System setup
+
 ## Support
 
 For issues with the management script:
@@ -357,4 +379,8 @@ For issues with the management script:
 - **v1.0.0**: Initial release with basic command structure
 - **v1.1.0**: Added comprehensive error handling and logging
 - **v1.2.0**: Added setup and all operations commands
-- **v1.3.0**: Enhanced status reporting and cleanup operations 
+- **v1.3.0**: Enhanced status reporting and cleanup operations
+
+---
+
+[← Back to Documentation Index](../docs/README.md) 
