@@ -101,7 +101,8 @@
                         {% endif %}
                         {% if trip.external_confirm_code %}
                         <div><strong>{{ _('Confirmation Code') }}:</strong>
-                            <code>{{ trip.external_confirm_code }}</code></div>
+                            <code>{{ trip.external_confirm_code }}</code>
+                        </div>
                         {% endif %}
                         {% if trip.external_synced_at %}
                         <small class="text-muted">{{ _('Synced') }}: {{ trip.external_synced_at.strftime('%Y-%m-%d
