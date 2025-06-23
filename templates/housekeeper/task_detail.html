@@ -129,27 +129,40 @@
             <!-- Photo Upload -->
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-success text-white">
-                    <h5 class="mb-0"><i class="fas fa-camera"></i> {{ _('Amenity Photo') }}</h5>
+                    <h5 class="mb-0"><i class="fas fa-camera"></i> {{ _('Amenity Photos') }}</h5>
                 </div>
                 <div class="card-body">
-                    {% if task.amenity_photo_path %}
-                    <div class="text-center mb-3">
-                        <img src="{{ url_for('uploaded_file', filename=task.amenity_photo_path) }}"
-                            class="img-fluid rounded" alt="{{ _('Amenity Photo') }}" style="max-height: 200px;">
+                    {% if task.photos %}
+                    <div class="row mb-3">
+                        {% for photo in task.photos %}
+                        <div class="col-6 mb-3 text-center">
+                            <img src="{{ url_for('uploaded_file', filename=photo.file_path) }}"
+                                class="img-fluid rounded mb-2" alt="{{ _('Amenity Photo') }}"
+                                style="max-height: 120px;">
+                            <div>
+                                <a href="{{ url_for('uploaded_file', filename=photo.file_path) }}" target="_blank"
+                                    class="btn btn-sm btn-success mb-1">
+                                    <i class="fas fa-external-link-alt"></i> {{ _('View Full Size') }}
+                                </a>
+                                <form method="POST"
+                                    action="{{ url_for('delete_housekeeping_photo', photo_id=photo.id) }}"
+                                    style="display:inline;">
+                                    <button type="submit" class="btn btn-sm btn-danger mb-1"
+                                        onclick="return confirm('{{ _('Are you sure you want to delete this photo?') }}');">
+                                        <i class="fas fa-trash"></i> {{ _('Delete') }}
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        {% endfor %}
                     </div>
-                    <a href="{{ url_for('uploaded_file', filename=task.amenity_photo_path) }}" target="_blank"
-                        class="btn btn-success w-100">
-                        <i class="fas fa-external-link-alt"></i> {{ _('View Full Size') }}
-                    </a>
                     {% else %}
                     <div class="text-center py-4">
                         <i class="fas fa-camera fa-3x text-muted mb-3"></i>
-                        <p class="text-muted">{{ _('No photo uploaded yet') }}</p>
+                        <p class="text-muted">{{ _('No photos uploaded yet') }}</p>
                     </div>
                     {% endif %}
-
                     <hr>
-
                     <button type="button" class="btn btn-primary w-100" data-bs-toggle="modal"
                         data-bs-target="#uploadModal">
                         <i class="fas fa-upload"></i> {{ _('Upload Photo') }}

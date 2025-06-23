@@ -319,6 +319,15 @@ class Housekeeping(db.Model):
     trip = db.relationship('Trip', backref='housekeeping_tasks')
     housekeeper = db.relationship('User', backref='housekeeping_tasks')
 
+class HousekeepingPhoto(db.Model):
+    __tablename__ = f"{app.config['TABLE_PREFIX']}housekeeping_photo"
+    id = db.Column(db.Integer, primary_key=True)
+    task_id = db.Column(db.Integer, db.ForeignKey(f'{app.config["TABLE_PREFIX"]}housekeeping.id'), nullable=False)
+    file_path = db.Column(db.String(255), nullable=False)
+    uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    task = db.relationship('Housekeeping', backref=db.backref('photos', lazy=True, cascade='all, delete-orphan'))
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.filter_by(id=int(user_id), is_deleted=False).first()
@@ -2202,7 +2211,7 @@ def housekeeping_events_api():
 @login_required
 @role_required('housekeeper')
 def upload_amenity_photo(task_id):
-    """Upload amenity photo for a housekeeping task."""
+    """Upload amenity photo for a housekeeping task (multiple supported)."""
     task = Housekeeping.query.get_or_404(task_id)
     
     # Verify the task belongs to the current housekeeper
@@ -2211,31 +2220,29 @@ def upload_amenity_photo(task_id):
     
     if 'photo' not in request.files:
         flash(_('No photo selected'), 'error')
-        return redirect(url_for('housekeeper_dashboard'))
+        return redirect(url_for('housekeeper_task_detail', task_id=task_id))
     
     file = request.files['photo']
     if file.filename == '':
         flash(_('No photo selected'), 'error')
-        return redirect(url_for('housekeeper_dashboard'))
+        return redirect(url_for('housekeeper_task_detail', task_id=task_id))
     
     if file and allowed_file(file.filename):
         # Generate unique filename
         filename = secure_filename(f"amenity_{task_id}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}_{file.filename}")
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        
-        # Save the file
         file.save(file_path)
-        
-        # Update the task with photo path
-        task.amenity_photo_path = filename
+        # Add new photo record
+        from app import HousekeepingPhoto
+        photo = HousekeepingPhoto(task_id=task_id, file_path=filename)
+        db.session.add(photo)
         task.updated_at = datetime.utcnow()
         db.session.commit()
-        
         flash(_('Photo uploaded successfully'), 'success')
     else:
         flash(_('Invalid file type. Please upload JPG or PNG files only.'), 'error')
     
-    return redirect(url_for('housekeeper_dashboard'))
+    return redirect(url_for('housekeeper_task_detail', task_id=task_id))
 
 def allowed_file(filename):
     """Check if the uploaded file is allowed."""
@@ -3678,6 +3685,25 @@ def add_task_notes(task_id):
     flash(_('Task notes updated successfully'), 'success')
     
     return redirect(url_for('housekeeper_task_detail', task_id=task_id))
+
+@app.route('/housekeeper/photo/<int:photo_id>/delete', methods=['POST'])
+@login_required
+@role_required('housekeeper')
+def delete_housekeeping_photo(photo_id):
+    photo = HousekeepingPhoto.query.get_or_404(photo_id)
+    task = photo.task
+    # Check if the current housekeeper has access to this task
+    if task.housekeeper_id != current_user.id:
+        flash(_('Access denied'), 'error')
+        return redirect(url_for('housekeeper_dashboard'))
+    # Delete the file from disk
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], photo.file_path)
+    if os.path.exists(file_path):
+        os.remove(file_path)
+    db.session.delete(photo)
+    db.session.commit()
+    flash(_('Photo deleted successfully'), 'success')
+    return redirect(url_for('housekeeper_task_detail', task_id=task.id))
 
 if __name__ == '__main__':
     # Parse command line arguments
