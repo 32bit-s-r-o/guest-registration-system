@@ -3149,11 +3149,33 @@ def admin_calendars():
     """Manage calendars."""
     amenities = Amenity.query.filter_by(admin_id=current_user.id).order_by(Amenity.name).all()
     calendars_by_amenity = {}
-    
     for amenity in amenities:
         calendars_by_amenity[amenity] = Calendar.query.filter_by(amenity_id=amenity.id).order_by(Calendar.name).all()
-    
-    return render_template('admin/calendars.html', calendars_by_amenity=calendars_by_amenity, amenities=amenities)
+
+    # Precompute statistics
+    def count_sync_enabled(calendars):
+        return sum(1 for c in calendars if getattr(c, 'sync_enabled', False))
+    def count_trips(calendars):
+        return sum(len(getattr(c, 'trips', [])) for c in calendars)
+    def count_synced_trips(calendars):
+        return sum(
+            sum(1 for t in getattr(c, 'trips', []) if getattr(t, 'is_externally_synced', False))
+            for c in calendars
+        )
+    total_calendars = sum(len(cals) for cals in calendars_by_amenity.values())
+    sync_enabled = sum(count_sync_enabled(cals) for cals in calendars_by_amenity.values())
+    total_trips = sum(count_trips(cals) for cals in calendars_by_amenity.values())
+    synced_trips = sum(count_synced_trips(cals) for cals in calendars_by_amenity.values())
+
+    return render_template(
+        'admin/calendars.html',
+        calendars_by_amenity=calendars_by_amenity,
+        amenities=amenities,
+        total_calendars=total_calendars,
+        sync_enabled=sync_enabled,
+        total_trips=total_trips,
+        synced_trips=synced_trips
+    )
 
 @app.route('/admin/calendars/new', methods=['GET', 'POST'])
 @login_required

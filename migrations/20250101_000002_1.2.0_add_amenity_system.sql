@@ -61,4 +61,17 @@ ALTER TABLE guest_reg_trip ALTER COLUMN amenity_id SET NOT NULL;
 ALTER TABLE guest_reg_user DROP COLUMN IF EXISTS airbnb_listing_id;
 ALTER TABLE guest_reg_user DROP COLUMN IF EXISTS airbnb_calendar_url;
 ALTER TABLE guest_reg_user DROP COLUMN IF EXISTS airbnb_sync_enabled;
-ALTER TABLE guest_reg_user DROP COLUMN IF EXISTS airbnb_last_sync; 
+ALTER TABLE guest_reg_user DROP COLUMN IF EXISTS airbnb_last_sync;
+
+-- Down Migration
+-- Rollback amenity system
+DROP INDEX IF EXISTS idx_trip_amenity_id;
+DROP INDEX IF EXISTS idx_amenity_active;
+DROP INDEX IF EXISTS idx_amenity_admin_id;
+ALTER TABLE guest_reg_trip DROP COLUMN IF EXISTS amenity_id;
+DROP TABLE IF EXISTS guest_reg_amenity;
+-- Optionally, re-add old Airbnb fields to user table (if needed for rollback)
+ALTER TABLE guest_reg_user ADD COLUMN IF NOT EXISTS airbnb_listing_id VARCHAR(100);
+ALTER TABLE guest_reg_user ADD COLUMN IF NOT EXISTS airbnb_calendar_url TEXT;
+ALTER TABLE guest_reg_user ADD COLUMN IF NOT EXISTS airbnb_sync_enabled BOOLEAN DEFAULT FALSE;
+ALTER TABLE guest_reg_user ADD COLUMN IF NOT EXISTS airbnb_last_sync TIMESTAMP; 

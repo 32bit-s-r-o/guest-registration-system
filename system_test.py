@@ -11,6 +11,8 @@ from datetime import datetime, timedelta
 import os
 import tempfile
 import re
+import csv
+import io
 
 # Configuration
 BASE_URL = "http://127.0.0.1:5000"
@@ -200,7 +202,7 @@ class SystemTest:
                 else:
                     self.log_test("View Registration", "FAIL", f"Status: {response.status_code}")
             else:
-                self.log_test("View Registration", "FAIL", "No registration could be created for testing")
+                self.log_test("View Registration", "FAIL", "No registration could be created for testing - try running seed data first")
         except Exception as e:
             self.log_test("View Registration", "FAIL", f"Exception: {str(e)}")
     
@@ -213,7 +215,7 @@ class SystemTest:
         reg_id = getattr(self, 'created_registration_id', None) or self.ensure_registration_exists()
         
         if not reg_id:
-            self.log_test("Registration Approval/Rejection", "FAIL", "No registration available for testing")
+            self.log_test("Registration Approval/Rejection", "FAIL", "No registration available for testing - try running seed data first")
             return
         
         # Test registration approval
@@ -773,76 +775,43 @@ class SystemTest:
 
     def ensure_registration_exists(self):
         """Ensure at least one registration exists for testing"""
-        # First check if any registrations already exist
-        response = self.session.get(f"{BASE_URL}/admin/registrations")
-        if response.status_code == 200 and 'href="/admin/registration/' in response.text:
-            # Extract the first registration ID from the page
-            match = re.search(r'href="/admin/registration/(\d+)"', response.text)
-            if match:
-                return match.group(1)
+        # First check if any registrations already exist by looking at all registrations
+        # We'll check the CSV export to see if there are any registrations
+        response = self.session.get(f"{BASE_URL}/admin/export/registrations")
+        if response.status_code == 200 and len(response.content) > 100:  # More than just headers
+            # Try to find a registration ID from the CSV content
+            try:
+                csv_content = response.content.decode('utf-8')
+                csv_reader = csv.reader(io.StringIO(csv_content))
+                next(csv_reader)  # Skip header
+                for row in csv_reader:
+                    if row and len(row) > 0:
+                        reg_id = row[0]  # First column should be registration ID
+                        if reg_id.isdigit():
+                            return reg_id
+            except:
+                pass
         
-        # If no registrations exist, create one
-        # First, ensure we have a trip
-        trip_id = self.ensure_trip_exists()
-        if not trip_id:
-            return None
-        
-        # Get the registration form
-        response = self.session.get(f"{BASE_URL}/register/id/{trip_id}")
-        if response.status_code != 200:
-            return None
-        
-        # Submit the registration form (this redirects to confirmation)
-        # The form requires at least one guest, and the JavaScript adds the first guest form
-        # We need to include all the required fields for guest 1
-        registration_data = {
-            'email': 'test@example.com',
-            'first_name_1': 'Test',
-            'last_name_1': 'Guest',
-            'age_category_1': 'adult',
-            'document_type_1': 'passport',
-            'document_number_1': 'TEST123456',
-            'gdpr_consent_1': 'on'
-        }
-        
-        # Check if photos are required for adults
-        if 'photo_required_adults' in response.text and 'true' in response.text:
-            # If photos are required, we need to upload a file
-            # For testing, we'll use a simple approach - create a test image
-            test_image_path = os.path.join('static', 'sample_images', 'sample_passport.jpg')
-            if os.path.exists(test_image_path):
-                with open(test_image_path, 'rb') as f:
-                    files = {'document_image_1': ('sample_passport.jpg', f, 'image/jpeg')}
-                    response = self.session.post(f"{BASE_URL}/register/id/{trip_id}", 
-                                               data=registration_data, files=files, allow_redirects=False)
-            else:
-                # If no sample image, try without photo (might fail if required)
-                response = self.session.post(f"{BASE_URL}/register/id/{trip_id}", 
-                                           data=registration_data, allow_redirects=False)
-        else:
-            # Photos not required, submit without file
-            response = self.session.post(f"{BASE_URL}/register/id/{trip_id}", 
-                                       data=registration_data, allow_redirects=False)
-        
-        if response.status_code != 302:  # Should redirect to confirmation
-            return None
-        
-        # Follow the redirect to confirmation page
-        response = self.session.get(f"{BASE_URL}/confirm")
-        if response.status_code != 200:
-            return None
-        
-        # Submit the confirmation (this creates the registration)
-        response = self.session.post(f"{BASE_URL}/submit", allow_redirects=False)
-        if response.status_code != 302:  # Should redirect to success
-            return None
-        
-        # Now check for the created registration
-        response = self.session.get(f"{BASE_URL}/admin/registrations")
-        if response.status_code == 200 and 'href="/admin/registration/' in response.text:
-            match = re.search(r'href="/admin/registration/(\d+)"', response.text)
-            if match:
-                return match.group(1)
+        # If no registrations exist, create one using the seed data endpoint
+        try:
+            response = self.session.post(f"{BASE_URL}/admin/seed-data", allow_redirects=True)
+            if response.status_code == 200:
+                # Check again for registrations after seeding
+                response = self.session.get(f"{BASE_URL}/admin/export/registrations")
+                if response.status_code == 200 and len(response.content) > 100:
+                    try:
+                        csv_content = response.content.decode('utf-8')
+                        csv_reader = csv.reader(io.StringIO(csv_content))
+                        next(csv_reader)  # Skip header
+                        for row in csv_reader:
+                            if row and len(row) > 0:
+                                reg_id = row[0]  # First column should be registration ID
+                                if reg_id.isdigit():
+                                    return reg_id
+                    except:
+                        pass
+        except Exception as e:
+            print(f"Warning: Could not seed data: {e}")
         
         return None
     

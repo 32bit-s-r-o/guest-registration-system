@@ -93,4 +93,36 @@ ALTER TABLE guest_reg_trip DROP COLUMN IF EXISTS airbnb_synced_at;
 ALTER TABLE guest_reg_trip DROP COLUMN IF EXISTS is_airbnb_synced;
 ALTER TABLE guest_reg_trip DROP COLUMN IF EXISTS airbnb_confirm_code;
 
+-- Down Migration
+-- Rollback calendar system
+DROP INDEX IF EXISTS idx_trip_is_externally_synced;
+DROP INDEX IF EXISTS idx_trip_external_confirm_code;
+DROP INDEX IF EXISTS idx_trip_external_reservation_id;
+DROP INDEX IF EXISTS idx_trip_calendar_id;
+ALTER TABLE guest_reg_trip DROP COLUMN IF EXISTS calendar_id;
+ALTER TABLE guest_reg_trip DROP COLUMN IF EXISTS external_reservation_id;
+ALTER TABLE guest_reg_trip DROP COLUMN IF EXISTS external_guest_name;
+ALTER TABLE guest_reg_trip DROP COLUMN IF EXISTS external_guest_email;
+ALTER TABLE guest_reg_trip DROP COLUMN IF EXISTS external_guest_count;
+ALTER TABLE guest_reg_trip DROP COLUMN IF EXISTS external_synced_at;
+ALTER TABLE guest_reg_trip DROP COLUMN IF EXISTS is_externally_synced;
+ALTER TABLE guest_reg_trip DROP COLUMN IF EXISTS external_confirm_code;
+DROP INDEX IF EXISTS idx_calendar_type;
+DROP INDEX IF EXISTS idx_calendar_is_active;
+DROP INDEX IF EXISTS idx_calendar_sync_enabled;
+DROP INDEX IF EXISTS idx_calendar_amenity_id;
+DROP TABLE IF EXISTS guest_reg_calendar;
+-- Optionally, re-add old Airbnb columns to amenity and trip tables (if needed for rollback)
+ALTER TABLE guest_reg_amenity ADD COLUMN IF NOT EXISTS airbnb_listing_id VARCHAR(100);
+ALTER TABLE guest_reg_amenity ADD COLUMN IF NOT EXISTS airbnb_calendar_url TEXT;
+ALTER TABLE guest_reg_amenity ADD COLUMN IF NOT EXISTS airbnb_sync_enabled BOOLEAN DEFAULT FALSE;
+ALTER TABLE guest_reg_amenity ADD COLUMN IF NOT EXISTS airbnb_last_sync TIMESTAMP;
+ALTER TABLE guest_reg_trip ADD COLUMN IF NOT EXISTS airbnb_reservation_id VARCHAR(100);
+ALTER TABLE guest_reg_trip ADD COLUMN IF NOT EXISTS airbnb_guest_name VARCHAR(200);
+ALTER TABLE guest_reg_trip ADD COLUMN IF NOT EXISTS airbnb_guest_email VARCHAR(200);
+ALTER TABLE guest_reg_trip ADD COLUMN IF NOT EXISTS airbnb_guest_count INTEGER;
+ALTER TABLE guest_reg_trip ADD COLUMN IF NOT EXISTS airbnb_synced_at TIMESTAMP;
+ALTER TABLE guest_reg_trip ADD COLUMN IF NOT EXISTS is_airbnb_synced BOOLEAN DEFAULT FALSE;
+ALTER TABLE guest_reg_trip ADD COLUMN IF NOT EXISTS airbnb_confirm_code VARCHAR(50);
+
 -- Version tracking is handled automatically by the migration system 

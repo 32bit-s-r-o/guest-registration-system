@@ -181,23 +181,19 @@
             <div class="card-body">
                 <div class="row text-center">
                     <div class="col-md-3">
-                        <h3 class="text-primary">{{ calendars_by_amenity.values() | sum(attribute='|length') }}</h3>
+                        <h3 class="text-primary">{{ total_calendars }}</h3>
                         <p class="text-muted">{{ _('Total Calendars') }}</p>
                     </div>
                     <div class="col-md-3">
-                        <h3 class="text-success">{{ calendars_by_amenity.values() |
-                            sum(attribute='|selectattr("sync_enabled")|list|length') }}</h3>
+                        <h3 class="text-success">{{ sync_enabled }}</h3>
                         <p class="text-muted">{{ _('Sync Enabled') }}</p>
                     </div>
                     <div class="col-md-3">
-                        <h3 class="text-info">{{ calendars_by_amenity.values() |
-                            sum(attribute='|sum(attribute="trips|length")') }}</h3>
+                        <h3 class="text-info">{{ total_trips }}</h3>
                         <p class="text-muted">{{ _('Total Trips') }}</p>
                     </div>
                     <div class="col-md-3">
-                        <h3 class="text-warning">{{ calendars_by_amenity.values() |
-                            sum(attribute='|sum(attribute="trips|selectattr(\"is_externally_synced\")|list|length")') }}
-                        </h3>
+                        <h3 class="text-warning">{{ synced_trips }}</h3>
                         <p class="text-muted">{{ _('Synced Trips') }}</p>
                     </div>
                 </div>
