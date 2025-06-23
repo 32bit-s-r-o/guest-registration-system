@@ -344,42 +344,61 @@ def parse_airbnb_guest_info(summary, description):
             guest_info['count'] = int(match.group(1))
             break
     
-    # Try to extract confirmation code
-    # Common patterns: "Confirmation code: ABC123" or "Code: ABC123" or "ABC123"
+    # Try to extract confirmation code from Airbnb reservation URL
+    # Handle the case where URL is split across lines with \n
     confirm_patterns = [
+        r'/de\s*\n\s*tails/([A-Z0-9]{10})',  # Handle split URL format
+        r'/details/([A-Z0-9]{10})',  # Standard format
+        r'tails/([A-Z0-9]{10})',  # Simple tails pattern
         r'confirmation\s+code:\s*([A-Z0-9]{6,})',
         r'code:\s*([A-Z0-9]{6,})',
-        r'\b([A-Z0-9]{6,})\b'
+        r'\b([A-Z0-9]{10})(?=\s|$|\\n)'  # 10-character code followed by space, end, or newline
     ]
     
+    # Try patterns on the original description first (for split URLs)
     for pattern in confirm_patterns:
         match = re.search(pattern, summary + ' ' + description, re.IGNORECASE)
         if match:
             guest_info['confirm_code'] = match.group(1).upper()
             break
     
+    # If no match found, try with normalized text
+    if not guest_info['confirm_code']:
+        normalized_text = summary + ' ' + description.replace('\n', ' ').replace('\\n', ' ')
+        for pattern in confirm_patterns:
+            match = re.search(pattern, normalized_text, re.IGNORECASE)
+            if match:
+                guest_info['confirm_code'] = match.group(1).upper()
+                break
+    
     return guest_info
 
 def sync_airbnb_reservations(admin_id):
-    """Sync Airbnb reservations with local trips."""
+    """Sync Airbnb reservations with local trips, ensuring unique confirmation codes."""
     admin = User.query.get(admin_id)
     if not admin or not admin.airbnb_calendar_url or not admin.airbnb_sync_enabled:
         return {'success': False, 'message': 'Airbnb sync not configured'}
-    
     try:
         reservations = fetch_airbnb_calendar(admin.airbnb_calendar_url)
         synced_count = 0
         updated_count = 0
-        
         for reservation in reservations:
-            # Check if trip already exists
+            # Check if trip already exists by airbnb_reservation_id
             existing_trip = Trip.query.filter_by(
                 airbnb_reservation_id=reservation['id'],
                 admin_id=admin_id
             ).first()
             
+            # Also check if trip exists by confirmation code (reservation code)
+            confirm_code = reservation['confirm_code']
+            existing_code_trip = None
+            if confirm_code:
+                existing_code_trip = Trip.query.filter_by(
+                    airbnb_confirm_code=confirm_code
+                ).first()
+            
             if existing_trip:
-                # Update existing trip
+                # Update existing trip by reservation ID
                 existing_trip.title = reservation['title']
                 existing_trip.start_date = reservation['start_date']
                 existing_trip.end_date = reservation['end_date']
@@ -388,6 +407,17 @@ def sync_airbnb_reservations(admin_id):
                 existing_trip.airbnb_guest_email = reservation['guest_email']
                 existing_trip.airbnb_confirm_code = reservation['confirm_code']
                 existing_trip.airbnb_synced_at = datetime.utcnow()
+                updated_count += 1
+            elif existing_code_trip:
+                # Update existing trip by confirmation code (dates may have changed)
+                existing_code_trip.title = reservation['title']
+                existing_code_trip.start_date = reservation['start_date']
+                existing_code_trip.end_date = reservation['end_date']
+                existing_code_trip.max_guests = reservation['guest_count']
+                existing_code_trip.airbnb_guest_name = reservation['guest_name']
+                existing_code_trip.airbnb_guest_email = reservation['guest_email']
+                existing_code_trip.airbnb_reservation_id = reservation['id']
+                existing_code_trip.airbnb_synced_at = datetime.utcnow()
                 updated_count += 1
             else:
                 # Create new trip
@@ -401,24 +431,20 @@ def sync_airbnb_reservations(admin_id):
                     airbnb_guest_name=reservation['guest_name'],
                     airbnb_guest_email=reservation['guest_email'],
                     airbnb_guest_count=reservation['guest_count'],
-                    airbnb_confirm_code=reservation['confirm_code'],
+                    airbnb_confirm_code=confirm_code,
                     airbnb_synced_at=datetime.utcnow(),
                     is_airbnb_synced=True
                 )
                 db.session.add(new_trip)
                 synced_count += 1
-        
-        # Update admin sync timestamp
         admin.airbnb_last_sync = datetime.utcnow()
         db.session.commit()
-        
         return {
             'success': True,
             'message': f'Synced {synced_count} new reservations, updated {updated_count} existing',
             'synced': synced_count,
             'updated': updated_count
         }
-        
     except Exception as e:
         db.session.rollback()
         return {'success': False, 'message': f'Error syncing: {str(e)}'}

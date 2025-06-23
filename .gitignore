@@ -563,3 +563,7 @@ celerybeat.pid
 .mypy_cache/
 .dmypy.json
 dmypy.json 
+airbnb.ics
+airbnb_reservations.csv
+airbnb_comprehensive_data.json
+airbnb_codes_simple.txt
