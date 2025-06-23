@@ -24,7 +24,8 @@
                 right: 'dayGridMonth,timeGridWeek,timeGridDay'
             },
             eventClick: function (info) {
-                alert(info.event.title + '\n' + '{{ _('Status') }}: ' + info.event.extendedProps.status);
+                // Redirect to task detail page
+                window.location.href = '/housekeeper/task/' + info.event.id;
             }
         });
         calendar.render();

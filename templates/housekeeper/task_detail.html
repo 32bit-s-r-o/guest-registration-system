@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Task Detail') }} - {{ _('Housekeeping') }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('housekeeper_dashboard') }}">{{ _('Dashboard')
+                            }}</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('housekeeper_calendar') }}">{{ _('Calendar') }}</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ _('Task Detail') }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="fas fa-broom"></i> {{ _('Housekeeping Task') }} #{{ task.id }}</h1>
+                <div>
+                    <a href="{{ url_for('housekeeper_dashboard') }}" class="btn btn-secondary me-2">
+                        <i class="fas fa-arrow-left"></i> {{ _('Back to Dashboard') }}
+                    </a>
+                    <a href="{{ url_for('housekeeper_calendar') }}" class="btn btn-info">
+                        <i class="fas fa-calendar"></i> {{ _('View Calendar') }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Task Information -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> {{ _('Task Information') }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">{{ _('Trip Details') }}</h6>
+                            <p><strong>{{ _('Trip ID') }}:</strong> {{ task.trip_id }}</p>
+                            <p><strong>{{ _('Trip Title') }}:</strong> {{ task.trip.title }}</p>
+                            <p><strong>{{ _('Amenity') }}:</strong> {{ task.trip.amenity.name if task.trip.amenity else
+                                'N/A' }}</p>
+                            <p><strong>{{ _('Start Date') }}:</strong> {{ task.trip.start_date.strftime('%Y-%m-%d') }}
+                            </p>
+                            <p><strong>{{ _('End Date') }}:</strong> {{ task.trip.end_date.strftime('%Y-%m-%d') }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">{{ _('Task Details') }}</h6>
+                            <p><strong>{{ _('Housekeeping Date') }}:</strong> {{ task.date.strftime('%Y-%m-%d') }}</p>
+                            <p><strong>{{ _('Status') }}:</strong>
+                                <span
+                                    class="badge bg-{{ 'success' if task.status == 'completed' else 'warning' if task.status == 'in_progress' else 'secondary' }}">
+                                    {{ task.status|title }}
+                                </span>
+                            </p>
+                            <p><strong>{{ _('Pay Amount') }}:</strong> {{ "%.2f"|format(task.pay_amount) }} €</p>
+                            <p><strong>{{ _('Paid') }}:</strong>
+                                <span class="badge bg-{{ 'success' if task.paid else 'danger' }}">
+                                    {{ _('Yes') if task.paid else _('No') }}
+                                </span>
+                            </p>
+                            <p><strong>{{ _('Created') }}:</strong> {{ task.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                            <p><strong>{{ _('Updated') }}:</strong> {{ task.updated_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Update -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-edit"></i> {{ _('Update Status') }}</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('update_task_status', task_id=task.id) }}">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="status" class="form-label">{{ _('Current Status') }}</label>
+                                <select class="form-select" id="status" name="status" required>
+                                    <option value="pending" {% if task.status=='pending' %}selected{% endif %}>{{
+                                        _('Pending') }}</option>
+                                    <option value="in_progress" {% if task.status=='in_progress' %}selected{% endif %}>
+                                        {{ _('In Progress') }}</option>
+                                    <option value="completed" {% if task.status=='completed' %}selected{% endif %}>{{
+                                        _('Completed') }}</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 d-flex align-items-end">
+                                <button type="submit" class="btn btn-warning">
+                                    <i class="fas fa-save"></i> {{ _('Update Status') }}
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-sticky-note"></i> {{ _('Task Notes') }}</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('add_task_notes', task_id=task.id) }}">
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">{{ _('Notes') }}</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="4"
+                                placeholder="{{ _('Add notes about this task...') }}">{{ task.notes or '' }}</textarea>
+                        </div>
+                        <button type="submit" class="btn btn-info">
+                            <i class="fas fa-save"></i> {{ _('Save Notes') }}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Photo Upload -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-camera"></i> {{ _('Amenity Photo') }}</h5>
+                </div>
+                <div class="card-body">
+                    {% if task.amenity_photo_path %}
+                    <div class="text-center mb-3">
+                        <img src="{{ url_for('uploaded_file', filename=task.amenity_photo_path) }}"
+                            class="img-fluid rounded" alt="{{ _('Amenity Photo') }}" style="max-height: 200px;">
+                    </div>
+                    <a href="{{ url_for('uploaded_file', filename=task.amenity_photo_path) }}" target="_blank"
+                        class="btn btn-success w-100">
+                        <i class="fas fa-external-link-alt"></i> {{ _('View Full Size') }}
+                    </a>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-camera fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">{{ _('No photo uploaded yet') }}</p>
+                    </div>
+                    {% endif %}
+
+                    <hr>
+
+                    <button type="button" class="btn btn-primary w-100" data-bs-toggle="modal"
+                        data-bs-target="#uploadModal">
+                        <i class="fas fa-upload"></i> {{ _('Upload Photo') }}
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-tools"></i> {{ _('Quick Actions') }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('housekeeper_dashboard') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-home"></i> {{ _('Back to Dashboard') }}
+                        </a>
+                        <a href="{{ url_for('housekeeper_calendar') }}" class="btn btn-outline-info">
+                            <i class="fas fa-calendar"></i> {{ _('View Calendar') }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Upload Photo Modal -->
+<div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="uploadModalLabel">{{ _('Upload Amenity Photo') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('upload_amenity_photo', task_id=task.id) }}" method="POST"
+                enctype="multipart/form-data">
+                <div class="modal-body">
+                    <p>{{ _('Upload a photo of the amenity for Trip #%(trip_id)s on %(date)s', trip_id=task.trip_id,
+                        date=task.date.strftime('%Y-%m-%d')) }}</p>
+                    <div class="mb-3">
+                        <label for="photo" class="form-label">{{ _('Select Photo') }}</label>
+                        <input type="file" class="form-control" id="photo" name="photo" accept="image/*" required>
+                        <div class="form-text">{{ _('Accepted formats: JPG, PNG, GIF. Max size: 16MB') }}</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Cancel') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ _('Upload Photo') }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

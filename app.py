@@ -3622,6 +3622,63 @@ def create_housekeeping_tasks_from_calendar(calendar_id):
     
     return redirect(url_for('admin_calendars'))
 
+@app.route('/housekeeper/task/<int:task_id>')
+@login_required
+@role_required('housekeeper')
+def housekeeper_task_detail(task_id):
+    """View and manage a specific housekeeping task."""
+    task = Housekeeping.query.get_or_404(task_id)
+    
+    # Check if the current housekeeper has access to this task
+    if task.housekeeper_id != current_user.id:
+        flash(_('Access denied'), 'error')
+        return redirect(url_for('housekeeper_dashboard'))
+    
+    return render_template('housekeeper/task_detail.html', task=task)
+
+@app.route('/housekeeper/task/<int:task_id>/update-status', methods=['POST'])
+@login_required
+@role_required('housekeeper')
+def update_task_status(task_id):
+    """Update the status of a housekeeping task."""
+    task = Housekeeping.query.get_or_404(task_id)
+    
+    # Check if the current housekeeper has access to this task
+    if task.housekeeper_id != current_user.id:
+        flash(_('Access denied'), 'error')
+        return redirect(url_for('housekeeper_dashboard'))
+    
+    new_status = request.form.get('status')
+    if new_status in ['pending', 'in_progress', 'completed']:
+        task.status = new_status
+        task.updated_at = datetime.utcnow()
+        db.session.commit()
+        flash(_('Task status updated successfully'), 'success')
+    else:
+        flash(_('Invalid status'), 'error')
+    
+    return redirect(url_for('housekeeper_task_detail', task_id=task_id))
+
+@app.route('/housekeeper/task/<int:task_id>/add-notes', methods=['POST'])
+@login_required
+@role_required('housekeeper')
+def add_task_notes(task_id):
+    """Add or update notes for a housekeeping task."""
+    task = Housekeeping.query.get_or_404(task_id)
+    
+    # Check if the current housekeeper has access to this task
+    if task.housekeeper_id != current_user.id:
+        flash(_('Access denied'), 'error')
+        return redirect(url_for('housekeeper_dashboard'))
+    
+    notes = request.form.get('notes', '').strip()
+    task.notes = notes
+    task.updated_at = datetime.utcnow()
+    db.session.commit()
+    flash(_('Task notes updated successfully'), 'success')
+    
+    return redirect(url_for('housekeeper_task_detail', task_id=task_id))
+
 if __name__ == '__main__':
     # Parse command line arguments
     parser = argparse.ArgumentParser(description='Guest Registration System')
