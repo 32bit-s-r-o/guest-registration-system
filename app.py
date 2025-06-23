@@ -3519,6 +3519,79 @@ def reassign_housekeeping_task(task_id):
     flash(_('Housekeeping task reassigned successfully'), 'success')
     return redirect(url_for('admin_housekeeping'))
 
+@app.route('/admin/housekeeping/<int:task_id>/delete', methods=['POST'])
+@login_required
+@role_required('admin')
+def delete_housekeeping_task(task_id):
+    """Delete a housekeeping task."""
+    task = Housekeeping.query.get_or_404(task_id)
+    # Check if admin has access to this task (through amenity ownership)
+    if task.trip.amenity.admin_id != current_user.id:
+        flash(_('Access denied'), 'error')
+        return redirect(url_for('admin_housekeeping'))
+    try:
+        db.session.delete(task)
+        db.session.commit()
+        flash(_('Housekeeping task deleted successfully!'), 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(_('Error deleting housekeeping task: %(error)s', error=str(e)), 'error')
+    return redirect(url_for('admin_housekeeping'))
+
+@app.route('/admin/calendars/<int:calendar_id>/create-housekeeping-tasks', methods=['POST'])
+@login_required
+@role_required('admin')
+def create_housekeeping_tasks_from_calendar(calendar_id):
+    """Create housekeeping tasks for all trips in a calendar that don't already have one."""
+    calendar = Calendar.query.get_or_404(calendar_id)
+    if calendar.amenity.admin_id != current_user.id:
+        flash(_('Access denied'), 'error')
+        return redirect(url_for('admin_calendars'))
+    
+    trips = Trip.query.filter_by(calendar_id=calendar_id).all()
+    created = 0
+    skipped_no_housekeeper = 0
+    
+    # Find default housekeeper for the amenity
+    default_assignment = AmenityHousekeeper.query.filter_by(
+        amenity_id=calendar.amenity_id, is_default=True).first()
+    
+    if not default_assignment and calendar.amenity.default_housekeeper_id:
+        # Fallback to legacy default housekeeper
+        housekeeper_id = calendar.amenity.default_housekeeper_id
+    elif default_assignment:
+        housekeeper_id = default_assignment.housekeeper_id
+    else:
+        housekeeper_id = None
+    
+    if not housekeeper_id:
+        flash(_('No default housekeeper assigned to this amenity. Please assign a default housekeeper first.'), 'error')
+        return redirect(url_for('admin_calendars'))
+    
+    for trip in trips:
+        # Check if a housekeeping task already exists for this trip
+        existing_task = Housekeeping.query.filter_by(trip_id=trip.id).first()
+        if not existing_task:
+            task = Housekeeping(
+                trip_id=trip.id,
+                housekeeper_id=housekeeper_id,
+                date=trip.end_date + timedelta(days=1),
+                status='pending',
+                pay_amount=50.00,
+                paid=False
+            )
+            db.session.add(task)
+            created += 1
+    
+    db.session.commit()
+    
+    if created > 0:
+        flash(_('%(num)d housekeeping tasks created from calendar.', num=created), 'success')
+    else:
+        flash(_('No new housekeeping tasks created. All trips already have housekeeping tasks.'), 'info')
+    
+    return redirect(url_for('admin_calendars'))
+
 if __name__ == '__main__':
     # Parse command line arguments
     parser = argparse.ArgumentParser(description='Guest Registration System')

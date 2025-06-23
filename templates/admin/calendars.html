@@ -126,6 +126,16 @@
                                                 </button>
                                             </form>
                                         </div>
+                                        <div class="col-6 mb-2">
+                                            <form method="POST"
+                                                action="{{ url_for('create_housekeeping_tasks_from_calendar', calendar_id=calendar.id) }}"
+                                                style="display: inline;">
+                                                <button type="submit" class="btn btn-sm btn-outline-warning w-100"
+                                                    onclick="return confirm('{{ _('Create housekeeping tasks for all trips in this calendar?') }}')">
+                                                    <i class="fas fa-broom"></i> {{ _('Create Tasks from Calendar') }}
+                                                </button>
+                                            </form>
+                                        </div>
                                         <div class="col-6">
                                             <a href="{{ url_for('admin_trips') }}?calendar={{ calendar.id }}"
                                                 class="btn btn-sm btn-outline-primary w-100">
