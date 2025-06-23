@@ -109,7 +109,7 @@ msgstr "Naše společnost"
 #: app.py:1209
 #, python-format
 msgid "Invoice PDF sent to %(email)s"
-msgstr "Faktura PDF odeslána na %(e-mail)s"
+msgstr "Faktura PDF odeslána na %(email)s"
 
 #: app.py:1212
 #, python-format
@@ -118,22 +118,118 @@ msgstr "Nepodařilo se odeslat fakturu PDF: %(error)s"
 
 #: app.py:1279
 msgid "All data has been reset successfully! Admin accounts have been preserved."
+msgstr "Všechna data byla úspěšně resetována! Administrátorské účty byly zachovány."
+
+#: app.py:1284
+#, python-format
+msgid ""
+"Error resetting data: %(error)s. Please use the command line tool: python"
+" quick_reset.py --confirm"
 msgstr ""
-"Všechna data byla úspěšně resetována! Administrátorské účty byly "
-"zachovány."
+"Chyba při resetování dat: %(error)s. Použijte prosím příkazový řádek: "
+"python quick_reset.py --confirm"
+
+#: app.py:1630
+msgid ""
+"Sample data has been seeded successfully! Created 5 accommodations, 7 "
+"registrations (including 1 single-person pending), 3 invoices with "
+"realistic data, and updated admin contact information."
+msgstr ""
+"Ukázková data byla úspěšně načtena! Vytvořeno 5 ubytování, 7 registrací "
+"(včetně 1 čekající jednotlivce), 3 faktury s realistickými daty a "
+"aktualizovány kontaktní informace administrátora."
 
 #: app.py:1633
 #, python-format
 msgid "Error seeding data: %(error)s"
 msgstr "Chyba při načítání dat: %(error)s"
 
+#: app.py:1856
+msgid ""
+"Database has been reset and seeded with sample data successfully! Admin "
+"accounts have been preserved. Created 5 accommodations and 6 registrations with "
+"various statuses. Sample document images have been copied to uploads "
+"directory."
+msgstr ""
+"Databáze byla úspěšně resetována a načtena ukázkovými daty! "
+"Administrátorské účty byly zachovány. Vytvořeno 5 ubytování a 6 registrací s"
+" různými stavy. Ukázkové obrázky dokumentů byly zkopírovány do složky "
+"uploads."
+
+#: app.py:1861
+#, python-format
+msgid ""
+"Error during reset and seed: %(error)s. Please use the command line tool:"
+" python quick_reset.py --reset-seed"
+msgstr ""
+"Chyba během resetování a načítání: %(error)s. Použijte prosím příkazový "
+"řádek: python quick_reset.py --reset-seed"
+
 #: app.py:1873
 msgid "Your registration has been approved!"
 msgstr "Vaše registrace byla schválena!"
 
+#: app.py:1877
+#, python-format
+msgid ""
+"\n"
+"Dear Guest,\n"
+"\n"
+"Your registration for %(trip_title)s has been approved!\n"
+"\n"
+"Your personal data has been processed and all uploaded documents have "
+"been securely deleted in compliance with GDPR regulations.\n"
+"\n"
+"Thank you for choosing our service.\n"
+"\n"
+"Best regards,\n"
+"The Admin Team\n"
+msgstr ""
+"Vážený hoste,\n"
+"\n"
+"Vaše registrace pro %(trip_title)s byla schválena!\n"
+"\n"
+"Vaše osobní údaje byly zpracovány a všechny nahrané dokumenty byly "
+"bezpečně smazány v souladu s nařízením GDPR.\n"
+"\n"
+"Děkujeme za využití našich služeb.\n"
+"\n"
+"S pozdravem,\n"
+"Administrátorský tým"
+
 #: app.py:1905
 msgid "Registration Update Required"
 msgstr "Vyžadována aktualizace registrace"
+
+#: app.py:1909
+#, python-format
+msgid ""
+"\n"
+"Dear Guest,\n"
+"\n"
+"Your registration for %(trip_title)s requires updates.\n"
+"\n"
+"Admin Comment: %(admin_comment)s\n"
+"\n"
+"Please update your information using this link: %(update_link)s\n"
+"\n"
+"Thank you for your understanding.\n"
+"\n"
+"Best regards,\n"
+"The Admin Team\n"
+msgstr ""
+"Vážený hoste,\n"
+"\n"
+"Vaše registrace pro %(trip_title)s vyžaduje aktualizace.\n"
+"\n"
+"Komentář administrátora: %(admin_comment)s\n"
+"\n"
+"Prosím aktualizujte své informace pomocí tohoto odkazu: %(update_link)s\n"
+"\n"
+"Děkujeme za pochopení.\n"
+"\n"
+"S pozdravem,\n"
+"Administrátorský tým"
 
 #: app.py:1985 app.py:1990
 msgid "No photo selected"
@@ -405,13 +501,21 @@ msgstr ""
 msgid "Our Mission"
 msgstr "Naše mise"
 
+#: templates/about.html:19
+msgid "We provide secure, GDPR-compliant guest registration systems that protect personal data while streamlining the registration process for trip organizers and guests alike."
+msgstr "Poskytujeme bezpečné systémy registrace hostů v souladu s GDPR, které chrání osobní údaje a zároveň zjednodušují proces registrace pro organizátory ubytování i hosty."
+
 #: templates/about.html:28
 msgid "Our Vision"
 msgstr "Naše vize"
 
+#: templates/about.html:30
+msgid "To become the leading platform for secure guest registration, ensuring privacy and compliance while providing an excellent user experience for all parties involved."
+msgstr "Stát se přední platformou pro bezpečnou registraci hostů, zajišťující soukromí a dodržování předpisů při poskytování vynikající uživatelské zkušenosti pro všechny zúčastněné strany."
+
 #: templates/about.html:40
 msgid "Why Choose Our System?"
-msgstr "Spravujte svůj systém"
+msgstr "Proč si vybrat náš systém?"
 
 #: templates/about.html:45
 msgid "Security & Privacy"
@@ -497,6 +601,14 @@ msgstr "Snadná správa administrátora"
 msgid "Our Team"
 msgstr "Náš tým"
 
+#: templates/about.html:92
+msgid "Our team consists of experienced developers, security experts, and travel industry professionals who understand the unique challenges of guest registration and data protection."
+msgstr "Náš tým se skládá ze zkušených vývojářů, bezpečnostních expertů a profesionálů z cestovního ruchu, kteří rozumějí jedinečným výzvám registrace hostů a ochrany dat."
+
+#: templates/about.html:96
+msgid "We are committed to continuous improvement and regularly update our systems to meet the latest security standards and regulatory requirements."
+msgstr "Jsme odhodláni k neustálému zlepšování a pravidelně aktualizujeme naše systémy, aby splňovaly nejnovější bezpečnostní standardy a regulační požadavky."
+
 #: templates/about.html:104 templates/contact.html:3 templates/gdpr.html:311
 msgid "Contact Us"
 msgstr "Kontakt"
@@ -524,7 +636,6 @@ msgstr "Administrátorská nástěnka"
 
 #: templates/base.html:89 templates/housekeeper/dashboard.html:3
 #: templates/housekeeper/dashboard.html:9
-#, fuzzy
 msgid "Housekeeper Dashboard"
 msgstr "Nástěnka úklidového pracovníka"
 
@@ -551,6 +662,10 @@ msgstr "Potvrďte svou registraci"
 #: templates/confirm.html:17
 msgid "Please review your information before submitting"
 msgstr "Zkontrolujte prosím své informace před odesláním"
+
+#: templates/confirm.html:19
+msgid "Once submitted, your registration will be reviewed by an administrator. You will receive an email notification with the result."
+msgstr "Po odeslání bude vaše registrace přezkoumána administrátorem. Obdržíte e-mailové oznámení s výsledkem."
 
 #: templates/confirm.html:26
 msgid "Trip Information"
@@ -1314,9 +1429,37 @@ msgstr "Administrátor přezkoumá vaši registraci do 24-48 hodin"
 msgid "You will receive an email notification with the approval status"
 msgstr "Obdržíte e-mailové oznámení se stavem schválení"
 
+#: templates/success.html:26
+msgid ""
+"If approved, your uploaded documents will be automatically deleted for "
+"GDPR\n"
+"                            compliance"
+msgstr ""
+"Pokud bude schválena, vaše nahrané dokumenty budou automaticky smazány "
+"pro GDPR kompatibilitu"
+
+#: templates/success.html:28
+msgid ""
+"If any corrections are needed, you'll receive a link to update your "
+"information"
+msgstr ""
+"Pokud budou potřeba nějaké opravy, obdržíte odkaz pro aktualizaci vašich "
+"informací"
+
 #: templates/success.html:34
 msgid "Data Protection"
 msgstr "Ochrana dat"
+
+#: templates/success.html:36
+msgid ""
+"Your personal data is protected according to GDPR regulations. All "
+"uploaded documents will\n"
+"                        be securely deleted after approval to ensure your"
+" privacy."
+msgstr ""
+"Vaše osobní údaje jsou chráněny podle nařízení GDPR. Všechny nahrané "
+"dokumenty budou bezpečně smazány po schválení pro zajištění vašeho "
+"soukromí."
 
 #: templates/admin/breakdowns.html:3 templates/admin/breakdowns.html:10
 #, fuzzy
@@ -2667,3 +2810,176 @@ msgstr "Náš tým se skládá ze zkušených vývojářů, bezpečnostních exp
 
 msgid "We are committed to continuous improvement and regularly update our systems to meet the latest security standards and regulatory requirements."
 msgstr "Jsme odhodláni k neustálému zlepšování a pravidelně aktualizujeme naše systémy, aby splňovaly nejnovější bezpečnostní standardy a regulační požadavky."
+
+#: app.py:1191
+#, python-format
+msgid ""
+"Dear %(client_name)s,\n"
+"\n"
+"Please find attached your invoice %(invoice_number)s.\n"
+"\n"
+"Thank you for your business!\n"
+"\n"
+"Best regards,\n"
+"%(company)s"
+msgstr ""
+"Vážený/á %(client_name)s,\n"
+"\n"
+"V příloze naleznete vaši fakturu %(invoice_number)s.\n"
+"\n"
+"Děkujeme za vaši důvěru!\n"
+"\n"
+"S pozdravem,\n"
+"%(company)s"
+
+#: templates/register.html:177
+msgid ""
+"I consent to the processing of my personal data according to GDPR "
+"regulations"
+msgstr ""
+"Souhlasím se zpracováním mých osobních údajů podle nařízení GDPR"
+
+#: templates/register.html:182
+msgid "Remove Guest"
+msgstr "Odebrat hosta"
+
+#: templates/register.html:206
+msgid "Photo upload is optional for adults"
+msgstr "Nahrání fotografie je pro dospělé nepovinné"
+
+#: templates/register.html:216
+msgid "Photo upload is optional for children"
+msgstr "Nahrání fotografie je pro děti nepovinné"
+
+#: templates/register_landing.html:19
+msgid ""
+"Please enter your Airbnb confirmation code to proceed with your "
+"registration."
+msgstr ""
+"Prosím zadejte svůj Airbnb ověřovací kód pro pokračování v registraci."
+
+#: templates/register_landing.html:38
+msgid "Airbnb Confirmation Code"
+msgstr "Airbnb ověřovací kód"
+
+#: templates/register_landing.html:41
+msgid "Enter your confirmation code"
+msgstr "Zadejte svůj ověřovací kód"
+
+#: templates/register_landing.html:45
+msgid "This is the confirmation code from your Airbnb reservation email."
+msgstr "Toto je ověřovací kód z vašeho Airbnb rezervačního e-mailu."
+
+#: templates/register_landing.html:51
+msgid "Continue to Registration"
+msgstr "Pokračovat k registraci"
+
+#: templates/register_landing.html:59
+msgid "Need Help?"
+msgstr "Potřebujete pomoc?"
+
+#: templates/register_landing.html:61
+msgid ""
+"If you can't find your confirmation code, please check your Airbnb "
+"reservation email\n"
+"                            or contact your host for assistance."
+msgstr ""
+"Pokud nemůžete najít svůj ověřovací kód, zkontrolujte prosím svůj "
+"Airbnb rezervační e-mail nebo kontaktujte svého hostitele pro pomoc."
+
+#: templates/register_landing.html:65
+msgid "About This Service"
+msgstr "O této službě"
+
+#: templates/success.html:3
+msgid "Registration Submitted"
+msgstr "Registrace odeslána"
+
+#: templates/success.html:14
+msgid "Registration Submitted Successfully!"
+msgstr "Registrace byla úspěšně odeslána!"
+
+#: templates/success.html:17
+msgid ""
+"Thank you for submitting your guest registration. Your information has "
+"been received and is\n"
+"                    now pending admin approval."
+msgstr ""
+"Děkujeme za odeslání vaší registrace hostů. Vaše informace byly přijaty a"
+" nyní čekají na schválení administrátorem."
+
+#: templates/success.html:22
+msgid "What happens next?"
+msgstr "Co se stane dál?"
+
+#: templates/success.html:24
+msgid "An administrator will review your registration within 24-48 hours"
+msgstr "Administrátor přezkoumá vaši registraci do 24-48 hodin"
+
+#: templates/success.html:25
+msgid "You will receive an email notification with the approval status"
+msgstr "Obdržíte e-mailové oznámení se stavem schválení"
+
+#: templates/success.html:26
+msgid ""
+"If approved, your uploaded documents will be automatically deleted for "
+"GDPR\n"
+"                            compliance"
+msgstr ""
+"Pokud bude schválena, vaše nahrané dokumenty budou automaticky smazány "
+"pro GDPR kompatibilitu"
+
+#: templates/success.html:28
+msgid ""
+"If any corrections are needed, you'll receive a link to update your "
+"information"
+msgstr ""
+"Pokud budou potřeba nějaké opravy, obdržíte odkaz pro aktualizaci vašich "
+"informací"
+
+#: templates/success.html:34
+msgid "Data Protection"
+msgstr "Ochrana dat"
+
+#: templates/success.html:36
+msgid ""
+"Your personal data is protected according to GDPR regulations. All "
+"uploaded documents will\n"
+"                        be securely deleted after approval to ensure your"
+" privacy."
+msgstr ""
+"Vaše osobní údaje jsou chráněny podle nařízení GDPR. Všechny nahrané "
+"dokumenty budou bezpečně smazány po schválení pro zajištění vašeho "
+"soukromí."
+
+#: templates/admin/breakdowns.html:91
+msgid ""
+"Detailed analysis of guest registrations including status breakdowns,\n"
+"                        monthly trends, and language preferences."
+msgstr ""
+"Detailní analýza registrací hostů včetně rozdělení podle stavu,\n"
+"                        měsíčních trendů a jazykových preferencí."
+
+#: templates/admin/breakdowns.html:94
+msgid ""
+"Status distribution (pending, approved,\n"
+"                            rejected)"
+msgstr ""
+"Rozdělení podle stavu (čekající, schválené,\n"
+"                            zamítnuté)"
+
+#: templates/admin/breakdowns.html:116
+msgid ""
+"Comprehensive guest demographics including age categories, document\n"
+"                        types, and GDPR compliance statistics."
+msgstr ""
+"Komplexní demografie hostů včetně věkových kategorií, typů\n"
+"                        dokumentů a statistik dodržování GDPR."
+
+#: templates/admin/breakdowns.html:119
+msgid ""
+"Age category breakdown (adults vs\n"
+"                            children)"
+msgstr ""
+"Rozdělení podle věkové kategorie (dospělí vs\n"
+"                            děti)"

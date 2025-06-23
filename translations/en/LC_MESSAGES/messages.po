@@ -471,11 +471,7 @@ msgid "Our Mission"
 msgstr ""
 
 #: templates/about.html:19
-msgid ""
-"We provide secure, GDPR-compliant guest registration systems that protect"
-" personal\n"
-"                            data while streamlining the registration "
-"process for trip organizers and guests alike."
+msgid "We provide secure, GDPR-compliant guest registration systems that protect personal data while streamlining the registration process for trip organizers and guests alike."
 msgstr ""
 
 #: templates/about.html:28
@@ -579,18 +575,11 @@ msgid "Our Team"
 msgstr ""
 
 #: templates/about.html:92
-msgid ""
-"Our team consists of experienced developers, security experts, and travel"
-" industry\n"
-"                    professionals who understand the unique challenges of"
-" guest registration and data protection."
+msgid "Our team consists of experienced developers, security experts, and travel industry professionals who understand the unique challenges of guest registration and data protection."
 msgstr ""
 
 #: templates/about.html:96
-msgid ""
-"We are committed to continuous improvement and regularly update our "
-"systems to meet the latest\n"
-"                    security standards and regulatory requirements."
+msgid "We are committed to continuous improvement and regularly update our systems to meet the latest security standards and regulatory requirements."
 msgstr ""
 
 #: templates/about.html:104 templates/contact.html:3 templates/gdpr.html:311
@@ -648,10 +637,7 @@ msgid "Please review your information before submitting"
 msgstr ""
 
 #: templates/confirm.html:19
-msgid ""
-"Once submitted, your registration will be reviewed by an administrator.\n"
-"                            You will receive an email notification with "
-"the result."
+msgid "Once submitted, your registration will be reviewed by an administrator. You will receive an email notification with the result."
 msgstr ""
 
 #: templates/confirm.html:26
