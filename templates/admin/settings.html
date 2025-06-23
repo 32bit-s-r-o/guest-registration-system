@@ -355,6 +355,70 @@
                         </div>
                     </div>
 
+                    <!-- Date Format Settings -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-success text-white">
+                            <h4 class="mb-0"><i class="fas fa-calendar"></i> {{ _('Date Format Settings') }}</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info" role="alert">
+                                <i class="fas fa-info-circle"></i>
+                                <strong>{{ _('Date Format') }}:</strong> {{ _('Choose your preferred date format for
+                                displaying dates throughout the system.') }}
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="date_format" class="form-label">{{ _('Preferred Date Format')
+                                            }}</label>
+                                        <select class="form-select" id="date_format" name="date_format" required>
+                                            <option value="d.m.Y" {% if current_user.date_format=='d.m.Y' %}selected{%
+                                                endif %}>
+                                                26.3.2025 ({{ _('Day.Month.Year') }})
+                                            </option>
+                                            <option value="Y-m-d" {% if current_user.date_format=='Y-m-d' %}selected{%
+                                                endif %}>
+                                                2025-03-26 ({{ _('Year-Month-Day') }})
+                                            </option>
+                                            <option value="d/m/Y" {% if current_user.date_format=='d/m/Y' %}selected{%
+                                                endif %}>
+                                                26/03/2025 ({{ _('Day/Month/Year') }})
+                                            </option>
+                                            <option value="m/d/Y" {% if current_user.date_format=='m/d/Y' %}selected{%
+                                                endif %}>
+                                                03/26/2025 ({{ _('Month/Day/Year') }})
+                                            </option>
+                                            <option value="d.m.y" {% if current_user.date_format=='d.m.y' %}selected{%
+                                                endif %}>
+                                                26.3.25 ({{ _('Day.Month.Year (short)') }})
+                                            </option>
+                                            <option value="j.n.Y" {% if current_user.date_format=='j.n.Y' %}selected{%
+                                                endif %}>
+                                                26.3.2025 ({{ _('Day.Month.Year (no leading zeros)') }})
+                                            </option>
+                                        </select>
+                                        <div class="form-text">{{ _('This format will be used for all date displays in
+                                            the system.') }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="alert alert-light" role="alert">
+                                        <h6>{{ _('Format Examples') }}:</h6>
+                                        <ul class="mb-0">
+                                            <li><code>d.m.Y</code> → 26.3.2025</li>
+                                            <li><code>Y-m-d</code> → 2025-03-26</li>
+                                            <li><code>d/m/Y</code> → 26/03/2025</li>
+                                            <li><code>m/d/Y</code> → 03/26/2025</li>
+                                            <li><code>d.m.y</code> → 26.3.25</li>
+                                            <li><code>j.n.Y</code> → 26.3.2025</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="alert alert-success" role="alert">
                         <i class="fas fa-check-circle"></i>
                         <strong>{{ _('Usage') }}:</strong> {{ _('This contact information can be used to create contact

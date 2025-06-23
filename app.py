@@ -137,6 +137,8 @@ class User(UserMixin, db.Model):
     custom_line_1 = db.Column(db.String(200))
     custom_line_2 = db.Column(db.String(200))
     custom_line_3 = db.Column(db.String(200))
+    # Preferred date format
+    date_format = db.Column(db.String(32), default='d.m.Y')
     # Soft delete flag
     is_deleted = db.Column(db.Boolean, default=False)
     
@@ -494,10 +496,39 @@ def sync_all_amenities_for_admin(admin_id):
 # Custom Jinja2 filters
 @app.template_filter('nl2br')
 def nl2br_filter(text):
-    """Convert newlines to HTML line breaks."""
+    """Convert newlines to <br> tags for HTML display."""
     if text:
-        return Markup(text.replace('\n', '<br>'))
+        return text.replace('\n', '<br>')
     return text
+
+@app.template_filter('format_date')
+def format_date_filter(date_obj):
+    """Format date using the current user's preferred format."""
+    if not date_obj:
+        return ''
+    
+    # Get the current user's preferred format, default to 'd.m.Y'
+    if current_user.is_authenticated:
+        date_format = current_user.date_format or 'd.m.Y'
+    else:
+        date_format = 'd.m.Y'  # Default for unauthenticated users
+    
+    try:
+        return date_obj.strftime(date_format)
+    except (ValueError, TypeError):
+        # Fallback to default format if there's an error
+        return date_obj.strftime('d.m.Y')
+
+# Helper for registration display name
+@app.template_filter('registration_name')
+def registration_name(reg):
+    if reg.trip and reg.trip.start_date and reg.trip.end_date:
+        # Use the format_date filter for consistent formatting
+        start_date = reg.trip.start_date.strftime(current_user.date_format or 'd.m.Y') if current_user.is_authenticated else reg.trip.start_date.strftime('d.m.Y')
+        end_date = reg.trip.end_date.strftime(current_user.date_format or 'd.m.Y') if current_user.is_authenticated else reg.trip.end_date.strftime('d.m.Y')
+        return f"Registration - {start_date} to {end_date} (#{reg.id})"
+    else:
+        return f"Registration #{reg.id}"
 
 # Routes
 @app.route('/')
@@ -832,6 +863,9 @@ def admin_settings():
         # Update photo upload settings
         current_user.photo_required_adults = request.form.get('photo_required_adults') == 'on'
         current_user.photo_required_children = request.form.get('photo_required_children') == 'on'
+        
+        # Update date format setting
+        current_user.date_format = request.form.get('date_format', 'd.m.Y')
         
         # Update password if provided
         new_password = request.form.get('new_password')
@@ -2196,9 +2230,19 @@ def housekeeping_events_api():
     tasks = Housekeeping.query.filter_by(housekeeper_id=current_user.id).all()
     events = []
     for task in tasks:
+        # Use the trip's end date for the title if available
+        trip_end_date = task.trip.end_date if task.trip and task.trip.end_date else task.date
+        
+        # Format the date using the user's preferred format
+        try:
+            date_format = current_user.date_format or 'd.m.Y'
+            formatted_date = trip_end_date.strftime(date_format)
+        except (ValueError, TypeError):
+            formatted_date = trip_end_date.strftime('d.m.Y')
+        
         events.append({
             'id': task.id,
-            'title': f'Housekeeping for Trip #{task.trip_id}',
+            'title': f'Housekeeping - {formatted_date}',
             'start': task.date.isoformat(),
             'end': task.date.isoformat(),
             'status': task.status,

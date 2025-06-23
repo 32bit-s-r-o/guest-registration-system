@@ -62,7 +62,7 @@
                             <tbody>
                                 {% for task in tasks %}
                                 <tr>
-                                    <td>{{ task.date.strftime('%Y-%m-%d') }}</td>
+                                    <td>{{ task.date|format_date }}</td>
                                     <td>{{ task.trip_id }}</td>
                                     <td>
                                         <span
@@ -126,8 +126,8 @@
             <form action="{{ url_for('upload_amenity_photo', task_id=task.id) }}" method="POST"
                 enctype="multipart/form-data">
                 <div class="modal-body">
-                    <p>{{ _('Upload a photo of the amenity for Trip #%(trip_id)s on %(date)s', trip_id=task.trip_id,
-                        date=task.date.strftime('%Y-%m-%d')) }}</p>
+                    <p>{{ _('Upload a photo of the amenity for') }} {{ _('Housekeeping') }} - {{
+                        task.date.strftime('%Y-%m-%d') }} ({{ _('Trip') }} #{{ task.trip_id }})</p>
                     <div class="mb-3">
                         <label for="photo{{ task.id }}" class="form-label">{{ _('Select Photo') }}</label>
                         <input type="file" class="form-control" id="photo{{ task.id }}" name="photo" accept="image/*"

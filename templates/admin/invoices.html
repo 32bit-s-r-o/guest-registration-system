@@ -57,10 +57,10 @@
                                     </a>
                                 </td>
                                 <td>{{ invoice.client_name }}</td>
-                                <td>{{ invoice.issue_date.strftime('%Y-%m-%d') }}</td>
+                                <td>{{ invoice.issue_date|format_date }}</td>
                                 <td>
                                     {% if invoice.due_date %}
-                                    {{ invoice.due_date.strftime('%Y-%m-%d') }}
+                                    {{ invoice.due_date|format_date }}
                                     {% else %}
                                     <span class="text-muted">-</span>
                                     {% endif %}

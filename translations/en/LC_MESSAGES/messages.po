@@ -2896,91 +2896,55 @@ msgstr ""
 msgid "Accepted formats: JPG, PNG, GIF. Max size: 16MB"
 msgstr ""
 
-#~ msgid ""
-#~ "Additional information fields for future "
-#~ "use. These are not displayed on "
-#~ "public pages yet."
-#~ msgstr ""
+#: templates/admin/settings.html:290
+msgid "Date Format Settings"
+msgstr ""
 
-#~ msgid ""
-#~ "This contact information can be used "
-#~ "to create contact pages, display in "
-#~ "guest communications, or integrate with "
-#~ "other parts of your website."
-#~ msgstr ""
+#: templates/admin/settings.html:295
+msgid "Date Format"
+msgstr ""
 
-#~ msgid "When enabled, the system will fetch your Airbnb calendar regularly"
-#~ msgstr ""
+#: templates/admin/settings.html:295
+msgid "Choose your preferred date format for displaying dates throughout the system."
+msgstr ""
 
-#~ msgid "New reservations are automatically converted to registration forms"
-#~ msgstr ""
+#: templates/admin/settings.html:302
+msgid "Preferred Date Format"
+msgstr ""
 
-#~ msgid "Guest names and counts are extracted from calendar events"
-#~ msgstr ""
+#: templates/admin/settings.html:304
+msgid "Day.Month.Year"
+msgstr ""
 
-#~ msgid ""
-#~ "Changes to reservations (dates, guest "
-#~ "count) are automatically reflected"
-#~ msgstr ""
+#: templates/admin/settings.html:307
+msgid "Year-Month-Day"
+msgstr ""
 
-#~ msgid "You can also trigger manual sync from the trips page"
-#~ msgstr ""
+#: templates/admin/settings.html:310
+msgid "Day/Month/Year"
+msgstr ""
 
-#~ msgid "VAT %"
-#~ msgstr ""
+#: templates/admin/settings.html:313
+msgid "Month/Day/Year"
+msgstr ""
 
-#~ msgid ""
-#~ "\n"
-#~ "        Dear Guest,\n"
-#~ "        \n"
-#~ "        Your registration for %(trip_title)s has been approved!\n"
-#~ "        \n"
-#~ "        Your personal data has been "
-#~ "processed and all uploaded documents "
-#~ "have been securely deleted in compliance"
-#~ " with GDPR regulations.\n"
-#~ "        \n"
-#~ "        Thank you for choosing our service.\n"
-#~ "        \n"
-#~ "        Best regards,\n"
-#~ "        The Admin Team\n"
-#~ "        "
-#~ msgstr ""
+#: templates/admin/settings.html:316
+msgid "Day.Month.Year (short)"
+msgstr ""
 
-#~ msgid ""
-#~ "\n"
-#~ "        Dear Guest,\n"
-#~ "        \n"
-#~ "        Your registration for %(trip_title)s requires updates.\n"
-#~ "        \n"
-#~ "        Admin Comment: %(admin_comment)s\n"
-#~ "        \n"
-#~ "        Please update your information "
-#~ "using this link: %(update_link)s\n"
-#~ "        \n"
-#~ "        Thank you for your understanding.\n"
-#~ "        \n"
-#~ "        Best regards,\n"
-#~ "        The Admin Team\n"
-#~ "        "
-#~ msgstr ""
+#: templates/admin/settings.html:319
+msgid "Day.Month.Year (no leading zeros)"
+msgstr ""
 
-#~ msgid ""
-#~ "Dear Guest,\n"
-#~ "\n"
-#~ "Your registration for %(trip_title)s has been approved!\n"
-#~ "\n"
-#~ "Your personal data has been processed"
-#~ " and all uploaded documents have been"
-#~ " securely deleted in compliance with "
-#~ "GDPR regulations.\n"
-#~ "\n"
-#~ "Thank you for choosing our service.\n"
-#~ "\n"
-#~ "Best regards,\n"
-#~ "The Admin Team"
-#~ msgstr ""
+#: templates/admin/settings.html:322
+msgid "This format will be used for all date displays in the system."
+msgstr ""
 
+#: templates/admin/settings.html:327
+msgid "Format Examples"
+msgstr ""
+
+#: templates/admin/settings.html:328
 #~ msgid ""
 #~ "Dear Guest,\n"
 #~ "\n"
