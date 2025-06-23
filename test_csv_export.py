@@ -8,7 +8,7 @@ import json
 from datetime import datetime
 
 # Configuration
-BASE_URL = "http://localhost:5000"
+BASE_URL = "http://127.0.0.1:5000"
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "admin123"
 
@@ -18,14 +18,19 @@ def login_admin():
     
     # Get login page to get CSRF token
     login_page = session.get(f"{BASE_URL}/admin/login")
+    print(f"[DEBUG] GET /admin/login status: {login_page.status_code}")
     
     # Login
     login_data = {
         'username': ADMIN_USERNAME,
         'password': ADMIN_PASSWORD
     }
-    
-    response = session.post(f"{BASE_URL}/admin/login", data=login_data)
+    response = session.post(f"{BASE_URL}/admin/login", data=login_data, allow_redirects=True)
+    print(f"[DEBUG] POST /admin/login status: {response.status_code}")
+    print(f"[DEBUG] POST /admin/login final URL: {response.url}")
+    print(f"[DEBUG] POST /admin/login headers: {response.headers}")
+    print(f"[DEBUG] POST /admin/login cookies: {session.cookies.get_dict()}")
+    print(f"[DEBUG] POST /admin/login body (first 500 chars):\n{response.text[:500]}")
     
     if response.status_code == 200 and "dashboard" in response.url:
         print("✅ Admin login successful")

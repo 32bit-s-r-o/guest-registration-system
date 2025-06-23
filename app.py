@@ -25,7 +25,7 @@ from flask_babel import Babel, gettext as _
 from functools import wraps
 import json
 import csv
-from io import StringIO
+from io import StringIO, BytesIO
 from flask_babel import lazy_gettext as _l
 from sqlalchemy import func, and_, or_
 from collections import defaultdict
@@ -1994,9 +1994,12 @@ def export_registrations_csv():
             reg.admin_comment or ''
         ])
     
-    output.seek(0)
+    # Convert to bytes and create BytesIO
+    csv_data = output.getvalue().encode('utf-8')
+    output.close()
+    
     return send_file(
-        StringIO(output.getvalue()),
+        BytesIO(csv_data),
         mimetype='text/csv',
         as_attachment=True,
         download_name=f'registrations_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
@@ -2043,9 +2046,12 @@ def export_guests_csv():
             guest.created_at.strftime('%Y-%m-%d %H:%M:%S')
         ])
     
-    output.seek(0)
+    # Convert to bytes and create BytesIO
+    csv_data = output.getvalue().encode('utf-8')
+    output.close()
+    
     return send_file(
-        StringIO(output.getvalue()),
+        BytesIO(csv_data),
         mimetype='text/csv',
         as_attachment=True,
         download_name=f'guests_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
@@ -2107,9 +2113,12 @@ def export_trips_csv():
             rejected_count
         ])
     
-    output.seek(0)
+    # Convert to bytes and create BytesIO
+    csv_data = output.getvalue().encode('utf-8')
+    output.close()
+    
     return send_file(
-        StringIO(output.getvalue()),
+        BytesIO(csv_data),
         mimetype='text/csv',
         as_attachment=True,
         download_name=f'trips_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
@@ -2170,8 +2179,12 @@ def export_invoices_csv():
         ])
     
     output.seek(0)
+    # Convert to bytes and create BytesIO
+    csv_data = output.getvalue().encode('utf-8')
+    output.close()
+    
     return send_file(
-        StringIO(output.getvalue()),
+        BytesIO(csv_data),
         mimetype='text/csv',
         as_attachment=True,
         download_name=f'invoices_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
