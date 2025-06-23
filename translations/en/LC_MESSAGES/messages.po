@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-06-23 01:31+0200\n"
+"POT-Creation-Date: 2025-06-23 02:14+0200\n"
 "PO-Revision-Date: 2025-06-23 01:07+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -171,15 +171,154 @@ msgid ""
 "        "
 msgstr ""
 
-#: templates/base.html:69
+#: templates/about.html:3 templates/about.html:9 templates/contact.html:119
+msgid "About Us"
+msgstr ""
+
+#: templates/about.html:10
+msgid "Secure and compliant guest registration solutions for modern travel"
+msgstr ""
+
+#: templates/about.html:17
+msgid "Our Mission"
+msgstr ""
+
+#: templates/about.html:19
+msgid ""
+"We provide secure, GDPR-compliant guest registration systems that protect"
+" personal\n"
+"                            data while streamlining the registration "
+"process for trip organizers and guests alike."
+msgstr ""
+
+#: templates/about.html:28
+msgid "Our Vision"
+msgstr ""
+
+#: templates/about.html:30
+msgid ""
+"To become the leading platform for secure guest registration, ensuring "
+"privacy and\n"
+"                            compliance while providing an excellent user "
+"experience for all parties involved."
+msgstr ""
+
+#: templates/about.html:40
+msgid "Why Choose Our System?"
+msgstr ""
+
+#: templates/about.html:45
+msgid "Security & Privacy"
+msgstr ""
+
+#: templates/about.html:47
+msgid "End-to-end encryption for all data"
+msgstr ""
+
+#: templates/about.html:48
+msgid "GDPR compliance built-in"
+msgstr ""
+
+#: templates/about.html:49
+msgid "Automatic document deletion after approval"
+msgstr ""
+
+#: templates/about.html:50 templates/gdpr.html:205
+msgid "Secure file uploads with virus scanning"
+msgstr ""
+
+#: templates/about.html:54
+msgid "Efficiency"
+msgstr ""
+
+#: templates/about.html:56
+msgid "Streamlined registration process"
+msgstr ""
+
+#: templates/about.html:57
+msgid "Instant email notifications"
+msgstr ""
+
+#: templates/about.html:58
+msgid "Admin dashboard for easy management"
+msgstr ""
+
+#: templates/about.html:59
+msgid "Mobile-responsive design"
+msgstr ""
+
+#: templates/about.html:65
+msgid "User Experience"
+msgstr ""
+
+#: templates/about.html:67
+msgid "Intuitive interface design"
+msgstr ""
+
+#: templates/about.html:68
+msgid "Clear progress indicators"
+msgstr ""
+
+#: templates/about.html:69
+msgid "Helpful validation messages"
+msgstr ""
+
+#: templates/about.html:70
+msgid "Accessible for all users"
+msgstr ""
+
+#: templates/about.html:74
+msgid "Flexibility"
+msgstr ""
+
+#: templates/about.html:76
+msgid "Customizable trip settings"
+msgstr ""
+
+#: templates/about.html:77
+msgid "Multiple document types supported"
+msgstr ""
+
+#: templates/about.html:78
+msgid "Scalable for any group size"
+msgstr ""
+
+#: templates/about.html:79
+msgid "Easy admin management"
+msgstr ""
+
+#: templates/about.html:88
+msgid "Our Team"
+msgstr ""
+
+#: templates/about.html:92
+msgid ""
+"Our team consists of experienced developers, security experts, and travel"
+" industry\n"
+"                    professionals who understand the unique challenges of"
+" guest registration and data protection."
+msgstr ""
+
+#: templates/about.html:96
+msgid ""
+"We are committed to continuous improvement and regularly update our "
+"systems to meet the latest\n"
+"                    security standards and regulatory requirements."
+msgstr ""
+
+#: templates/about.html:104 templates/contact.html:3 templates/gdpr.html:311
+msgid "Contact Us"
+msgstr ""
+
+#: templates/base.html:69 templates/contact.html:144
 msgid "Home"
 msgstr ""
 
-#: templates/base.html:72
+#: templates/base.html:72 templates/contact.html:149
 msgid "About"
 msgstr ""
 
-#: templates/base.html:75
+#: templates/base.html:75 templates/contact.html:10
 msgid "Contact"
 msgstr ""
 
@@ -243,15 +382,19 @@ msgstr ""
 msgid "Confirmation Code"
 msgstr ""
 
-#: templates/confirm.html:49 templates/register.html:45
+#: templates/admin/settings.html:142 templates/admin/settings.html:147
+#: templates/confirm.html:49 templates/contact.html:22 templates/gdpr.html:57
+#: templates/gdpr.html:135 templates/gdpr.html:245 templates/register.html:45
 msgid "Contact Information"
 msgstr ""
 
-#: templates/confirm.html:52 templates/register.html:47
+#: templates/admin/settings.html:37 templates/confirm.html:52
+#: templates/register.html:47
 msgid "Email Address"
 msgstr ""
 
-#: templates/confirm.html:59 templates/register.html:93
+#: templates/admin/settings.html:289 templates/confirm.html:59
+#: templates/register.html:93
 msgid "Guest Information"
 msgstr ""
 
@@ -296,8 +439,8 @@ msgstr ""
 msgid "Client Name"
 msgstr ""
 
-#: templates/admin/view_invoice.html:59 templates/confirm.html:98
-#: templates/register.html:77
+#: templates/admin/settings.html:183 templates/admin/view_invoice.html:59
+#: templates/confirm.html:98 templates/register.html:77
 msgid "VAT Number"
 msgstr ""
 
@@ -313,8 +456,564 @@ msgstr ""
 msgid "Submit Registration"
 msgstr ""
 
-#: templates/index.html:3
+#: templates/contact.html:12 templates/gdpr.html:28 templates/index.html:3
 msgid "Guest Registration System"
+msgstr ""
+
+#: templates/contact.html:13
+msgid "Get in touch with us for any questions about your stay"
+msgstr ""
+
+#: templates/contact.html:27
+msgid "Contact Person"
+msgstr ""
+
+#: templates/contact.html:34 templates/gdpr.html:39 templates/gdpr.html:45
+#: templates/gdpr.html:263
+msgid "Phone"
+msgstr ""
+
+#: templates/admin/view_invoice.html:56 templates/contact.html:45
+#: templates/gdpr.html:35 templates/gdpr.html:44 templates/gdpr.html:253
+msgid "Email"
+msgstr ""
+
+#: templates/admin/settings.html:214 templates/contact.html:56
+msgid "Website"
+msgstr ""
+
+#: templates/admin/settings.html:203 templates/admin/view_invoice.html:62
+#: templates/contact.html:68 templates/gdpr.html:32 templates/gdpr.html:43
+msgid "Address"
+msgstr ""
+
+#: templates/contact.html:80 templates/contact.html:107
+msgid "Send Message"
+msgstr ""
+
+#: templates/contact.html:85
+msgid "Your Name"
+msgstr ""
+
+#: templates/contact.html:90
+msgid "Your Email"
+msgstr ""
+
+#: templates/contact.html:95
+msgid "Subject"
+msgstr ""
+
+#: templates/contact.html:100
+msgid "Message"
+msgstr ""
+
+#: templates/contact.html:130
+msgid "Contact information not available."
+msgstr ""
+
+#: templates/contact.html:130
+msgid ""
+"Please check back later or contact\n"
+"                the administrator."
+msgstr ""
+
+#: templates/contact.html:138
+msgid "Quick Links"
+msgstr ""
+
+#: templates/contact.html:154 templates/register.html:3
+msgid "Register"
+msgstr ""
+
+#: templates/gdpr.html:3 templates/gdpr.html:9
+msgid "GDPR Privacy Policy"
+msgstr ""
+
+#: templates/gdpr.html:10
+msgid "Your privacy and data protection rights are important to us"
+msgstr ""
+
+#: templates/gdpr.html:11
+msgid "Last updated: December 2024"
+msgstr ""
+
+#: templates/gdpr.html:15
+msgid "Important Notice"
+msgstr ""
+
+#: templates/gdpr.html:17
+msgid ""
+"This privacy policy explains how we collect, use, and protect your "
+"personal data in accordance\n"
+"                with the General Data Protection Regulation (GDPR) and "
+"other applicable data protection laws."
+msgstr ""
+
+#: templates/gdpr.html:24
+msgid "Data Controller"
+msgstr ""
+
+#: templates/gdpr.html:27
+msgid "Company"
+msgstr ""
+
+#: templates/gdpr.html:43
+msgid "Your Company Address"
+msgstr ""
+
+#: templates/gdpr.html:44 templates/gdpr.html:188 templates/gdpr.html:258
+msgid "Your Contact Email"
+msgstr ""
+
+#: templates/gdpr.html:45 templates/gdpr.html:268
+msgid "Your Contact Phone"
+msgstr ""
+
+#: templates/gdpr.html:52
+msgid "Personal Data We Collect"
+msgstr ""
+
+#: templates/gdpr.html:55
+msgid "Information you provide:"
+msgstr ""
+
+#: templates/gdpr.html:57
+msgid "Email address for communication"
+msgstr ""
+
+#: templates/gdpr.html:58
+msgid "Personal Details"
+msgstr ""
+
+#: templates/gdpr.html:58
+msgid "First name, last name"
+msgstr ""
+
+#: templates/gdpr.html:59
+msgid "Identification"
+msgstr ""
+
+#: templates/gdpr.html:59
+msgid "Document type, document number"
+msgstr ""
+
+#: templates/gdpr.html:60 templates/gdpr.html:131
+msgid "Document Images"
+msgstr ""
+
+#: templates/gdpr.html:60
+msgid ""
+"Photos of identification documents\n"
+"                        (temporarily stored)"
+msgstr ""
+
+#: templates/gdpr.html:62 templates/gdpr.html:82
+msgid "Consent"
+msgstr ""
+
+#: templates/gdpr.html:62
+msgid "GDPR consent confirmation"
+msgstr ""
+
+#: templates/gdpr.html:65
+msgid "Automatically collected information:"
+msgstr ""
+
+#: templates/gdpr.html:67
+msgid "Technical Data"
+msgstr ""
+
+#: templates/gdpr.html:67
+msgid "IP address, browser type, device information"
+msgstr ""
+
+#: templates/gdpr.html:69
+msgid "Usage Data"
+msgstr ""
+
+#: templates/gdpr.html:69
+msgid "Pages visited, time spent on site"
+msgstr ""
+
+#: templates/gdpr.html:70
+msgid "Cookies"
+msgstr ""
+
+#: templates/gdpr.html:70
+msgid "Session cookies for functionality"
+msgstr ""
+
+#: templates/gdpr.html:77
+msgid "How We Use Your Data"
+msgstr ""
+
+#: templates/gdpr.html:80
+msgid "Legal basis for processing:"
+msgstr ""
+
+#: templates/gdpr.html:82
+msgid "You have given explicit consent for data processing"
+msgstr ""
+
+#: templates/gdpr.html:84
+msgid "Legitimate Interest"
+msgstr ""
+
+#: templates/gdpr.html:84
+msgid "To provide guest registration services"
+msgstr ""
+
+#: templates/gdpr.html:86
+msgid "Contract"
+msgstr ""
+
+#: templates/gdpr.html:86
+msgid "To fulfill registration obligations"
+msgstr ""
+
+#: templates/gdpr.html:89
+msgid "Purposes of processing:"
+msgstr ""
+
+#: templates/gdpr.html:91
+msgid "Process guest registrations for trips"
+msgstr ""
+
+#: templates/gdpr.html:92
+msgid "Verify guest identities and documents"
+msgstr ""
+
+#: templates/gdpr.html:93
+msgid "Communicate registration status and updates"
+msgstr ""
+
+#: templates/gdpr.html:94
+msgid "Ensure compliance with travel regulations"
+msgstr ""
+
+#: templates/gdpr.html:95
+msgid "Improve our services and user experience"
+msgstr ""
+
+#: templates/gdpr.html:102
+msgid "Data Sharing and Transfers"
+msgstr ""
+
+#: templates/gdpr.html:105
+msgid "We may share your data with:"
+msgstr ""
+
+#: templates/gdpr.html:107
+msgid "Trip Organizers"
+msgstr ""
+
+#: templates/gdpr.html:107
+msgid "Only the specific admin managing your trip"
+msgstr ""
+
+#: templates/gdpr.html:109
+msgid "Service Providers"
+msgstr ""
+
+#: templates/gdpr.html:109
+msgid ""
+"Email services, hosting providers (under\n"
+"                        strict contracts)"
+msgstr ""
+
+#: templates/gdpr.html:111
+msgid "Legal Authorities"
+msgstr ""
+
+#: templates/gdpr.html:111
+msgid "When required by law or to protect rights"
+msgstr ""
+
+#: templates/gdpr.html:115
+msgid "Data transfers:"
+msgstr ""
+
+#: templates/gdpr.html:117
+msgid "All data is stored within the European Economic Area (EEA)"
+msgstr ""
+
+#: templates/gdpr.html:118
+msgid "Any international transfers comply with GDPR requirements"
+msgstr ""
+
+#: templates/gdpr.html:119
+msgid "We use appropriate safeguards for data protection"
+msgstr ""
+
+#: templates/gdpr.html:126
+msgid "Data Retention"
+msgstr ""
+
+#: templates/gdpr.html:129
+msgid "Retention periods:"
+msgstr ""
+
+#: templates/gdpr.html:131
+msgid ""
+"Automatically deleted immediately after\n"
+"                        approval"
+msgstr ""
+
+#: templates/gdpr.html:133
+msgid "Registration Data"
+msgstr ""
+
+#: templates/gdpr.html:133
+msgid ""
+"Retained for 2 years after trip\n"
+"                        completion"
+msgstr ""
+
+#: templates/gdpr.html:135
+msgid ""
+"Retained for 2 years for communication\n"
+"                        purposes"
+msgstr ""
+
+#: templates/gdpr.html:137
+msgid "Technical Logs"
+msgstr ""
+
+#: templates/gdpr.html:137
+msgid "Retained for 90 days for security purposes"
+msgstr ""
+
+#: templates/gdpr.html:141
+msgid "Deletion process:"
+msgstr ""
+
+#: templates/gdpr.html:143
+msgid "Automatic deletion of documents after approval"
+msgstr ""
+
+#: templates/gdpr.html:144
+msgid "Regular review and deletion of expired data"
+msgstr ""
+
+#: templates/gdpr.html:145
+msgid "Secure deletion methods to prevent recovery"
+msgstr ""
+
+#: templates/gdpr.html:152 templates/gdpr.html:300
+msgid "Your Rights"
+msgstr ""
+
+#: templates/gdpr.html:155
+msgid "Under GDPR, you have the following rights:"
+msgstr ""
+
+#: templates/gdpr.html:158
+msgid "Right to Access"
+msgstr ""
+
+#: templates/gdpr.html:159
+msgid ""
+"Request a copy of your personal data and information about how it's "
+"processed."
+msgstr ""
+
+#: templates/gdpr.html:162
+msgid "Right to Rectification"
+msgstr ""
+
+#: templates/gdpr.html:163
+msgid "Request correction of inaccurate or incomplete personal data."
+msgstr ""
+
+#: templates/gdpr.html:165
+msgid "Right to Erasure"
+msgstr ""
+
+#: templates/gdpr.html:166
+msgid "Request deletion of your personal data (subject to legal requirements)."
+msgstr ""
+
+#: templates/gdpr.html:169
+msgid "Right to Restrict Processing"
+msgstr ""
+
+#: templates/gdpr.html:170
+msgid "Request limitation of data processing in certain circumstances."
+msgstr ""
+
+#: templates/gdpr.html:172
+msgid "Right to Data Portability"
+msgstr ""
+
+#: templates/gdpr.html:173
+msgid "Receive your data in a structured, machine-readable format."
+msgstr ""
+
+#: templates/gdpr.html:175
+msgid "Right to Object"
+msgstr ""
+
+#: templates/gdpr.html:176
+msgid "Object to processing based on legitimate interests."
+msgstr ""
+
+#: templates/gdpr.html:181
+msgid "How to Exercise Your Rights"
+msgstr ""
+
+#: templates/gdpr.html:183
+msgid "To exercise any of these rights, please contact us at"
+msgstr ""
+
+#: templates/gdpr.html:191
+msgid "with your request. We will respond within 30 days."
+msgstr ""
+
+#: templates/gdpr.html:199
+msgid "Data Security"
+msgstr ""
+
+#: templates/gdpr.html:202
+msgid "Security measures:"
+msgstr ""
+
+#: templates/gdpr.html:204
+msgid "Encryption of data in transit and at rest"
+msgstr ""
+
+#: templates/gdpr.html:206
+msgid "Regular security audits and updates"
+msgstr ""
+
+#: templates/gdpr.html:207
+msgid "Access controls and authentication"
+msgstr ""
+
+#: templates/gdpr.html:208
+msgid "Secure deletion of sensitive documents"
+msgstr ""
+
+#: templates/gdpr.html:211
+msgid "Incident response:"
+msgstr ""
+
+#: templates/gdpr.html:213
+msgid "24/7 monitoring for security incidents"
+msgstr ""
+
+#: templates/gdpr.html:214
+msgid "Immediate response to data breaches"
+msgstr ""
+
+#: templates/gdpr.html:215
+msgid "Notification to authorities within 72 hours"
+msgstr ""
+
+#: templates/gdpr.html:216
+msgid "Communication with affected individuals"
+msgstr ""
+
+#: templates/gdpr.html:223
+msgid "Cookies and Tracking"
+msgstr ""
+
+#: templates/gdpr.html:226
+msgid "Types of cookies we use:"
+msgstr ""
+
+#: templates/gdpr.html:228
+msgid "Essential Cookies"
+msgstr ""
+
+#: templates/gdpr.html:228
+msgid "Required for basic functionality"
+msgstr ""
+
+#: templates/gdpr.html:229
+msgid "Session Cookies"
+msgstr ""
+
+#: templates/gdpr.html:229
+msgid "Maintain your login session"
+msgstr ""
+
+#: templates/gdpr.html:230
+msgid "Analytics Cookies"
+msgstr ""
+
+#: templates/gdpr.html:230
+msgid "Help us improve our service (optional)"
+msgstr ""
+
+#: templates/gdpr.html:234
+msgid "Cookie management:"
+msgstr ""
+
+#: templates/gdpr.html:236
+msgid "You can control cookies through your browser settings"
+msgstr ""
+
+#: templates/gdpr.html:237
+msgid "Essential cookies cannot be disabled"
+msgstr ""
+
+#: templates/gdpr.html:238
+msgid "Analytics cookies are optional and can be refused"
+msgstr ""
+
+#: templates/gdpr.html:248
+msgid ""
+"If you have any questions about this privacy policy or our data "
+"practices, please contact us:"
+msgstr ""
+
+#: templates/gdpr.html:275
+msgid "Data Protection Officer"
+msgstr ""
+
+#: templates/gdpr.html:277
+msgid ""
+"For complex data protection inquiries, you may also contact our Data "
+"Protection Officer at\n"
+"                        the same contact details above."
+msgstr ""
+
+#: templates/gdpr.html:286
+msgid "Changes to This Policy"
+msgstr ""
+
+#: templates/gdpr.html:289
+msgid ""
+"We may update this privacy policy from time to time to reflect changes in"
+" our practices or\n"
+"                    applicable laws."
+msgstr ""
+
+#: templates/gdpr.html:292
+msgid "How we notify you of changes:"
+msgstr ""
+
+#: templates/gdpr.html:294
+msgid "We will post the updated policy on our website"
+msgstr ""
+
+#: templates/gdpr.html:295
+msgid "We will notify you by email for significant changes"
+msgstr ""
+
+#: templates/gdpr.html:296
+msgid "The effective date will be clearly indicated"
+msgstr ""
+
+#: templates/gdpr.html:302
+msgid ""
+"If you disagree with any changes to this policy, you have the right to "
+"request deletion of\n"
+"                        your data and discontinue use of our services."
+msgstr ""
+
+#: templates/gdpr.html:314
+msgid "Back to Home"
 msgstr ""
 
 #: templates/index.html:9 templates/register_landing.html:17
@@ -396,10 +1095,6 @@ msgstr ""
 
 #: templates/index.html:67
 msgid "Have your Airbnb confirmation code ready!"
-msgstr ""
-
-#: templates/register.html:3
-msgid "Register"
 msgstr ""
 
 #: templates/register.html:8 templates/register_landing.html:3
@@ -739,7 +1434,7 @@ msgid "Cancel"
 msgstr ""
 
 #: templates/admin/edit_invoice.html:170 templates/admin/new_invoice.html:163
-#: templates/admin/view_invoice.html:89
+#: templates/admin/settings.html:223 templates/admin/view_invoice.html:89
 msgid "Description"
 msgstr ""
 
@@ -810,7 +1505,7 @@ msgstr ""
 msgid "New Invoice"
 msgstr ""
 
-#: templates/admin/invoices.html:22
+#: templates/admin/invoices.html:22 templates/admin/settings.html:11
 msgid "Back to Dashboard"
 msgstr ""
 
@@ -881,7 +1576,7 @@ msgstr ""
 msgid "Delete Invoice"
 msgstr ""
 
-#: templates/admin/login.html:30
+#: templates/admin/login.html:30 templates/admin/settings.html:29
 msgid "Username"
 msgstr ""
 
@@ -901,20 +1596,306 @@ msgstr ""
 msgid "Create Invoice"
 msgstr ""
 
+#: templates/admin/settings.html:3 templates/admin/settings.html:9
+msgid "Admin Settings"
+msgstr ""
+
+#: templates/admin/settings.html:23
+msgid "Profile Settings"
+msgstr ""
+
+#: templates/admin/settings.html:32
+msgid "Username cannot be changed"
+msgstr ""
+
+#: templates/admin/settings.html:47
+msgid "New Password"
+msgstr ""
+
+#: templates/admin/settings.html:50
+msgid "Leave blank to keep current password"
+msgstr ""
+
+#: templates/admin/settings.html:55
+msgid "Confirm New Password"
+msgstr ""
+
+#: templates/admin/settings.html:57
+msgid "Must match new password"
+msgstr ""
+
+#: templates/admin/settings.html:63
+msgid "Account Created"
+msgstr ""
+
+#: templates/admin/settings.html:73
+msgid "Airbnb Calendar Integration"
+msgstr ""
+
+#: templates/admin/settings.html:78
+msgid "Airbnb Calendar Sync"
+msgstr ""
+
+#: templates/admin/settings.html:78
+msgid ""
+"Automatically import reservations from\n"
+"                        your Airbnb calendar and create registration "
+"forms."
+msgstr ""
+
+#: templates/admin/settings.html:85
+msgid "Airbnb Listing ID"
+msgstr ""
+
+#: templates/admin/settings.html:88
+msgid "Your Airbnb listing ID (found in your listing URL)"
+msgstr ""
+
+#: templates/admin/settings.html:94
+msgid "Enable Sync"
+msgstr ""
+
+#: templates/admin/settings.html:100
+msgid "Enable automatic Airbnb calendar sync"
+msgstr ""
+
+#: templates/admin/settings.html:108
+msgid "Airbnb Calendar URL"
+msgstr ""
+
+#: templates/admin/settings.html:113
+msgid "How to get your calendar URL:"
+msgstr ""
+
+#: templates/admin/settings.html:115
+msgid "Go to your Airbnb listing"
+msgstr ""
+
+#: templates/admin/settings.html:116
+msgid "Click \"Calendar\" tab"
+msgstr ""
+
+#: templates/admin/settings.html:117
+msgid "Click \"Export Calendar\""
+msgstr ""
+
+#: templates/admin/settings.html:118
+msgid "Copy the iCal URL"
+msgstr ""
+
+#: templates/admin/settings.html:125
+msgid "Last Sync"
+msgstr ""
+
+#: templates/admin/settings.html:133
+msgid "Important"
+msgstr ""
+
+#: templates/admin/settings.html:133
+msgid ""
+"The calendar URL contains sensitive information.\n"
+"                        Keep it secure and don't share it publicly."
+msgstr ""
+
+#: templates/admin/settings.html:147
+msgid ""
+"This information can be displayed on\n"
+"                        contact pages or used in communications with "
+"guests."
+msgstr ""
+
+#: templates/admin/settings.html:154
+msgid "Company Name"
+msgstr ""
+
+#: templates/admin/settings.html:158
+msgid "The company or organization name shown on public pages"
+msgstr ""
+
+#: templates/admin/settings.html:164
+msgid "Contact Name"
+msgstr ""
+
+#: templates/admin/settings.html:167
+msgid "The name to display for contact purposes"
+msgstr ""
+
+#: templates/admin/settings.html:175
+msgid "Company ICO"
+msgstr ""
+
+#: templates/admin/settings.html:178
+msgid "Company identification number (optional)"
+msgstr ""
+
+#: templates/admin/settings.html:186
+msgid "VAT identification number (optional)"
+msgstr ""
+
+#: templates/admin/settings.html:194
+msgid "Phone Number"
+msgstr ""
+
+#: templates/admin/settings.html:198
+msgid "Contact phone number for guests"
+msgstr ""
+
+#: templates/admin/settings.html:205
+msgid "Enter your full address"
+msgstr ""
+
+#: templates/admin/settings.html:206
+msgid "Your business or property address"
+msgstr ""
+
+#: templates/admin/settings.html:218
+msgid "Your website URL (optional)"
+msgstr ""
+
+#: templates/admin/settings.html:226
+msgid "Brief description about your property or business"
+msgstr ""
+
+#: templates/admin/settings.html:227
+msgid "A brief description for contact pages"
+msgstr ""
+
+#: templates/admin/settings.html:235
+msgid "Custom Lines"
+msgstr ""
+
+#: templates/admin/settings.html:235
+msgid "Additional information fields for future use. These are not displayed on public pages yet."
+msgstr ""
+
+#: templates/admin/settings.html:242
+msgid "Custom Line 1"
+msgstr ""
+
+#: templates/admin/settings.html:245 templates/admin/settings.html:254
+#: templates/admin/settings.html:263
+msgid "Custom information"
+msgstr ""
+
+#: templates/admin/settings.html:246 templates/admin/settings.html:255
+#: templates/admin/settings.html:264
+msgid "Additional information field"
+msgstr ""
+
+#: templates/admin/settings.html:251
+msgid "Custom Line 2"
+msgstr ""
+
+#: templates/admin/settings.html:260
+msgid "Custom Line 3"
+msgstr ""
+
+#: templates/admin/settings.html:271
+msgid "Usage"
+msgstr ""
+
+#: templates/admin/settings.html:271
+msgid "This contact information can be used to create contact pages, display in guest communications, or integrate with other parts of your website."
+msgstr ""
+
+#: templates/admin/settings.html:280
+msgid "Sync Information"
+msgstr ""
+
+#: templates/admin/settings.html:283
+msgid "How Airbnb Sync Works"
+msgstr ""
+
+#: templates/admin/settings.html:285
+msgid "Automatic Import"
+msgstr ""
+
+#: templates/admin/settings.html:285
+msgid "When enabled, the system will fetch your Airbnb calendar regularly"
+msgstr ""
+
+#: templates/admin/settings.html:287
+msgid "Reservation Detection"
+msgstr ""
+
+#: templates/admin/settings.html:287
+msgid "New reservations are automatically converted to registration forms"
+msgstr ""
+
+#: templates/admin/settings.html:289
+msgid "Guest names and counts are extracted from calendar events"
+msgstr ""
+
+#: templates/admin/settings.html:291
+msgid "Updates"
+msgstr ""
+
+#: templates/admin/settings.html:291
+msgid "Changes to reservations (dates, guest count) are automatically reflected"
+msgstr ""
+
+#: templates/admin/settings.html:293
+msgid "Manual Sync"
+msgstr ""
+
+#: templates/admin/settings.html:293
+msgid "You can also trigger manual sync from the trips page"
+msgstr ""
+
+#: templates/admin/settings.html:297
+msgid "What Gets Synced"
+msgstr ""
+
+#: templates/admin/settings.html:299
+msgid "Reservation dates (check-in/check-out)"
+msgstr ""
+
+#: templates/admin/settings.html:300
+msgid "Guest names (when available)"
+msgstr ""
+
+#: templates/admin/settings.html:301
+msgid "Number of guests"
+msgstr ""
+
+#: templates/admin/settings.html:302
+msgid "Reservation status"
+msgstr ""
+
+#: templates/admin/settings.html:305
+msgid "What Doesn't Get Synced"
+msgstr ""
+
+#: templates/admin/settings.html:307
+msgid "Guest contact information (for privacy)"
+msgstr ""
+
+#: templates/admin/settings.html:308
+msgid "Payment information"
+msgstr ""
+
+#: templates/admin/settings.html:309
+msgid "Messages and reviews"
+msgstr ""
+
+#: templates/admin/settings.html:310
+msgid "House rules and policies"
+msgstr ""
+
+#: templates/admin/settings.html:318
+msgid "Save Settings"
+msgstr ""
+
+#: templates/admin/settings.html:334
+msgid "Passwords do not match"
+msgstr ""
+
 #: templates/admin/view_invoice.html:3 templates/admin/view_invoice.html:9
 msgid "Invoice"
 msgstr ""
 
 #: templates/admin/view_invoice.html:53
 msgid "Client Information"
-msgstr ""
-
-#: templates/admin/view_invoice.html:56
-msgid "Email"
-msgstr ""
-
-#: templates/admin/view_invoice.html:62
-msgid "Address"
 msgstr ""
 
 #: templates/admin/view_invoice.html:66

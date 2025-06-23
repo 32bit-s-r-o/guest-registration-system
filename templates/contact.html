@@ -1,15 +1,16 @@
 {% extends "base.html" %}
 
-{% block title %}Contact Us{% endblock %}
+{% block title %}{{ _('Contact Us') }}{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
     <div class="row">
         <div class="col-lg-8 mx-auto">
             <div class="text-center mb-5">
-                <h1 class="display-4"><i class="fas fa-envelope"></i> Contact {{ admin_contact.company_name if
-                    admin_contact and admin_contact.company_name else 'Guest Registration System' }}</h1>
-                <p class="lead">Get in touch with us for any questions about your stay</p>
+                <h1 class="display-4"><i class="fas fa-envelope"></i> {{ _('Contact') }} {{ admin_contact.company_name
+                    if
+                    admin_contact and admin_contact.company_name else _('Guest Registration System') }}</h1>
+                <p class="lead">{{ _('Get in touch with us for any questions about your stay') }}</p>
             </div>
 
             {% if admin_contact %}
@@ -18,19 +19,19 @@
                 <div class="col-md-6 mb-4">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-header bg-primary text-white">
-                            <h4 class="mb-0"><i class="fas fa-info-circle"></i> Contact Information</h4>
+                            <h4 class="mb-0"><i class="fas fa-info-circle"></i> {{ _('Contact Information') }}</h4>
                         </div>
                         <div class="card-body">
                             {% if admin_contact.contact_name %}
                             <div class="mb-3">
-                                <h6><i class="fas fa-user text-primary"></i> Contact Person</h6>
+                                <h6><i class="fas fa-user text-primary"></i> {{ _('Contact Person') }}</h6>
                                 <p class="mb-0">{{ admin_contact.contact_name }}</p>
                             </div>
                             {% endif %}
 
                             {% if admin_contact.contact_phone %}
                             <div class="mb-3">
-                                <h6><i class="fas fa-phone text-primary"></i> Phone</h6>
+                                <h6><i class="fas fa-phone text-primary"></i> {{ _('Phone') }}</h6>
                                 <p class="mb-0">
                                     <a href="tel:{{ admin_contact.contact_phone }}" class="text-decoration-none">
                                         {{ admin_contact.contact_phone }}
@@ -41,7 +42,7 @@
 
                             {% if admin_contact.email %}
                             <div class="mb-3">
-                                <h6><i class="fas fa-envelope text-primary"></i> Email</h6>
+                                <h6><i class="fas fa-envelope text-primary"></i> {{ _('Email') }}</h6>
                                 <p class="mb-0">
                                     <a href="mailto:{{ admin_contact.email }}" class="text-decoration-none">
                                         {{ admin_contact.email }}
@@ -52,7 +53,7 @@
 
                             {% if admin_contact.contact_website %}
                             <div class="mb-3">
-                                <h6><i class="fas fa-globe text-primary"></i> Website</h6>
+                                <h6><i class="fas fa-globe text-primary"></i> {{ _('Website') }}</h6>
                                 <p class="mb-0">
                                     <a href="{{ admin_contact.contact_website }}" target="_blank"
                                         class="text-decoration-none">
@@ -64,7 +65,7 @@
 
                             {% if admin_contact.contact_address %}
                             <div class="mb-3">
-                                <h6><i class="fas fa-map-marker-alt text-primary"></i> Address</h6>
+                                <h6><i class="fas fa-map-marker-alt text-primary"></i> {{ _('Address') }}</h6>
                                 <p class="mb-0">{{ admin_contact.contact_address | nl2br }}</p>
                             </div>
                             {% endif %}
@@ -76,34 +77,34 @@
                 <div class="col-md-6 mb-4">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-header bg-success text-white">
-                            <h4 class="mb-0"><i class="fas fa-paper-plane"></i> Send Message</h4>
+                            <h4 class="mb-0"><i class="fas fa-paper-plane"></i> {{ _('Send Message') }}</h4>
                         </div>
                         <div class="card-body">
                             <form method="POST" action="{{ url_for('contact') }}">
                                 <div class="mb-3">
-                                    <label for="name" class="form-label">Your Name</label>
+                                    <label for="name" class="form-label">{{ _('Your Name') }}</label>
                                     <input type="text" class="form-control" id="name" name="name" required>
                                 </div>
 
                                 <div class="mb-3">
-                                    <label for="email" class="form-label">Your Email</label>
+                                    <label for="email" class="form-label">{{ _('Your Email') }}</label>
                                     <input type="email" class="form-control" id="email" name="email" required>
                                 </div>
 
                                 <div class="mb-3">
-                                    <label for="subject" class="form-label">Subject</label>
+                                    <label for="subject" class="form-label">{{ _('Subject') }}</label>
                                     <input type="text" class="form-control" id="subject" name="subject" required>
                                 </div>
 
                                 <div class="mb-3">
-                                    <label for="message" class="form-label">Message</label>
+                                    <label for="message" class="form-label">{{ _('Message') }}</label>
                                     <textarea class="form-control" id="message" name="message" rows="5"
                                         required></textarea>
                                 </div>
 
                                 <div class="d-grid">
                                     <button type="submit" class="btn btn-success">
-                                        <i class="fas fa-paper-plane"></i> Send Message
+                                        <i class="fas fa-paper-plane"></i> {{ _('Send Message') }}
                                     </button>
                                 </div>
                             </form>
@@ -115,7 +116,7 @@
             {% if admin_contact.contact_description %}
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-info text-white">
-                    <h4 class="mb-0"><i class="fas fa-info"></i> About Us</h4>
+                    <h4 class="mb-0"><i class="fas fa-info"></i> {{ _('About Us') }}</h4>
                 </div>
                 <div class="card-body">
                     <p class="mb-0">{{ admin_contact.contact_description }}</p>
@@ -126,31 +127,31 @@
             {% else %}
             <div class="alert alert-info" role="alert">
                 <i class="fas fa-info-circle"></i>
-                <strong>Contact information not available.</strong> Please check back later or contact the
-                administrator.
+                <strong>{{ _('Contact information not available.') }}</strong> {{ _('Please check back later or contact
+                the administrator.') }}
             </div>
             {% endif %}
 
             <!-- Quick Links -->
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-secondary text-white">
-                    <h4 class="mb-0"><i class="fas fa-link"></i> Quick Links</h4>
+                    <h4 class="mb-0"><i class="fas fa-link"></i> {{ _('Quick Links') }}</h4>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-4 mb-2">
                             <a href="{{ url_for('index') }}" class="btn btn-outline-primary w-100">
-                                <i class="fas fa-home"></i> Home
+                                <i class="fas fa-home"></i> {{ _('Home') }}
                             </a>
                         </div>
                         <div class="col-md-4 mb-2">
                             <a href="{{ url_for('about') }}" class="btn btn-outline-info w-100">
-                                <i class="fas fa-info"></i> About
+                                <i class="fas fa-info"></i> {{ _('About') }}
                             </a>
                         </div>
                         <div class="col-md-4 mb-2">
                             <a href="{{ url_for('register_landing') }}" class="btn btn-outline-success w-100">
-                                <i class="fas fa-user-plus"></i> Register
+                                <i class="fas fa-user-plus"></i> {{ _('Register') }}
                             </a>
                         </div>
                     </div>

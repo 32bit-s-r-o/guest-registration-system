@@ -1,182 +1,194 @@
 {% extends "base.html" %}
 
-{% block title %}GDPR Privacy Policy{% endblock %}
+{% block title %}{{ _('GDPR Privacy Policy') }}{% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-lg-10 mx-auto">
         <div class="text-center mb-5">
-            <h1 class="display-4">GDPR Privacy Policy</h1>
-            <p class="lead">Your privacy and data protection rights are important to us</p>
-            <p class="text-muted">Last updated: December 2024</p>
+            <h1 class="display-4">{{ _('GDPR Privacy Policy') }}</h1>
+            <p class="lead">{{ _('Your privacy and data protection rights are important to us') }}</p>
+            <p class="text-muted">{{ _('Last updated: December 2024') }}</p>
         </div>
 
         <div class="alert alert-info" role="alert">
-            <h5><i class="fas fa-info-circle"></i> Important Notice</h5>
+            <h5><i class="fas fa-info-circle"></i> {{ _('Important Notice') }}</h5>
             <p class="mb-0">
-                This privacy policy explains how we collect, use, and protect your personal data in accordance with the
-                General Data Protection Regulation (GDPR) and other applicable data protection laws.
+                {{ _('This privacy policy explains how we collect, use, and protect your personal data in accordance
+                with the General Data Protection Regulation (GDPR) and other applicable data protection laws.') }}
             </p>
         </div>
 
         <div class="card mb-4">
             <div class="card-header">
-                <h3><i class="fas fa-user-shield"></i> Data Controller</h3>
+                <h3><i class="fas fa-user-shield"></i> {{ _('Data Controller') }}</h3>
             </div>
             <div class="card-body">
-                <p><strong>Company:</strong> {{ (admin_contact.company_name if admin_contact and
-                    admin_contact.company_name else 'Guest Registration System') }}</p>
+                <p><strong>{{ _('Company') }}:</strong> {{ (admin_contact.company_name if admin_contact and
+                    admin_contact.company_name else _('Guest Registration System')) }}</p>
                 {% if admin_contact and (admin_contact.contact_address or admin_contact.email or
                 admin_contact.contact_phone) %}
                 {% if admin_contact.contact_address %}
-                <p><strong>Address:</strong> <span>{{ admin_contact.contact_address | nl2br }}</span></p>
+                <p><strong>{{ _('Address') }}:</strong> <span>{{ admin_contact.contact_address | nl2br }}</span></p>
                 {% endif %}
                 {% if admin_contact.email %}
-                <p><strong>Email:</strong> <a href="mailto:{{ admin_contact.email }}">{{ admin_contact.email }}</a></p>
+                <p><strong>{{ _('Email') }}:</strong> <a href="mailto:{{ admin_contact.email }}">{{ admin_contact.email
+                        }}</a></p>
                 {% endif %}
                 {% if admin_contact.contact_phone %}
-                <p><strong>Phone:</strong> <a href="tel:{{ admin_contact.contact_phone }}">{{
+                <p><strong>{{ _('Phone') }}:</strong> <a href="tel:{{ admin_contact.contact_phone }}">{{
                         admin_contact.contact_phone }}</a></p>
                 {% endif %}
                 {% else %}
-                <p><strong>Address:</strong> [Your Company Address]</p>
-                <p><strong>Email:</strong> [Your Contact Email]</p>
-                <p><strong>Phone:</strong> [Your Contact Phone]</p>
+                <p><strong>{{ _('Address') }}:</strong> [{{ _('Your Company Address') }}]</p>
+                <p><strong>{{ _('Email') }}:</strong> [{{ _('Your Contact Email') }}]</p>
+                <p><strong>{{ _('Phone') }}:</strong> [{{ _('Your Contact Phone') }}]</p>
                 {% endif %}
             </div>
         </div>
 
         <div class="card mb-4">
             <div class="card-header">
-                <h3><i class="fas fa-database"></i> Personal Data We Collect</h3>
+                <h3><i class="fas fa-database"></i> {{ _('Personal Data We Collect') }}</h3>
             </div>
             <div class="card-body">
-                <h5>Information you provide:</h5>
+                <h5>{{ _('Information you provide:') }}</h5>
                 <ul>
-                    <li><strong>Contact Information:</strong> Email address for communication</li>
-                    <li><strong>Personal Details:</strong> First name, last name</li>
-                    <li><strong>Identification:</strong> Document type, document number</li>
-                    <li><strong>Document Images:</strong> Photos of identification documents (temporarily stored)</li>
-                    <li><strong>Consent:</strong> GDPR consent confirmation</li>
+                    <li><strong>{{ _('Contact Information') }}:</strong> {{ _('Email address for communication') }}</li>
+                    <li><strong>{{ _('Personal Details') }}:</strong> {{ _('First name, last name') }}</li>
+                    <li><strong>{{ _('Identification') }}:</strong> {{ _('Document type, document number') }}</li>
+                    <li><strong>{{ _('Document Images') }}:</strong> {{ _('Photos of identification documents
+                        (temporarily stored)') }}</li>
+                    <li><strong>{{ _('Consent') }}:</strong> {{ _('GDPR consent confirmation') }}</li>
                 </ul>
 
-                <h5>Automatically collected information:</h5>
+                <h5>{{ _('Automatically collected information:') }}</h5>
                 <ul>
-                    <li><strong>Technical Data:</strong> IP address, browser type, device information</li>
-                    <li><strong>Usage Data:</strong> Pages visited, time spent on site</li>
-                    <li><strong>Cookies:</strong> Session cookies for functionality</li>
+                    <li><strong>{{ _('Technical Data') }}:</strong> {{ _('IP address, browser type, device information')
+                        }}</li>
+                    <li><strong>{{ _('Usage Data') }}:</strong> {{ _('Pages visited, time spent on site') }}</li>
+                    <li><strong>{{ _('Cookies') }}:</strong> {{ _('Session cookies for functionality') }}</li>
                 </ul>
             </div>
         </div>
 
         <div class="card mb-4">
             <div class="card-header">
-                <h3><i class="fas fa-cogs"></i> How We Use Your Data</h3>
+                <h3><i class="fas fa-cogs"></i> {{ _('How We Use Your Data') }}</h3>
             </div>
             <div class="card-body">
-                <h5>Legal basis for processing:</h5>
+                <h5>{{ _('Legal basis for processing:') }}</h5>
                 <ul>
-                    <li><strong>Consent:</strong> You have given explicit consent for data processing</li>
-                    <li><strong>Legitimate Interest:</strong> To provide guest registration services</li>
-                    <li><strong>Contract:</strong> To fulfill registration obligations</li>
+                    <li><strong>{{ _('Consent') }}:</strong> {{ _('You have given explicit consent for data processing')
+                        }}</li>
+                    <li><strong>{{ _('Legitimate Interest') }}:</strong> {{ _('To provide guest registration services')
+                        }}</li>
+                    <li><strong>{{ _('Contract') }}:</strong> {{ _('To fulfill registration obligations') }}</li>
                 </ul>
 
-                <h5>Purposes of processing:</h5>
+                <h5>{{ _('Purposes of processing:') }}</h5>
                 <ul>
-                    <li>Process guest registrations for trips</li>
-                    <li>Verify guest identities and documents</li>
-                    <li>Communicate registration status and updates</li>
-                    <li>Ensure compliance with travel regulations</li>
-                    <li>Improve our services and user experience</li>
+                    <li>{{ _('Process guest registrations for trips') }}</li>
+                    <li>{{ _('Verify guest identities and documents') }}</li>
+                    <li>{{ _('Communicate registration status and updates') }}</li>
+                    <li>{{ _('Ensure compliance with travel regulations') }}</li>
+                    <li>{{ _('Improve our services and user experience') }}</li>
                 </ul>
             </div>
         </div>
 
         <div class="card mb-4">
             <div class="card-header">
-                <h3><i class="fas fa-share-alt"></i> Data Sharing and Transfers</h3>
+                <h3><i class="fas fa-share-alt"></i> {{ _('Data Sharing and Transfers') }}</h3>
             </div>
             <div class="card-body">
-                <h5>We may share your data with:</h5>
+                <h5>{{ _('We may share your data with:') }}</h5>
                 <ul>
-                    <li><strong>Trip Organizers:</strong> Only the specific admin managing your trip</li>
-                    <li><strong>Service Providers:</strong> Email services, hosting providers (under strict contracts)
-                    </li>
-                    <li><strong>Legal Authorities:</strong> When required by law or to protect rights</li>
+                    <li><strong>{{ _('Trip Organizers') }}:</strong> {{ _('Only the specific admin managing your trip')
+                        }}</li>
+                    <li><strong>{{ _('Service Providers') }}:</strong> {{ _('Email services, hosting providers (under
+                        strict contracts)') }}</li>
+                    <li><strong>{{ _('Legal Authorities') }}:</strong> {{ _('When required by law or to protect rights')
+                        }}</li>
                 </ul>
 
-                <h5>Data transfers:</h5>
+                <h5>{{ _('Data transfers:') }}</h5>
                 <ul>
-                    <li>All data is stored within the European Economic Area (EEA)</li>
-                    <li>Any international transfers comply with GDPR requirements</li>
-                    <li>We use appropriate safeguards for data protection</li>
+                    <li>{{ _('All data is stored within the European Economic Area (EEA)') }}</li>
+                    <li>{{ _('Any international transfers comply with GDPR requirements') }}</li>
+                    <li>{{ _('We use appropriate safeguards for data protection') }}</li>
                 </ul>
             </div>
         </div>
 
         <div class="card mb-4">
             <div class="card-header">
-                <h3><i class="fas fa-clock"></i> Data Retention</h3>
+                <h3><i class="fas fa-clock"></i> {{ _('Data Retention') }}</h3>
             </div>
             <div class="card-body">
-                <h5>Retention periods:</h5>
+                <h5>{{ _('Retention periods:') }}</h5>
                 <ul>
-                    <li><strong>Document Images:</strong> Automatically deleted immediately after approval</li>
-                    <li><strong>Registration Data:</strong> Retained for 2 years after trip completion</li>
-                    <li><strong>Contact Information:</strong> Retained for 2 years for communication purposes</li>
-                    <li><strong>Technical Logs:</strong> Retained for 90 days for security purposes</li>
+                    <li><strong>{{ _('Document Images') }}:</strong> {{ _('Automatically deleted immediately after
+                        approval') }}</li>
+                    <li><strong>{{ _('Registration Data') }}:</strong> {{ _('Retained for 2 years after trip
+                        completion') }}</li>
+                    <li><strong>{{ _('Contact Information') }}:</strong> {{ _('Retained for 2 years for communication
+                        purposes') }}</li>
+                    <li><strong>{{ _('Technical Logs') }}:</strong> {{ _('Retained for 90 days for security purposes')
+                        }}</li>
                 </ul>
 
-                <h5>Deletion process:</h5>
+                <h5>{{ _('Deletion process:') }}</h5>
                 <ul>
-                    <li>Automatic deletion of documents after approval</li>
-                    <li>Regular review and deletion of expired data</li>
-                    <li>Secure deletion methods to prevent recovery</li>
+                    <li>{{ _('Automatic deletion of documents after approval') }}</li>
+                    <li>{{ _('Regular review and deletion of expired data') }}</li>
+                    <li>{{ _('Secure deletion methods to prevent recovery') }}</li>
                 </ul>
             </div>
         </div>
 
         <div class="card mb-4">
             <div class="card-header">
-                <h3><i class="fas fa-user-check"></i> Your Rights</h3>
+                <h3><i class="fas fa-user-check"></i> {{ _('Your Rights') }}</h3>
             </div>
             <div class="card-body">
-                <p>Under GDPR, you have the following rights:</p>
+                <p>{{ _('Under GDPR, you have the following rights:') }}</p>
                 <div class="row">
                     <div class="col-md-6">
-                        <h5><i class="fas fa-eye text-primary"></i> Right to Access</h5>
-                        <p>Request a copy of your personal data and information about how it's processed.</p>
+                        <h5><i class="fas fa-eye text-primary"></i> {{ _('Right to Access') }}</h5>
+                        <p>{{ _('Request a copy of your personal data and information about how it\'s processed.') }}
+                        </p>
 
-                        <h5><i class="fas fa-edit text-success"></i> Right to Rectification</h5>
-                        <p>Request correction of inaccurate or incomplete personal data.</p>
+                        <h5><i class="fas fa-edit text-success"></i> {{ _('Right to Rectification') }}</h5>
+                        <p>{{ _('Request correction of inaccurate or incomplete personal data.') }}</p>
 
-                        <h5><i class="fas fa-trash text-danger"></i> Right to Erasure</h5>
-                        <p>Request deletion of your personal data (subject to legal requirements).</p>
+                        <h5><i class="fas fa-trash text-danger"></i> {{ _('Right to Erasure') }}</h5>
+                        <p>{{ _('Request deletion of your personal data (subject to legal requirements).') }}</p>
                     </div>
                     <div class="col-md-6">
-                        <h5><i class="fas fa-pause text-warning"></i> Right to Restrict Processing</h5>
-                        <p>Request limitation of data processing in certain circumstances.</p>
+                        <h5><i class="fas fa-pause text-warning"></i> {{ _('Right to Restrict Processing') }}</h5>
+                        <p>{{ _('Request limitation of data processing in certain circumstances.') }}</p>
 
-                        <h5><i class="fas fa-download text-info"></i> Right to Data Portability</h5>
-                        <p>Receive your data in a structured, machine-readable format.</p>
+                        <h5><i class="fas fa-download text-info"></i> {{ _('Right to Data Portability') }}</h5>
+                        <p>{{ _('Receive your data in a structured, machine-readable format.') }}</p>
 
-                        <h5><i class="fas fa-ban text-secondary"></i> Right to Object</h5>
-                        <p>Object to processing based on legitimate interests.</p>
+                        <h5><i class="fas fa-ban text-secondary"></i> {{ _('Right to Object') }}</h5>
+                        <p>{{ _('Object to processing based on legitimate interests.') }}</p>
                     </div>
                 </div>
 
                 <div class="alert alert-warning mt-3" role="alert">
-                    <h6><i class="fas fa-exclamation-triangle"></i> How to Exercise Your Rights</h6>
+                    <h6><i class="fas fa-exclamation-triangle"></i> {{ _('How to Exercise Your Rights') }}</h6>
                     <p class="mb-0">
-                        To exercise any of these rights, please contact us at
+                        {{ _('To exercise any of these rights, please contact us at') }}
                         <strong>
                             {% if admin_contact and admin_contact.email %}
                             <a href="mailto:{{ admin_contact.email }}">{{ admin_contact.email }}</a>
                             {% else %}
-                            [Your Contact Email]
+                            [{{ _('Your Contact Email') }}]
                             {% endif %}
                         </strong>
-                        with your request. We will respond within 30 days.
+                        {{ _('with your request. We will respond within 30 days.') }}
                     </p>
                 </div>
             </div>
@@ -184,101 +196,122 @@
 
         <div class="card mb-4">
             <div class="card-header">
-                <h3><i class="fas fa-shield-alt"></i> Data Security</h3>
+                <h3><i class="fas fa-shield-alt"></i> {{ _('Data Security') }}</h3>
             </div>
             <div class="card-body">
-                <h5>Security measures:</h5>
+                <h5>{{ _('Security measures:') }}</h5>
                 <ul>
-                    <li>Encryption of data in transit and at rest</li>
-                    <li>Secure file uploads with virus scanning</li>
-                    <li>Regular security audits and updates</li>
-                    <li>Access controls and authentication</li>
-                    <li>Secure deletion of sensitive documents</li>
+                    <li>{{ _('Encryption of data in transit and at rest') }}</li>
+                    <li>{{ _('Secure file uploads with virus scanning') }}</li>
+                    <li>{{ _('Regular security audits and updates') }}</li>
+                    <li>{{ _('Access controls and authentication') }}</li>
+                    <li>{{ _('Secure deletion of sensitive documents') }}</li>
                 </ul>
 
-                <h5>Incident response:</h5>
+                <h5>{{ _('Incident response:') }}</h5>
                 <ul>
-                    <li>24/7 monitoring for security incidents</li>
-                    <li>Immediate notification of data breaches</li>
-                    <li>Compliance with breach notification requirements</li>
+                    <li>{{ _('24/7 monitoring for security incidents') }}</li>
+                    <li>{{ _('Immediate response to data breaches') }}</li>
+                    <li>{{ _('Notification to authorities within 72 hours') }}</li>
+                    <li>{{ _('Communication with affected individuals') }}</li>
                 </ul>
             </div>
         </div>
 
         <div class="card mb-4">
             <div class="card-header">
-                <h3><i class="fas fa-cookie-bite"></i> Cookies and Tracking</h3>
+                <h3><i class="fas fa-cookie-bite"></i> {{ _('Cookies and Tracking') }}</h3>
             </div>
             <div class="card-body">
-                <h5>Types of cookies we use:</h5>
+                <h5>{{ _('Types of cookies we use:') }}</h5>
                 <ul>
-                    <li><strong>Essential Cookies:</strong> Required for basic functionality</li>
-                    <li><strong>Session Cookies:</strong> Maintain your session during registration</li>
-                    <li><strong>Analytics Cookies:</strong> Help improve our service (with consent)</li>
+                    <li><strong>{{ _('Essential Cookies') }}:</strong> {{ _('Required for basic functionality') }}</li>
+                    <li><strong>{{ _('Session Cookies') }}:</strong> {{ _('Maintain your login session') }}</li>
+                    <li><strong>{{ _('Analytics Cookies') }}:</strong> {{ _('Help us improve our service (optional)') }}
+                    </li>
                 </ul>
 
-                <p>You can control cookie settings through your browser preferences.</p>
+                <h5>{{ _('Cookie management:') }}</h5>
+                <ul>
+                    <li>{{ _('You can control cookies through your browser settings') }}</li>
+                    <li>{{ _('Essential cookies cannot be disabled') }}</li>
+                    <li>{{ _('Analytics cookies are optional and can be refused') }}</li>
+                </ul>
             </div>
         </div>
 
         <div class="card mb-4">
             <div class="card-header">
-                <h3><i class="fas fa-envelope"></i> Contact Information</h3>
+                <h3><i class="fas fa-phone"></i> {{ _('Contact Information') }}</h3>
             </div>
             <div class="card-body">
-                <p>For any questions about this privacy policy or to exercise your rights, please contact us:</p>
+                <p>{{ _('If you have any questions about this privacy policy or our data practices, please contact us:')
+                    }}</p>
 
-                {% if admin_contact and (admin_contact.email or admin_contact.contact_phone) %}
                 <div class="row">
                     <div class="col-md-6">
-                        <h5>Data Protection Contact</h5>
-                        {% if admin_contact.email %}
-                        <p><i class="fas fa-envelope"></i> <a href="mailto:{{ admin_contact.email }}">{{
-                                admin_contact.email }}</a></p>
-                        {% endif %}
-                        {% if admin_contact.contact_phone %}
-                        <p><i class="fas fa-phone"></i> <a href="tel:{{ admin_contact.contact_phone }}">{{
-                                admin_contact.contact_phone }}</a></p>
-                        {% endif %}
-                        <p><i class="fas fa-clock"></i> Response within 30 days</p>
+                        <h6><i class="fas fa-envelope text-primary"></i> {{ _('Email') }}</h6>
+                        <p>
+                            {% if admin_contact and admin_contact.email %}
+                            <a href="mailto:{{ admin_contact.email }}">{{ admin_contact.email }}</a>
+                            {% else %}
+                            [{{ _('Your Contact Email') }}]
+                            {% endif %}
+                        </p>
                     </div>
                     <div class="col-md-6">
-                        <h5>Company Information</h5>
-                        <p><strong>{{ admin_contact.company_name if admin_contact.company_name else 'Guest Registration
-                                System' }}</strong></p>
-                        {% if admin_contact.contact_address %}
-                        <p><i class="fas fa-map-marker-alt"></i> {{ admin_contact.contact_address | nl2br }}</p>
-                        {% endif %}
+                        <h6><i class="fas fa-phone text-primary"></i> {{ _('Phone') }}</h6>
+                        <p>
+                            {% if admin_contact and admin_contact.contact_phone %}
+                            <a href="tel:{{ admin_contact.contact_phone }}">{{ admin_contact.contact_phone }}</a>
+                            {% else %}
+                            [{{ _('Your Contact Phone') }}]
+                            {% endif %}
+                        </p>
                     </div>
                 </div>
-                {% else %}
-                <div class="row">
-                    <div class="col-md-6">
-                        <h5>Data Protection Officer</h5>
-                        <p><i class="fas fa-envelope"></i> dpo@guestregistration.com</p>
-                        <p><i class="fas fa-phone"></i> +1 (555) 123-4567</p>
-                    </div>
-                    <div class="col-md-6">
-                        <h5>General Privacy Inquiries</h5>
-                        <p><i class="fas fa-envelope"></i> privacy@guestregistration.com</p>
-                        <p><i class="fas fa-clock"></i> Response within 30 days</p>
-                    </div>
-                </div>
-                {% endif %}
 
                 <div class="alert alert-info mt-3" role="alert">
-                    <h6><i class="fas fa-info-circle"></i> Supervisory Authority</h6>
+                    <h6><i class="fas fa-info-circle"></i> {{ _('Data Protection Officer') }}</h6>
                     <p class="mb-0">
-                        You have the right to lodge a complaint with your local data protection supervisory authority
-                        if you believe your rights have been violated.
+                        {{ _('For complex data protection inquiries, you may also contact our Data Protection Officer at
+                        the same contact details above.') }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3><i class="fas fa-calendar-alt"></i> {{ _('Changes to This Policy') }}</h3>
+            </div>
+            <div class="card-body">
+                <p>{{ _('We may update this privacy policy from time to time to reflect changes in our practices or
+                    applicable laws.') }}</p>
+
+                <h5>{{ _('How we notify you of changes:') }}</h5>
+                <ul>
+                    <li>{{ _('We will post the updated policy on our website') }}</li>
+                    <li>{{ _('We will notify you by email for significant changes') }}</li>
+                    <li>{{ _('The effective date will be clearly indicated') }}</li>
+                </ul>
+
+                <div class="alert alert-warning" role="alert">
+                    <h6><i class="fas fa-exclamation-triangle"></i> {{ _('Your Rights') }}</h6>
+                    <p class="mb-0">
+                        {{ _('If you disagree with any changes to this policy, you have the right to request deletion of
+                        your data and discontinue use of our services.') }}
                     </p>
                 </div>
             </div>
         </div>
 
         <div class="text-center">
-            <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg">
-                <i class="fas fa-home"></i> Return to Home
+            <a href="{{ url_for('contact') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-envelope"></i> {{ _('Contact Us') }}
+            </a>
+            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-lg ms-2">
+                <i class="fas fa-home"></i> {{ _('Back to Home') }}
             </a>
         </div>
     </div>

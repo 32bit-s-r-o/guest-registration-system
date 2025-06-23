@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 
-{% block title %}Admin Settings{% endblock %}
+{% block title %}{{ _('Admin Settings') }}{% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1><i class="fas fa-cog"></i> Admin Settings</h1>
+            <h1><i class="fas fa-cog"></i> {{ _('Admin Settings') }}</h1>
             <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Back to Dashboard
+                <i class="fas fa-arrow-left"></i> {{ _('Back to Dashboard') }}
             </a>
         </div>
     </div>
@@ -20,21 +20,21 @@
             <!-- Profile Settings -->
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0"><i class="fas fa-user"></i> Profile Settings</h4>
+                    <h4 class="mb-0"><i class="fas fa-user"></i> {{ _('Profile Settings') }}</h4>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="username" class="form-label">Username</label>
+                                <label for="username" class="form-label">{{ _('Username') }}</label>
                                 <input type="text" class="form-control" id="username"
                                     value="{{ current_user.username }}" readonly>
-                                <div class="form-text">Username cannot be changed</div>
+                                <div class="form-text">{{ _('Username cannot be changed') }}</div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="email" class="form-label">Email Address</label>
+                                <label for="email" class="form-label">{{ _('Email Address') }}</label>
                                 <input type="email" class="form-control" id="email" name="email"
                                     value="{{ current_user.email }}" required>
                             </div>
@@ -44,23 +44,23 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="new_password" class="form-label">New Password</label>
+                                <label for="new_password" class="form-label">{{ _('New Password') }}</label>
                                 <input type="password" class="form-control" id="new_password" name="new_password"
                                     minlength="6">
-                                <div class="form-text">Leave blank to keep current password</div>
+                                <div class="form-text">{{ _('Leave blank to keep current password') }}</div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="confirm_password" class="form-label">Confirm New Password</label>
+                                <label for="confirm_password" class="form-label">{{ _('Confirm New Password') }}</label>
                                 <input type="password" class="form-control" id="confirm_password" minlength="6">
-                                <div class="form-text">Must match new password</div>
+                                <div class="form-text">{{ _('Must match new password') }}</div>
                             </div>
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label for="created_at" class="form-label">Account Created</label>
+                        <label for="created_at" class="form-label">{{ _('Account Created') }}</label>
                         <input type="text" class="form-control" id="created_at"
                             value="{{ current_user.created_at.strftime('%Y-%m-%d %H:%M:%S') }}" readonly>
                     </div>
@@ -70,33 +70,34 @@
             <!-- Airbnb Integration -->
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-success text-white">
-                    <h4 class="mb-0"><i class="fab fa-airbnb"></i> Airbnb Calendar Integration</h4>
+                    <h4 class="mb-0"><i class="fab fa-airbnb"></i> {{ _('Airbnb Calendar Integration') }}</h4>
                 </div>
                 <div class="card-body">
                     <div class="alert alert-info" role="alert">
                         <i class="fas fa-info-circle"></i>
-                        <strong>Airbnb Calendar Sync:</strong> Automatically import reservations from your Airbnb
-                        calendar and create registration forms.
+                        <strong>{{ _('Airbnb Calendar Sync') }}:</strong> {{ _('Automatically import reservations from
+                        your Airbnb calendar and create registration forms.') }}
                     </div>
 
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="airbnb_listing_id" class="form-label">Airbnb Listing ID</label>
+                                <label for="airbnb_listing_id" class="form-label">{{ _('Airbnb Listing ID') }}</label>
                                 <input type="text" class="form-control" id="airbnb_listing_id" name="airbnb_listing_id"
                                     value="{{ current_user.airbnb_listing_id or '' }}" placeholder="e.g., 12345678">
-                                <div class="form-text">Your Airbnb listing ID (found in your listing URL)</div>
+                                <div class="form-text">{{ _('Your Airbnb listing ID (found in your listing URL)') }}
+                                </div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="airbnb_sync_enabled" class="form-label">Enable Sync</label>
+                                <label for="airbnb_sync_enabled" class="form-label">{{ _('Enable Sync') }}</label>
                                 <div class="form-check form-switch">
                                     <input class="form-check-input" type="checkbox" id="airbnb_sync_enabled"
                                         name="airbnb_sync_enabled" {% if current_user.airbnb_sync_enabled %}checked{%
                                         endif %}>
                                     <label class="form-check-label" for="airbnb_sync_enabled">
-                                        Enable automatic Airbnb calendar sync
+                                        {{ _('Enable automatic Airbnb calendar sync') }}
                                     </label>
                                 </div>
                             </div>
@@ -104,24 +105,24 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="airbnb_calendar_url" class="form-label">Airbnb Calendar URL</label>
+                        <label for="airbnb_calendar_url" class="form-label">{{ _('Airbnb Calendar URL') }}</label>
                         <input type="url" class="form-control" id="airbnb_calendar_url" name="airbnb_calendar_url"
                             value="{{ current_user.airbnb_calendar_url or '' }}"
                             placeholder="https://www.airbnb.com/calendar/ical/YOUR_LISTING_ID.ics?s=YOUR_SECRET_KEY">
                         <div class="form-text">
-                            <strong>How to get your calendar URL:</strong>
+                            <strong>{{ _('How to get your calendar URL:') }}</strong>
                             <ol class="mt-2">
-                                <li>Go to your Airbnb listing</li>
-                                <li>Click "Calendar" tab</li>
-                                <li>Click "Export Calendar"</li>
-                                <li>Copy the iCal URL</li>
+                                <li>{{ _('Go to your Airbnb listing') }}</li>
+                                <li>{{ _('Click "Calendar" tab') }}</li>
+                                <li>{{ _('Click "Export Calendar"') }}</li>
+                                <li>{{ _('Copy the iCal URL') }}</li>
                             </ol>
                         </div>
                     </div>
 
                     {% if current_user.airbnb_last_sync %}
                     <div class="mb-3">
-                        <label class="form-label">Last Sync</label>
+                        <label class="form-label">{{ _('Last Sync') }}</label>
                         <input type="text" class="form-control"
                             value="{{ current_user.airbnb_last_sync.strftime('%Y-%m-%d %H:%M:%S') }}" readonly>
                     </div>
@@ -129,8 +130,8 @@
 
                     <div class="alert alert-warning" role="alert">
                         <i class="fas fa-exclamation-triangle"></i>
-                        <strong>Important:</strong> The calendar URL contains sensitive information. Keep it secure and
-                        don't share it publicly.
+                        <strong>{{ _('Important') }}:</strong> {{ _('The calendar URL contains sensitive information.
+                        Keep it secure and don\'t share it publicly.') }}
                     </div>
                 </div>
             </div>
@@ -138,31 +139,32 @@
             <!-- Contact Information -->
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-warning text-dark">
-                    <h4 class="mb-0"><i class="fas fa-address-book"></i> Contact Information</h4>
+                    <h4 class="mb-0"><i class="fas fa-address-book"></i> {{ _('Contact Information') }}</h4>
                 </div>
                 <div class="card-body">
                     <div class="alert alert-info" role="alert">
                         <i class="fas fa-info-circle"></i>
-                        <strong>Contact Information:</strong> This information can be displayed on contact pages or used
-                        in communications with guests.
+                        <strong>{{ _('Contact Information') }}:</strong> {{ _('This information can be displayed on
+                        contact pages or used in communications with guests.') }}
                     </div>
 
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="company_name" class="form-label">Company Name</label>
+                                <label for="company_name" class="form-label">{{ _('Company Name') }}</label>
                                 <input type="text" class="form-control" id="company_name" name="company_name"
                                     value="{{ current_user.company_name or '' }}"
                                     placeholder="e.g., Guest Registration System">
-                                <div class="form-text">The company or organization name shown on public pages</div>
+                                <div class="form-text">{{ _('The company or organization name shown on public pages') }}
+                                </div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="contact_name" class="form-label">Contact Name</label>
+                                <label for="contact_name" class="form-label">{{ _('Contact Name') }}</label>
                                 <input type="text" class="form-control" id="contact_name" name="contact_name"
                                     value="{{ current_user.contact_name or '' }}" placeholder="e.g., John Smith">
-                                <div class="form-text">The name to display for contact purposes</div>
+                                <div class="form-text">{{ _('The name to display for contact purposes') }}</div>
                             </div>
                         </div>
                     </div>
@@ -170,18 +172,18 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="company_ico" class="form-label">Company ICO</label>
+                                <label for="company_ico" class="form-label">{{ _('Company ICO') }}</label>
                                 <input type="text" class="form-control" id="company_ico" name="company_ico"
                                     value="{{ current_user.company_ico or '' }}" placeholder="e.g., 12345678">
-                                <div class="form-text">Company identification number (optional)</div>
+                                <div class="form-text">{{ _('Company identification number (optional)') }}</div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="company_vat" class="form-label">VAT Number</label>
+                                <label for="company_vat" class="form-label">{{ _('VAT Number') }}</label>
                                 <input type="text" class="form-control" id="company_vat" name="company_vat"
                                     value="{{ current_user.company_vat or '' }}" placeholder="e.g., CZ12345678">
-                                <div class="form-text">VAT identification number (optional)</div>
+                                <div class="form-text">{{ _('VAT identification number (optional)') }}</div>
                             </div>
                         </div>
                     </div>
@@ -189,19 +191,19 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="contact_phone" class="form-label">Phone Number</label>
+                                <label for="contact_phone" class="form-label">{{ _('Phone Number') }}</label>
                                 <input type="tel" class="form-control" id="contact_phone" name="contact_phone"
                                     value="{{ current_user.contact_phone or '' }}"
                                     placeholder="e.g., +1 (555) 123-4567">
-                                <div class="form-text">Contact phone number for guests</div>
+                                <div class="form-text">{{ _('Contact phone number for guests') }}</div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="contact_address" class="form-label">Address</label>
+                                <label for="contact_address" class="form-label">{{ _('Address') }}</label>
                                 <textarea class="form-control" id="contact_address" name="contact_address" rows="3"
-                                    placeholder="Enter your full address">{{ current_user.contact_address or '' }}</textarea>
-                                <div class="form-text">Your business or property address</div>
+                                    placeholder="{{ _('Enter your full address') }}">{{ current_user.contact_address or '' }}</textarea>
+                                <div class="form-text">{{ _('Your business or property address') }}</div>
                             </div>
                         </div>
                     </div>
@@ -209,20 +211,20 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="contact_website" class="form-label">Website</label>
+                                <label for="contact_website" class="form-label">{{ _('Website') }}</label>
                                 <input type="url" class="form-control" id="contact_website" name="contact_website"
                                     value="{{ current_user.contact_website or '' }}"
                                     placeholder="https://yourwebsite.com">
-                                <div class="form-text">Your website URL (optional)</div>
+                                <div class="form-text">{{ _('Your website URL (optional)') }}</div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="contact_description" class="form-label">Description</label>
+                                <label for="contact_description" class="form-label">{{ _('Description') }}</label>
                                 <textarea class="form-control" id="contact_description" name="contact_description"
                                     rows="3"
-                                    placeholder="Brief description about your property or business">{{ current_user.contact_description or '' }}</textarea>
-                                <div class="form-text">A brief description for contact pages</div>
+                                    placeholder="{{ _('Brief description about your property or business') }}">{{ current_user.contact_description or '' }}</textarea>
+                                <div class="form-text">{{ _('A brief description for contact pages') }}</div>
                             </div>
                         </div>
                     </div>
@@ -230,41 +232,44 @@
                     <!-- Custom Lines Section -->
                     <div class="alert alert-info" role="alert">
                         <i class="fas fa-info-circle"></i>
-                        <strong>Custom Lines:</strong> Additional information fields for future use. These are not
-                        displayed on public pages yet.
+                        <strong>{{ _('Custom Lines') }}:</strong> {{ _('Additional information fields for future use.
+                        These are not displayed on public pages yet.') }}
                     </div>
 
                     <div class="row">
                         <div class="col-md-4">
                             <div class="mb-3">
-                                <label for="custom_line_1" class="form-label">Custom Line 1</label>
+                                <label for="custom_line_1" class="form-label">{{ _('Custom Line 1') }}</label>
                                 <input type="text" class="form-control" id="custom_line_1" name="custom_line_1"
-                                    value="{{ current_user.custom_line_1 or '' }}" placeholder="Custom information">
-                                <div class="form-text">Additional information field</div>
+                                    value="{{ current_user.custom_line_1 or '' }}"
+                                    placeholder="{{ _('Custom information') }}">
+                                <div class="form-text">{{ _('Additional information field') }}</div>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="mb-3">
-                                <label for="custom_line_2" class="form-label">Custom Line 2</label>
+                                <label for="custom_line_2" class="form-label">{{ _('Custom Line 2') }}</label>
                                 <input type="text" class="form-control" id="custom_line_2" name="custom_line_2"
-                                    value="{{ current_user.custom_line_2 or '' }}" placeholder="Custom information">
-                                <div class="form-text">Additional information field</div>
+                                    value="{{ current_user.custom_line_2 or '' }}"
+                                    placeholder="{{ _('Custom information') }}">
+                                <div class="form-text">{{ _('Additional information field') }}</div>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="mb-3">
-                                <label for="custom_line_3" class="form-label">Custom Line 3</label>
+                                <label for="custom_line_3" class="form-label">{{ _('Custom Line 3') }}</label>
                                 <input type="text" class="form-control" id="custom_line_3" name="custom_line_3"
-                                    value="{{ current_user.custom_line_3 or '' }}" placeholder="Custom information">
-                                <div class="form-text">Additional information field</div>
+                                    value="{{ current_user.custom_line_3 or '' }}"
+                                    placeholder="{{ _('Custom information') }}">
+                                <div class="form-text">{{ _('Additional information field') }}</div>
                             </div>
                         </div>
                     </div>
 
                     <div class="alert alert-success" role="alert">
                         <i class="fas fa-check-circle"></i>
-                        <strong>Usage:</strong> This contact information can be used to create contact pages, display in
-                        guest communications, or integrate with other parts of your website.
+                        <strong>{{ _('Usage') }}:</strong> {{ _('This contact information can be used to create contact
+                        pages, display in guest communications, or integrate with other parts of your website.') }}
                     </div>
                 </div>
             </div>
@@ -272,36 +277,37 @@
             <!-- Sync Information -->
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-info text-white">
-                    <h4 class="mb-0"><i class="fas fa-sync"></i> Sync Information</h4>
+                    <h4 class="mb-0"><i class="fas fa-sync"></i> {{ _('Sync Information') }}</h4>
                 </div>
                 <div class="card-body">
-                    <h5>How Airbnb Sync Works</h5>
+                    <h5>{{ _('How Airbnb Sync Works') }}</h5>
                     <ul>
-                        <li><strong>Automatic Import:</strong> When enabled, the system will fetch your Airbnb calendar
-                            regularly</li>
-                        <li><strong>Reservation Detection:</strong> New reservations are automatically converted to
-                            registration forms</li>
-                        <li><strong>Guest Information:</strong> Guest names and counts are extracted from calendar
-                            events</li>
-                        <li><strong>Updates:</strong> Changes to reservations (dates, guest count) are automatically
-                            reflected</li>
-                        <li><strong>Manual Sync:</strong> You can also trigger manual sync from the trips page</li>
+                        <li><strong>{{ _('Automatic Import') }}:</strong> {{ _('When enabled, the system will fetch your
+                            Airbnb calendar regularly') }}</li>
+                        <li><strong>{{ _('Reservation Detection') }}:</strong> {{ _('New reservations are automatically
+                            converted to registration forms') }}</li>
+                        <li><strong>{{ _('Guest Information') }}:</strong> {{ _('Guest names and counts are extracted
+                            from calendar events') }}</li>
+                        <li><strong>{{ _('Updates') }}:</strong> {{ _('Changes to reservations (dates, guest count) are
+                            automatically reflected') }}</li>
+                        <li><strong>{{ _('Manual Sync') }}:</strong> {{ _('You can also trigger manual sync from the
+                            trips page') }}</li>
                     </ul>
 
-                    <h5>What Gets Synced</h5>
+                    <h5>{{ _('What Gets Synced') }}</h5>
                     <ul>
-                        <li>Reservation dates (check-in/check-out)</li>
-                        <li>Guest names (when available)</li>
-                        <li>Number of guests</li>
-                        <li>Reservation status</li>
+                        <li>{{ _('Reservation dates (check-in/check-out)') }}</li>
+                        <li>{{ _('Guest names (when available)') }}</li>
+                        <li>{{ _('Number of guests') }}</li>
+                        <li>{{ _('Reservation status') }}</li>
                     </ul>
 
-                    <h5>What Doesn't Get Synced</h5>
+                    <h5>{{ _('What Doesn\'t Get Synced') }}</h5>
                     <ul>
-                        <li>Guest contact information (for privacy)</li>
-                        <li>Payment information</li>
-                        <li>Messages and reviews</li>
-                        <li>House rules and policies</li>
+                        <li>{{ _('Guest contact information (for privacy)') }}</li>
+                        <li>{{ _('Payment information') }}</li>
+                        <li>{{ _('Messages and reviews') }}</li>
+                        <li>{{ _('House rules and policies') }}</li>
                     </ul>
                 </div>
             </div>
@@ -309,7 +315,7 @@
             <!-- Save Button -->
             <div class="d-grid gap-2">
                 <button type="submit" class="btn btn-primary btn-lg">
-                    <i class="fas fa-save"></i> Save Settings
+                    <i class="fas fa-save"></i> {{ _('Save Settings') }}
                 </button>
             </div>
         </form>
@@ -325,7 +331,7 @@
         const confirmPassword = this.value;
 
         if (newPassword && confirmPassword && newPassword !== confirmPassword) {
-            this.setCustomValidity('Passwords do not match');
+            this.setCustomValidity('{{ _("Passwords do not match") }}');
         } else {
             this.setCustomValidity('');
         }
