@@ -22,16 +22,30 @@
                     <h5 class="mb-0">{{ _('Assign New Housekeeper') }}</h5>
                 </div>
                 <div class="card-body">
+                    <!-- Summary -->
+                    <div class="alert alert-info mb-3">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>{{ _('Housekeeper Summary:') }}</strong>
+                        {{ _('%(assigned)s of %(total)s housekeepers assigned',
+                        assigned=assigned_housekeeper_ids|length, total=housekeepers|length) }}
+                    </div>
+
+                    {% set available_housekeepers = [] %}
+                    {% for housekeeper in housekeepers %}
+                    {% if housekeeper.id not in assigned_housekeeper_ids %}
+                    {% set _ = available_housekeepers.append(housekeeper) %}
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if available_housekeepers %}
                     <form method="POST" action="{{ url_for('assign_housekeeper_to_amenity', amenity_id=amenity.id) }}">
                         <div class="mb-3">
                             <label for="housekeeper_id" class="form-label">{{ _('Select Housekeeper') }}</label>
                             <select class="form-select" id="housekeeper_id" name="housekeeper_id" required>
                                 <option value="">{{ _('Choose a housekeeper...') }}</option>
-                                {% for housekeeper in housekeepers %}
-                                {% if housekeeper.id not in assigned_housekeeper_ids %}
+                                {% for housekeeper in available_housekeepers %}
                                 <option value="{{ housekeeper.id }}">{{ housekeeper.username }} ({{ housekeeper.email
                                     }})</option>
-                                {% endif %}
                                 {% endfor %}
                             </select>
                         </div>
@@ -51,6 +65,19 @@
                             <i class="fas fa-plus"></i> {{ _('Assign Housekeeper') }}
                         </button>
                     </form>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                        <h6 class="text-success">{{ _('All housekeepers assigned!') }}</h6>
+                        <p class="text-muted">{{ _('All available housekeepers are already assigned to this amenity.')
+                            }}</p>
+                        <div class="mt-3">
+                            <a href="{{ url_for('new_user') }}?role=housekeeper" class="btn btn-outline-primary">
+                                <i class="fas fa-user-plus"></i> {{ _('Create New Housekeeper') }}
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>

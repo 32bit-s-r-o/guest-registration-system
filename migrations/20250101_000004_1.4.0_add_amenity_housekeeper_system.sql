@@ -26,7 +26,7 @@ ALTER TABLE guest_reg_amenity ADD COLUMN default_housekeeper_id INTEGER REFERENC
 
 -- Triggers for single default (Postgres version would require a function, skipping for now)
 
--- Down Migration
+-- Down Migration (Rollback)
 DROP INDEX IF EXISTS idx_amenity_housekeeper_default;
 DROP INDEX IF EXISTS idx_amenity_housekeeper_housekeeper;
 DROP INDEX IF EXISTS idx_amenity_housekeeper_amenity;

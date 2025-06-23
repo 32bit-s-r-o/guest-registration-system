@@ -63,7 +63,7 @@ ALTER TABLE guest_reg_user DROP COLUMN IF EXISTS airbnb_calendar_url;
 ALTER TABLE guest_reg_user DROP COLUMN IF EXISTS airbnb_sync_enabled;
 ALTER TABLE guest_reg_user DROP COLUMN IF EXISTS airbnb_last_sync;
 
--- Down Migration
+-- Down Migration (Rollback)
 -- Rollback amenity system
 DROP INDEX IF EXISTS idx_trip_amenity_id;
 DROP INDEX IF EXISTS idx_amenity_active;

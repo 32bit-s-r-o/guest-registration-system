@@ -93,8 +93,7 @@ ALTER TABLE guest_reg_trip DROP COLUMN IF EXISTS airbnb_synced_at;
 ALTER TABLE guest_reg_trip DROP COLUMN IF EXISTS is_airbnb_synced;
 ALTER TABLE guest_reg_trip DROP COLUMN IF EXISTS airbnb_confirm_code;
 
--- Down Migration
--- Rollback calendar system
+-- Down Migration (Rollback)
 DROP INDEX IF EXISTS idx_trip_is_externally_synced;
 DROP INDEX IF EXISTS idx_trip_external_confirm_code;
 DROP INDEX IF EXISTS idx_trip_external_reservation_id;

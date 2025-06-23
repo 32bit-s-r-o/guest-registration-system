@@ -2789,7 +2789,9 @@ def new_user():
         flash(_('User created successfully!'), 'success')
         return redirect(url_for('admin_users'))
     
-    return render_template('admin/new_user.html')
+    # Get role from query parameter for pre-filling
+    default_role = request.args.get('role', 'admin')
+    return render_template('admin/new_user.html', default_role=default_role)
 
 @app.route('/admin/users/<int:user_id>')
 @login_required
