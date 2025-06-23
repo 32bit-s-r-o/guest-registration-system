@@ -1135,6 +1135,86 @@ def generate_invoice_pdf(invoice_id):
         except:
             pass
 
+@app.route('/admin/invoices/<int:invoice_id>/send-pdf', methods=['POST'])
+@login_required
+@role_required('admin')
+def send_invoice_pdf(invoice_id):
+    """Send the invoice PDF to the registration/client email."""
+    invoice = Invoice.query.filter_by(id=invoice_id, admin_id=current_user.id).first_or_404()
+    
+    # Determine recipient and language
+    recipient = invoice.client_email or (invoice.registration.email if invoice.registration else None)
+    if not recipient:
+        flash(_('No recipient email found for this invoice.'), 'error')
+        return redirect(url_for('view_invoice', invoice_id=invoice.id))
+    
+    # Set language based on registration
+    if invoice.registration and invoice.registration.language:
+        # Temporarily set the language for this request
+        from flask_babel import get_locale
+        original_locale = get_locale()
+        session['lang'] = invoice.registration.language
+    
+    # Generate HTML content for the invoice
+    html_content = render_template('admin/invoice_pdf.html', invoice=invoice)
+    font_config = FontConfiguration()
+    css = CSS(string='''
+        @page { size: A4; margin: 1.5cm; }
+        body { font-family: Arial, sans-serif; font-size: 10px; line-height: 1.2; }
+        .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 15px; }
+        .invoice-details { margin-top: 10px; font-size: 9px; color: #666; }
+        .invoice-details span { margin: 0 15px; }
+        .row { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .company-info { text-align: left; width: 48%; }
+        .client-info { text-align: right; width: 48%; }
+        .invoice-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        .invoice-table th, .invoice-table td { border: 1px solid #ddd; padding: 6px; text-align: left; font-size: 9px; }
+        .invoice-table th { background-color: #f8f9fa; font-weight: bold; }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .total-row { font-weight: bold; background-color: #f8f9fa; }
+        .notes { margin-top: 20px; padding: 10px; background-color: #f8f9fa; border-left: 4px solid #007bff; font-size: 9px; }
+    ''', font_config=font_config)
+    html_doc = HTML(string=html_content)
+    pdf_bytes = html_doc.write_pdf(stylesheets=[css], font_config=font_config)
+    
+    # Send email with PDF attachment
+    try:
+        msg = Message(
+            subject=_('Your Invoice from %(company)s', company=invoice.admin.company_name or _('Our Company')),
+            sender=app.config['MAIL_USERNAME'],
+            recipients=[recipient]
+        )
+        msg.body = _(
+            """Dear %(client_name)s,
+
+Please find attached your invoice %(invoice_number)s.
+
+Thank you for your business!
+
+Best regards,
+%(company)s""",
+            client_name=invoice.client_name,
+            invoice_number=invoice.invoice_number,
+            company=invoice.admin.company_name or _('Our Company')
+        )
+        msg.attach(
+            filename=f"invoice_{invoice.invoice_number}.pdf",
+            content_type="application/pdf",
+            data=pdf_bytes
+        )
+        mail.send(msg)
+        flash(_('Invoice PDF sent to %(email)s', email=recipient), 'success')
+    except Exception as e:
+        print(f"Error sending invoice PDF: {e}")
+        flash(_('Failed to send invoice PDF: %(error)s', error=str(e)), 'error')
+    finally:
+        # Restore original language if it was changed
+        if invoice.registration and invoice.registration.language:
+            session['lang'] = original_locale.language if original_locale else 'en'
+    
+    return redirect(url_for('view_invoice', invoice_id=invoice.id))
+
 # Data management routes
 @app.route('/admin/data-management')
 @login_required
@@ -1782,29 +1862,42 @@ def seed_reset():
 
 def send_approval_email(registration):
     try:
+        # Set language based on registration
+        original_lang = session.get('lang', 'en')
+        if registration.language:
+            session['lang'] = registration.language
+        
         msg = Message(
             _('Your registration has been approved!'),
             sender=app.config['MAIL_USERNAME'],
             recipients=[registration.email]
         )
         msg.body = _("""
-        Dear Guest,
-        
-        Your registration for %(trip_title)s has been approved!
-        
-        Your personal data has been processed and all uploaded documents have been securely deleted in compliance with GDPR regulations.
-        
-        Thank you for choosing our service.
-        
-        Best regards,
-        The Admin Team
-        """, trip_title=registration.trip.title)
+Dear Guest,
+
+Your registration for %(trip_title)s has been approved!
+
+Your personal data has been processed and all uploaded documents have been securely deleted in compliance with GDPR regulations.
+
+Thank you for choosing our service.
+
+Best regards,
+The Admin Team
+""", trip_title=registration.trip.title)
         mail.send(msg)
+        
+        # Restore original language
+        session['lang'] = original_lang
     except Exception as e:
         print(f"Error sending email: {e}")
 
 def send_rejection_email(registration):
     try:
+        # Set language based on registration
+        original_lang = session.get('lang', 'en')
+        if registration.language:
+            session['lang'] = registration.language
+        
         update_link = url_for('register', trip_id=registration.trip_id, _external=True).replace('/register/', '/register/id/')
         msg = Message(
             _('Registration Update Required'),
@@ -1812,20 +1905,23 @@ def send_rejection_email(registration):
             recipients=[registration.email]
         )
         msg.body = _("""
-        Dear Guest,
-        
-        Your registration for %(trip_title)s requires updates.
-        
-        Admin Comment: %(admin_comment)s
-        
-        Please update your information using this link: %(update_link)s
-        
-        Thank you for your understanding.
-        
-        Best regards,
-        The Admin Team
-        """, trip_title=registration.trip.title, admin_comment=registration.admin_comment, update_link=update_link)
+Dear Guest,
+
+Your registration for %(trip_title)s requires updates.
+
+Admin Comment: %(admin_comment)s
+
+Please update your information using this link: %(update_link)s
+
+Thank you for your understanding.
+
+Best regards,
+The Admin Team
+""", trip_title=registration.trip.title, admin_comment=registration.admin_comment, update_link=update_link)
         mail.send(msg)
+        
+        # Restore original language
+        session['lang'] = original_lang
     except Exception as e:
         print(f"Error sending email: {e}")
 

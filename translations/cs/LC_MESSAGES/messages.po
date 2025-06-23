@@ -2954,68 +2954,47 @@ msgstr ""
 msgid "Accepted formats: JPG, PNG, GIF. Max size: 16MB"
 msgstr ""
 
-#~ msgid ""
-#~ "We provide secure, GDPR-compliant guest"
-#~ " registration systems that protect personal"
-#~ "\n"
-#~ " data while streamlining the "
-#~ "registration process for trip organizers "
-#~ "and guests alike."
-#~ msgstr ""
+#: app.py:1180
+msgid "No recipient email found for this invoice."
+msgstr "Pro tuto fakturu nebyl nalezen příjemce e-mailu."
 
-#~ msgid ""
-#~ "To become the leading platform for "
-#~ "secure guest registration, ensuring privacy"
-#~ " and compliance while providing an "
-#~ "excellent user experience for all "
-#~ "parties involved."
-#~ msgstr ""
+#: app.py:1200
+msgid "Your Invoice from %(company)s"
+msgstr "Vaše faktura od %(company)s"
 
-#~ msgid ""
-#~ "Our team consists of experienced "
-#~ "developers, security experts, and travel "
-#~ "industry professionals who understand the "
-#~ "unique challenges of guest registration "
-#~ "and data protection."
-#~ msgstr ""
+#: app.py:1205
+msgid "Dear %(client_name)s,\n\nPlease find attached your invoice %(invoice_number)s.\n\nThank you for your business!\n\nBest regards,\n%(company)s"
+msgstr "Vážený/á %(client_name)s,\n\nV příloze naleznete vaši fakturu %(invoice_number)s.\n\nDěkujeme za vaši důvěru!\n\nS pozdravem,\n%(company)s"
 
-#~ msgid ""
-#~ "We are committed to continuous "
-#~ "improvement and regularly update our "
-#~ "systems to meet the latest security "
-#~ "standards and regulatory requirements."
-#~ msgstr ""
+#: app.py:1215
+msgid "Invoice PDF sent to %(email)s"
+msgstr "Faktura PDF odeslána na %(email)s"
 
-#~ msgid ""
-#~ "Additional information fields for future "
-#~ "use. These are not displayed on "
-#~ "public pages yet."
-#~ msgstr ""
+#: app.py:1218
+msgid "Failed to send invoice PDF: %(error)s"
+msgstr "Nepodařilo se odeslat fakturu PDF: %(error)s"
 
-#~ msgid "Další řádek 1"
-#~ msgstr ""
+#: app.py:1220
+msgid "Our Company"
+msgstr "Naše společnost"
 
-#~ msgid ""
-#~ "This contact information can be used "
-#~ "to create contact pages, display in "
-#~ "guest communications, or integrate with "
-#~ "other parts of your website."
-#~ msgstr ""
+#: app.py:1862
+msgid "Your registration has been approved!"
+msgstr "Vaše registrace byla schválena!"
 
-#~ msgid "When enabled, the system will fetch your Airbnb calendar regularly"
-#~ msgstr ""
+#: app.py:1867
+msgid "Dear Guest,\n\nYour registration for %(trip_title)s has been approved!\n\nYour personal data has been processed and all uploaded documents have been securely deleted in compliance with GDPR regulations.\n\nThank you for choosing our service.\n\nBest regards,\nThe Admin Team"
+msgstr "Vážený hoste,\n\nVaše registrace pro %(trip_title)s byla schválena!\n\nVaše osobní údaje byly zpracovány a všechny nahrané dokumenty byly bezpečně smazány v souladu s nařízením GDPR.\n\nDěkujeme za využití našich služeb.\n\nS pozdravem,\nAdministrátorský tým"
 
-#~ msgid "New reservations are automatically converted to registration forms"
-#~ msgstr ""
+#: app.py:1890
+msgid "Registration Update Required"
+msgstr "Vyžaduje se aktualizace registrace"
 
-#~ msgid "Guest names and counts are extracted from calendar events"
-#~ msgstr ""
+#: app.py:1895
+msgid "Dear Guest,\n\nYour registration for %(trip_title)s requires updates.\n\nAdmin Comment: %(admin_comment)s\n\nPlease update your information using this link: %(update_link)s\n\nThank you for your understanding.\n\nBest regards,\nThe Admin Team"
+msgstr "Vážený hoste,\n\nVaše registrace pro %(trip_title)s vyžaduje aktualizace.\n\nKomentář administrátora: %(admin_comment)s\n\nProsím aktualizujte své informace pomocí tohoto odkazu: %(update_link)s\n\nDěkujeme za pochopení.\n\nS pozdravem,\nAdministrátorský tým"
 
-#~ msgid ""
-#~ "Changes to reservations (dates, guest "
-#~ "count) are automatically reflected"
-#~ msgstr ""
-
-#~ msgid "You can also trigger manual sync from the trips page"
-#~ msgstr ""
+#: templates/admin/view_invoice.html:160
+msgid "Send PDF by Email"
+msgstr "Odeslat PDF e-mailem"
 
