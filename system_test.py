@@ -10,6 +10,7 @@ import time
 from datetime import datetime, timedelta
 import os
 import tempfile
+import re
 
 # Configuration
 BASE_URL = "http://127.0.0.1:5000"
@@ -189,13 +190,26 @@ class SystemTest:
         
         # Test viewing a specific registration (if any exist)
         try:
-            response = self.session.get(f"{BASE_URL}/admin/registration/1")
+            # First check if any registrations exist
+            response = self.session.get(f"{BASE_URL}/admin/registrations")
             if response.status_code == 200:
-                self.log_test("View Registration", "PASS", "Registration view accessible")
-            elif response.status_code == 404:
-                self.log_test("View Registration", "WARN", "No registration with ID 1 found")
+                # Look for a registration link in the response
+                if 'href="/admin/registration/' in response.text:
+                    # Extract the first registration ID from the page
+                    match = re.search(r'href="/admin/registration/(\d+)"', response.text)
+                    if match:
+                        reg_id = match.group(1)
+                        response = self.session.get(f"{BASE_URL}/admin/registration/{reg_id}")
+                        if response.status_code == 200:
+                            self.log_test("View Registration", "PASS", f"Registration {reg_id} view accessible")
+                        else:
+                            self.log_test("View Registration", "FAIL", f"Status: {response.status_code}")
+                    else:
+                        self.log_test("View Registration", "WARN", "No registration links found on page")
+                else:
+                    self.log_test("View Registration", "WARN", "No registrations exist in database")
             else:
-                self.log_test("View Registration", "FAIL", f"Status: {response.status_code}")
+                self.log_test("View Registration", "FAIL", f"Registrations page status: {response.status_code}")
         except Exception as e:
             self.log_test("View Registration", "FAIL", f"Exception: {str(e)}")
     
@@ -408,13 +422,26 @@ class SystemTest:
         
         # Test registration form (if a trip exists)
         try:
-            response = self.session.get(f"{BASE_URL}/register/id/1")
+            # First check if any trips exist
+            response = self.session.get(f"{BASE_URL}/admin/trips")
             if response.status_code == 200:
-                self.log_test("Registration Form", "PASS", "Registration form accessible")
-            elif response.status_code == 404:
-                self.log_test("Registration Form", "WARN", "No trip with ID 1 found")
+                # Look for a trip link in the response
+                if 'href="/register/id/' in response.text:
+                    # Extract the first trip ID from the page
+                    match = re.search(r'href="/register/id/(\d+)"', response.text)
+                    if match:
+                        trip_id = match.group(1)
+                        response = self.session.get(f"{BASE_URL}/register/id/{trip_id}")
+                        if response.status_code == 200:
+                            self.log_test("Registration Form", "PASS", f"Registration form for trip {trip_id} accessible")
+                        else:
+                            self.log_test("Registration Form", "FAIL", f"Status: {response.status_code}")
+                    else:
+                        self.log_test("Registration Form", "WARN", "No trip registration links found on page")
+                else:
+                    self.log_test("Registration Form", "WARN", "No trips exist in database")
             else:
-                self.log_test("Registration Form", "FAIL", f"Status: {response.status_code}")
+                self.log_test("Registration Form", "FAIL", f"Trips page status: {response.status_code}")
         except Exception as e:
             self.log_test("Registration Form", "FAIL", f"Exception: {str(e)}")
     
