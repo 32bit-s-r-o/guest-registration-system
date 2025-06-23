@@ -3097,3 +3097,9 @@ msgstr ""
 #: templates/admin/settings.html:290
 msgid "Date Format Settings"
 msgstr "Nastavení formátu data"
+
+msgid "Tasks can only be marked as completed on the task date (%(task_date)s). Today is %(today)s."
+msgstr "Úkoly lze označit jako dokončené pouze v den úkolu (%(task_date)s). Dnes je %(today)s."
+
+msgid "Not available today"
+msgstr "Dnes není dostupné"

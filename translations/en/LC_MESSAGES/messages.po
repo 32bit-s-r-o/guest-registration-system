@@ -2945,18 +2945,10 @@ msgid "Format Examples"
 msgstr ""
 
 #: templates/admin/settings.html:328
-#~ msgid ""
-#~ "Dear Guest,\n"
-#~ "\n"
-#~ "Your registration for %(trip_title)s requires updates.\n"
-#~ "\n"
-#~ "Admin Comment: %(admin_comment)s\n"
-#~ "\n"
-#~ "Please update your information using this link: %(update_link)s\n"
-#~ "\n"
-#~ "Thank you for your understanding.\n"
-#~ "\n"
-#~ "Best regards,\n"
-#~ "The Admin Team"
-#~ msgstr ""
+msgid "Tasks can only be marked as completed on the task date (%(task_date)s). Today is %(today)s."
+msgstr "Tasks can only be marked as completed on the task date (%(task_date)s). Today is %(today)s."
+
+#: templates/admin/settings.html:329
+msgid "Not available today"
+msgstr "Not available today"
 

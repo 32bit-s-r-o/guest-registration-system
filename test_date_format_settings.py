@@ -5,8 +5,9 @@ Test script to verify date format settings functionality.
 
 import sys
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from dotenv import load_dotenv
+import uuid
 
 # Add the current directory to Python path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -155,6 +156,186 @@ def test_date_format_settings():
             print(f"❌ Error testing date format settings: {str(e)}")
             db.session.rollback()
             return False
+
+def test_task_completion_date_restriction():
+    """Test that tasks can only be marked as completed on the task date."""
+    with app.app_context():
+        unique = str(uuid.uuid4())[:8]
+        # Create an admin user
+        admin = User(
+            username=f'admin_{unique}',
+            email=f'admin_{unique}@test.com',
+            password_hash='test_hash',
+            role='admin'
+        )
+        db.session.add(admin)
+        db.session.commit()
+
+        # Create a housekeeper
+        housekeeper = User(
+            username=f'test_housekeeper_{unique}',
+            email=f'housekeeper_{unique}@test.com',
+            password_hash='test_hash',
+            role='housekeeper'
+        )
+        db.session.add(housekeeper)
+        db.session.commit()
+        
+        # Create an amenity with admin_id set
+        amenity = Amenity(name='Test Amenity', admin_id=admin.id)
+        db.session.add(amenity)
+        db.session.commit()
+        
+        # Create a trip
+        trip = Trip(
+            title='Test Trip',
+            start_date=date(2025, 1, 1),
+            end_date=date(2025, 1, 5),
+            max_guests=1,
+            amenity_id=amenity.id,
+            admin_id=admin.id
+        )
+        db.session.add(trip)
+        db.session.commit()
+        
+        # Create a housekeeping task for tomorrow
+        tomorrow = date.today() + timedelta(days=1)
+        task = Housekeeping(
+            trip_id=trip.id,
+            housekeeper_id=housekeeper.id,
+            date=tomorrow,
+            status='pending',
+            pay_amount=50.0
+        )
+        db.session.add(task)
+        db.session.commit()
+        
+        # Try to mark as completed today (should fail)
+        with app.test_client() as client:
+            login_user(housekeeper)
+            response = client.post(f'/housekeeper/task/{task.id}/update-status', 
+                                 data={'status': 'completed'}, follow_redirects=True)
+            
+            # Should redirect back with error message
+            assert response.status_code == 200
+            assert b'can only be marked as completed on the task date' in response.data
+            
+            # Task should still be pending
+            task = Housekeeping.query.get(task.id)
+            assert task.status == 'pending'
+        
+        # Create a task for today
+        today = date.today()
+        today_task = Housekeeping(
+            trip_id=trip.id,
+            housekeeper_id=housekeeper.id,
+            date=today,
+            status='pending',
+            pay_amount=50.0
+        )
+        db.session.add(today_task)
+        db.session.commit()
+        
+        # Try to mark as completed today (should succeed)
+        with app.test_client() as client:
+            login_user(housekeeper)
+            response = client.post(f'/housekeeper/task/{today_task.id}/update-status', 
+                                 data={'status': 'completed'}, follow_redirects=True)
+            
+            # Should succeed
+            assert response.status_code == 200
+            assert b'Task status updated successfully' in response.data
+            
+            # Task should be completed
+            today_task = Housekeeping.query.get(today_task.id)
+            assert today_task.status == 'completed'
+
+def test_payment_calculation_only_completed_tasks():
+    """Test that only completed tasks are counted in payment calculations."""
+    with app.app_context():
+        unique = str(uuid.uuid4())[:8]
+        # Create an admin user
+        admin = User(
+            username=f'admin_{unique}',
+            email=f'admin_{unique}@test.com',
+            password_hash='test_hash',
+            role='admin'
+        )
+        db.session.add(admin)
+        db.session.commit()
+
+        # Create a housekeeper
+        housekeeper = User(
+            username=f'test_housekeeper_{unique}',
+            email=f'housekeeper_{unique}@test.com',
+            password_hash='test_hash',
+            role='housekeeper'
+        )
+        db.session.add(housekeeper)
+        db.session.commit()
+        
+        # Create an amenity with admin_id set
+        amenity = Amenity(name='Test Amenity', admin_id=admin.id)
+        db.session.add(amenity)
+        db.session.commit()
+        
+        # Create a trip
+        trip = Trip(
+            title='Test Trip',
+            start_date=date(2025, 1, 1),
+            end_date=date(2025, 1, 5),
+            max_guests=1,
+            amenity_id=amenity.id,
+            admin_id=admin.id
+        )
+        db.session.add(trip)
+        db.session.commit()
+        
+        # Create tasks with different statuses
+        today = date.today()
+        completed_task = Housekeeping(
+            trip_id=trip.id,
+            housekeeper_id=housekeeper.id,
+            date=today,
+            status='completed',
+            pay_amount=50.0,
+            paid=False
+        )
+        pending_task = Housekeeping(
+            trip_id=trip.id,
+            housekeeper_id=housekeeper.id,
+            date=today,
+            status='pending',
+            pay_amount=30.0,
+            paid=False
+        )
+        in_progress_task = Housekeeping(
+            trip_id=trip.id,
+            housekeeper_id=housekeeper.id,
+            date=today,
+            status='in_progress',
+            pay_amount=20.0,
+            paid=False
+        )
+        
+        db.session.add_all([completed_task, pending_task, in_progress_task])
+        db.session.commit()
+        
+        # Test admin housekeeping view payment calculations
+        with app.test_client() as client:
+            admin2 = User(username=f'admin2_{unique}', email=f'admin2_{unique}@test.com', password_hash='hash', role='admin')
+            db.session.add(admin2)
+            db.session.commit()
+            login_user(admin2)
+            
+            response = client.get('/admin/housekeeping')
+            assert response.status_code == 200
+            
+            # Only completed task should be counted in payment
+            # Total should be 50.0 (only completed task)
+            assert b'50.00' in response.data
+            # Should not include pending or in_progress tasks in payment totals
+            assert b'100.00' not in response.data  # 50+30+20
 
 if __name__ == "__main__":
     success = test_date_format_settings()

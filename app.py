@@ -503,21 +503,47 @@ def nl2br_filter(text):
 
 @app.template_filter('format_date')
 def format_date_filter(date_obj):
-    """Format date using the current user's preferred format."""
+    """Format date using the current user's preferred format (PHP/JS style) by converting to Python strftime."""
     if not date_obj:
         return ''
     
-    # Get the current user's preferred format, default to 'd.m.Y'
-    if current_user.is_authenticated:
-        date_format = current_user.date_format or 'd.m.Y'
-    else:
-        date_format = 'd.m.Y'  # Default for unauthenticated users
+    # Map PHP/JS style to Python strftime
+    format_map = [
+        ('d', '%d'),
+        ('j', '%-d'),
+        ('m', '%m'),
+        ('n', '%-m'),
+        ('Y', '%Y'),
+        ('y', '%y'),
+    ]
+    
+    date_format = 'd.m.Y'  # Default for unauthenticated users
+    try:
+        if current_user.is_authenticated and hasattr(current_user, 'date_format') and current_user.date_format:
+            date_format = current_user.date_format
+    except Exception:
+        date_format = 'd.m.Y'
+    
+    # Convert to Python strftime format
+    py_format = date_format
+    for php, py in format_map:
+        py_format = py_format.replace(php, py)
     
     try:
-        return date_obj.strftime(date_format)
-    except (ValueError, TypeError):
-        # Fallback to default format if there's an error
-        return date_obj.strftime('d.m.Y')
+        if hasattr(date_obj, 'strftime'):
+            return date_obj.strftime(py_format)
+        else:
+            from datetime import datetime
+            if isinstance(date_obj, str):
+                parsed_date = datetime.strptime(date_obj, '%Y-%m-%d').date()
+                return parsed_date.strftime(py_format)
+            else:
+                return str(date_obj)
+    except Exception:
+        try:
+            return date_obj.strftime('%d.%m.%Y')
+        except:
+            return str(date_obj)
 
 # Helper for registration display name
 @app.template_filter('registration_name')
@@ -2321,15 +2347,20 @@ def admin_housekeeping():
     pay_summary = {}
     for hk in housekeepers:
         hk_tasks = [t for t in tasks if t.housekeeper_id == hk.id]
+        # Only count completed tasks for payment
+        completed_tasks = [t for t in hk_tasks if t.status == 'completed']
         pay_summary[hk.id] = {
             'username': hk.username,
-            'total': sum(float(t.pay_amount) for t in hk_tasks),
-            'paid': sum(float(t.pay_amount) for t in hk_tasks if t.paid),
-            'pending': sum(float(t.pay_amount) for t in hk_tasks if not t.paid),
+            'total': sum(float(t.pay_amount) for t in completed_tasks),
+            'paid': sum(float(t.pay_amount) for t in completed_tasks if t.paid),
+            'pending': sum(float(t.pay_amount) for t in completed_tasks if not t.paid),
         }
-    grand_total = sum(float(t.pay_amount) for t in tasks)
-    grand_paid = sum(float(t.pay_amount) for t in tasks if t.paid)
-    grand_pending = sum(float(t.pay_amount) for t in tasks if not t.paid)
+    
+    # Grand totals - only count completed tasks
+    completed_tasks = [t for t in tasks if t.status == 'completed']
+    grand_total = sum(float(t.pay_amount) for t in completed_tasks)
+    grand_paid = sum(float(t.pay_amount) for t in completed_tasks if t.paid)
+    grand_pending = sum(float(t.pay_amount) for t in completed_tasks if not t.paid)
 
     # Handle pay status/amount update
     if request.method == 'POST':
@@ -3677,7 +3708,7 @@ def create_housekeeping_tasks_from_calendar(calendar_id):
 @login_required
 @role_required('housekeeper')
 def housekeeper_task_detail(task_id):
-    """View and manage a specific housekeeping task."""
+    """Display detailed view of a housekeeping task."""
     task = Housekeeping.query.get_or_404(task_id)
     
     # Check if the current housekeeper has access to this task
@@ -3685,7 +3716,7 @@ def housekeeper_task_detail(task_id):
         flash(_('Access denied'), 'error')
         return redirect(url_for('housekeeper_dashboard'))
     
-    return render_template('housekeeper/task_detail.html', task=task)
+    return render_template('housekeeper/task_detail.html', task=task, today=datetime.utcnow().date())
 
 @app.route('/housekeeper/task/<int:task_id>/update-status', methods=['POST'])
 @login_required
@@ -3701,6 +3732,15 @@ def update_task_status(task_id):
     
     new_status = request.form.get('status')
     if new_status in ['pending', 'in_progress', 'completed']:
+        # Check if trying to mark as completed
+        if new_status == 'completed':
+            today = datetime.utcnow().date()
+            if task.date != today:
+                flash(_('Tasks can only be marked as completed on the task date (%(task_date)s). Today is %(today)s.', 
+                       task_date=task.date.strftime(current_user.date_format or 'd.m.Y'),
+                       today=today.strftime(current_user.date_format or 'd.m.Y')), 'error')
+                return redirect(url_for('housekeeper_task_detail', task_id=task_id))
+        
         task.status = new_status
         task.updated_at = datetime.utcnow()
         db.session.commit()

@@ -81,28 +81,39 @@
             <!-- Status Update -->
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-warning text-dark">
-                    <h5 class="mb-0"><i class="fas fa-edit"></i> {{ _('Update Status') }}</h5>
+                    <h5 class="mb-0"><i class="fas fa-edit"></i> {{ _('Update Task Status') }}</h5>
                 </div>
                 <div class="card-body">
+                    {% set task_date = task.date %}
+
+                    {% if task_date != today and task.status != 'completed' %}
+                    <div class="alert alert-warning" role="alert">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>{{ _('Note') }}:</strong> {{ _('This task can only be marked as completed on
+                        %(task_date)s (today is %(today)s).', task_date=task_date|format_date, today=today|format_date)
+                        }}
+                    </div>
+                    {% endif %}
+
                     <form method="POST" action="{{ url_for('update_task_status', task_id=task.id) }}">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <label for="status" class="form-label">{{ _('Current Status') }}</label>
-                                <select class="form-select" id="status" name="status" required>
-                                    <option value="pending" {% if task.status=='pending' %}selected{% endif %}>{{
-                                        _('Pending') }}</option>
-                                    <option value="in_progress" {% if task.status=='in_progress' %}selected{% endif %}>
-                                        {{ _('In Progress') }}</option>
-                                    <option value="completed" {% if task.status=='completed' %}selected{% endif %}>{{
-                                        _('Completed') }}</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 d-flex align-items-end">
-                                <button type="submit" class="btn btn-warning">
-                                    <i class="fas fa-save"></i> {{ _('Update Status') }}
-                                </button>
-                            </div>
+                        <div class="mb-3">
+                            <label for="status" class="form-label">{{ _('Status') }}</label>
+                            <select class="form-select" id="status" name="status" required>
+                                <option value="pending" {% if task.status=='pending' %}selected{% endif %}>{{
+                                    _('Pending') }}</option>
+                                <option value="in_progress" {% if task.status=='in_progress' %}selected{% endif %}>{{
+                                    _('In Progress') }}</option>
+                                <option value="completed" {% if task.status=='completed' %}selected{% endif %}" {% if
+                                    task_date !=today and task.status !='completed' %}disabled{% endif %}>
+                                    {{ _('Completed') }}
+                                    {% if task_date != today and task.status != 'completed' %} ({{ _('Not available
+                                    today') }}){% endif %}
+                                </option>
+                            </select>
                         </div>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-save"></i> {{ _('Update Status') }}
+                        </button>
                     </form>
                 </div>
             </div>
