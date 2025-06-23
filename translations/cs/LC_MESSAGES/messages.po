@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-06-23 11:56+0200\n"
+"POT-Creation-Date: 2025-06-23 12:45+0200\n"
 "PO-Revision-Date: 2025-06-23 01:07+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: cs\n"
@@ -18,88 +18,88 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: app.py:441
+#: app.py:440
 #, python-format
 msgid "Thank you for your message, %(name)s! We will get back to you soon."
 msgstr "Děkujeme za vaši zprávu, %(name)s! Budeme vás kontaktovat brzy."
 
-#: app.py:468
+#: app.py:467
 msgid "Please enter a confirmation code"
 msgstr "Prosím zadejte potvrzovací kód"
 
-#: app.py:474 app.py:491
+#: app.py:473 app.py:490
 msgid "Invalid confirmation code. Please check your code and try again."
 msgstr "Neplatný potvrzovací kód. Prosím zkontrolujte svůj kód a zkuste to znovu."
 
-#: app.py:530
+#: app.py:529
 #, python-format
 msgid "Document photo is required for %(age_category)s guests"
 msgstr ""
 
-#: app.py:669
+#: app.py:668
 msgid ""
 "Registration submitted successfully! You will receive an email once it is"
 " reviewed."
 msgstr "Registrace byla úspěšně odeslána! Obdržíte email po jejím přezkoumání."
 
-#: app.py:688
+#: app.py:687
 msgid "Invalid username or password"
 msgstr "Neplatné uživatelské jméno nebo heslo"
 
-#: app.py:751
+#: app.py:750
 msgid "Settings updated successfully!"
 msgstr "Nastavení bylo úspěšně aktualizováno!"
 
-#: app.py:763
+#: app.py:762
 #, python-format
 msgid "Airbnb sync successful: %(message)s"
 msgstr "Synchronizace s Airbnb úspěšná: %(message)s"
 
-#: app.py:765
+#: app.py:764
 #, python-format
 msgid "Airbnb sync failed: %(message)s"
 msgstr "Synchronizace s Airbnb selhala: %(message)s"
 
-#: app.py:790
+#: app.py:789
 msgid "Trip created successfully!"
 msgstr "Výlet byl úspěšně vytvořen!"
 
-#: app.py:831
+#: app.py:830
 msgid "Registration approved and email sent to user"
 msgstr "Registrace schválena a email odeslán uživateli"
 
-#: app.py:848
+#: app.py:847
 msgid "Registration rejected and email sent to user"
 msgstr "Registrace zamítnuta a email odeslán uživateli"
 
-#: app.py:918
+#: app.py:917
 msgid "Invoice created successfully!"
 msgstr "Faktura byla úspěšně vytvořena!"
 
-#: app.py:984
+#: app.py:983
 msgid "Invoice updated successfully!"
 msgstr "Faktura byla úspěšně aktualizována!"
 
-#: app.py:1006
+#: app.py:1005
 msgid "Invoice deleted successfully!"
 msgstr "Faktura byla úspěšně smazána!"
 
-#: app.py:1022
+#: app.py:1021
 #, python-format
 msgid "Invoice status changed from %(old_status)s to %(new_status)s successfully!"
 msgstr "Stav faktury byl úspěšně změněn z %(old_status)s na %(new_status)s!"
 
-#: app.py:1024
+#: app.py:1023
 msgid "Invalid status provided."
 msgstr "Poskytnut neplatný stav."
 
-#: app.py:1190
+#: app.py:1189
 msgid "All data has been reset successfully! Admin accounts have been preserved."
 msgstr ""
 "Všechna data byla úspěšně resetována! Administrátorské účty byly "
 "zachovány."
 
-#: app.py:1195
+#: app.py:1194
 #, python-format
 msgid ""
 "Error resetting data: %(error)s. Please use the command line tool: python"
@@ -108,7 +108,7 @@ msgstr ""
 "Chyba při resetování dat: %(error)s. Použijte prosím příkazový řádek: "
 "python quick_reset.py --confirm"
 
-#: app.py:1541
+#: app.py:1540
 msgid ""
 "Sample data has been seeded successfully! Created 5 trips, 7 "
 "registrations (including 1 single-person pending), 3 invoices with "
@@ -118,12 +118,12 @@ msgstr ""
 "(včetně 1 čekající jednotlivce), 3 faktury s realistickými daty a "
 "aktualizovány kontaktní informace administrátora."
 
-#: app.py:1544
+#: app.py:1543
 #, python-format
 msgid "Error seeding data: %(error)s"
 msgstr "Chyba při načítání dat: %(error)s"
 
-#: app.py:1767
+#: app.py:1766
 msgid ""
 "Database has been reset and seeded with sample data successfully! Admin "
 "accounts have been preserved. Created 5 trips and 6 registrations with "
@@ -135,7 +135,7 @@ msgstr ""
 " různými stavy. Ukázkové obrázky dokumentů byly zkopírovány do složky "
 "uploads."
 
-#: app.py:1772
+#: app.py:1771
 #, python-format
 msgid ""
 "Error during reset and seed: %(error)s. Please use the command line tool:"
@@ -144,11 +144,11 @@ msgstr ""
 "Chyba během resetování a načítání: %(error)s. Použijte prosím příkazový "
 "řádek: python quick_reset.py --reset-seed"
 
-#: app.py:1779
+#: app.py:1778
 msgid "Your registration has been approved!"
 msgstr "Vaše registrace byla schválena!"
 
-#: app.py:1783
+#: app.py:1782
 #, python-format
 msgid ""
 "\n"
@@ -179,11 +179,11 @@ msgstr ""
 "        Administrátorský tým\n"
 "        "
 
-#: app.py:1803
+#: app.py:1802
 msgid "Registration Update Required"
 msgstr "Vyžadována aktualizace registrace"
 
-#: app.py:1807
+#: app.py:1806
 #, python-format
 msgid ""
 "\n"
@@ -217,40 +217,40 @@ msgstr ""
 "        Administrátorský tým\n"
 "        "
 
-#: app.py:1880 app.py:1885
+#: app.py:1879 app.py:1884
 msgid "No photo selected"
 msgstr ""
 
-#: app.py:1901
+#: app.py:1900
 #, fuzzy
 msgid "Photo uploaded successfully"
 msgstr "Faktura byla úspěšně aktualizována!"
 
-#: app.py:1903
+#: app.py:1902
 msgid "Invalid file type. Please upload JPG or PNG files only."
 msgstr ""
 
-#: app.py:1953
+#: app.py:1952
 msgid "Housekeeping pay updated."
 msgstr ""
 
-#: app.py:1973 app.py:2021 app.py:2147
+#: app.py:1972 app.py:2023 app.py:2155
 #, fuzzy
 msgid "Registration ID"
 msgstr "Údaje o registraci"
 
-#: app.py:1974 app.py:2022 app.py:2148 templates/admin/trip_breakdown.html:194
+#: app.py:1973 app.py:2024 app.py:2156 templates/admin/trip_breakdown.html:194
 #: templates/confirm.html:31
 msgid "Trip Title"
 msgstr "Název výletu"
 
-#: app.py:1975 templates/admin/registration_breakdown.html:179
+#: app.py:1974 templates/admin/registration_breakdown.html:179
 #: templates/admin/view_invoice.html:56 templates/contact.html:45
 #: templates/gdpr.html:35 templates/gdpr.html:44 templates/gdpr.html:253
 msgid "Email"
 msgstr "Email"
 
-#: app.py:1976 app.py:2144 templates/admin/housekeeping.html:76
+#: app.py:1975 app.py:2152 templates/admin/housekeeping.html:76
 #: templates/admin/housekeeping.html:98
 #: templates/admin/invoice_breakdown.html:198 templates/admin/invoices.html:46
 #: templates/admin/invoices.html:106
@@ -260,185 +260,185 @@ msgstr "Email"
 msgid "Status"
 msgstr "Stav"
 
-#: app.py:1977 templates/admin/registration_breakdown.html:182
+#: app.py:1976 templates/admin/registration_breakdown.html:182
 msgid "Language"
 msgstr ""
 
-#: app.py:1978 app.py:2029 app.py:2074 app.py:2145
+#: app.py:1977 app.py:2031 app.py:2079 app.py:2153
 #, fuzzy
 msgid "Created Date"
 msgstr "Vytvořeno"
 
-#: app.py:1979 app.py:2146
+#: app.py:1978 app.py:2154
 #, fuzzy
 msgid "Updated Date"
 msgstr "Datum konce"
 
-#: app.py:1980
+#: app.py:1979
 #, fuzzy
 msgid "Guest Count"
 msgstr "Počet položek"
 
-#: app.py:1981
+#: app.py:1980
 #, fuzzy
 msgid "Admin Comment"
 msgstr "Přihlášení administrátora"
 
-#: app.py:2020
+#: app.py:2022
 #, fuzzy
 msgid "Guest ID"
 msgstr "Host"
 
-#: app.py:2023 templates/register.html:128
+#: app.py:2025 templates/register.html:128
 msgid "First Name"
 msgstr "Jméno"
 
-#: app.py:2024 templates/register.html:134
+#: app.py:2026 templates/register.html:134
 msgid "Last Name"
 msgstr "Příjmení"
 
-#: app.py:2025 templates/admin/guest_breakdown.html:199
+#: app.py:2027 templates/admin/guest_breakdown.html:199
 #: templates/register.html:140
 msgid "Age Category"
 msgstr "Věková kategorie"
 
-#: app.py:2026 templates/admin/guest_breakdown.html:200
+#: app.py:2028 templates/admin/guest_breakdown.html:200
 #: templates/confirm.html:70 templates/register.html:152
 msgid "Document Type"
 msgstr "Typ dokumentu"
 
-#: app.py:2027 templates/confirm.html:71 templates/register.html:163
+#: app.py:2029 templates/confirm.html:71 templates/register.html:163
 msgid "Document Number"
 msgstr "Číslo dokumentu"
 
-#: app.py:2028 templates/admin/guest_breakdown.html:75
+#: app.py:2030 templates/admin/guest_breakdown.html:75
 #: templates/admin/guest_breakdown.html:173
 #: templates/admin/guest_breakdown.html:202 templates/confirm.html:74
 msgid "GDPR Consent"
 msgstr "Souhlas s GDPR"
 
-#: app.py:2069 templates/admin/housekeeping.html:96
+#: app.py:2074 templates/admin/housekeeping.html:96
 #: templates/housekeeper/dashboard.html:54
 #, fuzzy
 msgid "Trip ID"
 msgstr "Název výletu"
 
-#: app.py:2070
+#: app.py:2075
 #, fuzzy
 msgid "Title"
 msgstr "Název výletu"
 
-#: app.py:2071 templates/confirm.html:32
+#: app.py:2076 templates/confirm.html:32
 msgid "Start Date"
 msgstr "Datum začátku"
 
-#: app.py:2072 templates/confirm.html:34
+#: app.py:2077 templates/confirm.html:34
 msgid "End Date"
 msgstr "Datum konce"
 
-#: app.py:2073 templates/admin/trip_breakdown.html:196
+#: app.py:2078 templates/admin/trip_breakdown.html:196
 #, fuzzy
 msgid "Max Guests"
 msgstr "Maximální počet hostů"
 
-#: app.py:2075 templates/admin/trip_breakdown.html:45
+#: app.py:2080 templates/admin/trip_breakdown.html:45
 #: templates/admin/trip_breakdown.html:148
 #: templates/admin/trip_breakdown.html:169
 #, fuzzy
 msgid "Airbnb Synced"
 msgstr "Airbnb potvrzovací kód"
 
-#: app.py:2076
+#: app.py:2081
 #, fuzzy
 msgid "Airbnb Guest Name"
 msgstr "Jméno"
 
-#: app.py:2077
+#: app.py:2082
 #, fuzzy
 msgid "Airbnb Guest Email"
 msgstr "Email klienta"
 
-#: app.py:2078
+#: app.py:2083
 msgid "Airbnb Guest Count"
 msgstr ""
 
-#: app.py:2079 templates/confirm.html:39 templates/register.html:15
+#: app.py:2084 templates/confirm.html:39 templates/register.html:15
 msgid "Confirmation Code"
 msgstr "Potvrzovací kód"
 
-#: app.py:2080
+#: app.py:2085
 #, fuzzy
 msgid "Registration Count"
 msgstr "Údaje o registraci"
 
-#: app.py:2081
+#: app.py:2086
 msgid "Pending Count"
 msgstr ""
 
-#: app.py:2082
+#: app.py:2087
 msgid "Approved Count"
 msgstr ""
 
-#: app.py:2083
+#: app.py:2088
 #, fuzzy
 msgid "Rejected Count"
 msgstr "Počet položek"
 
-#: app.py:2133
+#: app.py:2141
 #, fuzzy
 msgid "Invoice ID"
 msgstr "Faktura #"
 
-#: app.py:2134 templates/admin/invoice_breakdown.html:195
+#: app.py:2142 templates/admin/invoice_breakdown.html:195
 #: templates/admin/view_invoice.html:67
 msgid "Invoice Number"
 msgstr "Číslo faktury"
 
-#: app.py:2135 templates/admin/edit_invoice.html:29
-#: templates/admin/new_invoice.html:29 templates/confirm.html:96
+#: app.py:2143 templates/admin/edit_invoice.html:29
+#: templates/admin/new_invoice.html:32 templates/confirm.html:96
 #: templates/register.html:70
 msgid "Client Name"
 msgstr "Jméno klienta"
 
-#: app.py:2136 templates/admin/edit_invoice.html:36
-#: templates/admin/new_invoice.html:35
+#: app.py:2144 templates/admin/edit_invoice.html:36
+#: templates/admin/new_invoice.html:38
 msgid "Client Email"
 msgstr "Email klienta"
 
-#: app.py:2137
+#: app.py:2145
 #, fuzzy
 msgid "Client VAT Number"
 msgstr "DIČ"
 
-#: app.py:2138 templates/admin/edit_invoice.html:63
+#: app.py:2146 templates/admin/edit_invoice.html:63
 #: templates/admin/invoice_breakdown.html:200 templates/admin/invoices.html:43
-#: templates/admin/new_invoice.html:59 templates/admin/view_invoice.html:68
+#: templates/admin/new_invoice.html:62 templates/admin/view_invoice.html:68
 msgid "Issue Date"
 msgstr "Datum vystavení"
 
-#: app.py:2139 templates/admin/edit_invoice.html:70
-#: templates/admin/invoices.html:44 templates/admin/new_invoice.html:66
+#: app.py:2147 templates/admin/edit_invoice.html:70
+#: templates/admin/invoices.html:44 templates/admin/new_invoice.html:69
 #: templates/admin/view_invoice.html:70
 msgid "Due Date"
 msgstr "Datum splatnosti"
 
-#: app.py:2140 templates/admin/edit_invoice.html:128
-#: templates/admin/new_invoice.html:123 templates/admin/view_invoice.html:143
+#: app.py:2148 templates/admin/edit_invoice.html:128
+#: templates/admin/new_invoice.html:126 templates/admin/view_invoice.html:143
 msgid "Subtotal"
 msgstr "Mezisoučet"
 
-#: app.py:2141 templates/admin/edit_invoice.html:132
-#: templates/admin/new_invoice.html:127 templates/admin/view_invoice.html:147
+#: app.py:2149 templates/admin/edit_invoice.html:132
+#: templates/admin/new_invoice.html:130 templates/admin/view_invoice.html:147
 msgid "VAT Total"
 msgstr "Celkem DPH"
 
-#: app.py:2142 templates/admin/invoices.html:45
+#: app.py:2150 templates/admin/invoices.html:45
 msgid "Total Amount"
 msgstr "Celková částka"
 
-#: app.py:2143 templates/admin/edit_invoice.html:77
+#: app.py:2151 templates/admin/edit_invoice.html:77
 #: templates/admin/invoice_breakdown.html:199
-#: templates/admin/new_invoice.html:72 templates/admin/view_invoice.html:72
+#: templates/admin/new_invoice.html:75 templates/admin/view_invoice.html:72
 msgid "Currency"
 msgstr "Měna"
 
@@ -1877,44 +1877,49 @@ msgstr "Upravit fakturu"
 msgid "Back to Invoice"
 msgstr "Zpět k faktuře"
 
-#: templates/admin/edit_invoice.html:23 templates/admin/new_invoice.html:23
+#: templates/admin/edit_invoice.html:17 templates/admin/new_invoice.html:17
+#: templates/admin/new_invoice.html:19
+msgid "VAT Rate"
+msgstr "DPH"
+
+#: templates/admin/edit_invoice.html:23 templates/admin/new_invoice.html:26
 #: templates/admin/view_invoice.html:28
 msgid "Invoice Details"
 msgstr "Detaily faktury"
 
-#: templates/admin/edit_invoice.html:46 templates/admin/new_invoice.html:44
+#: templates/admin/edit_invoice.html:46 templates/admin/new_invoice.html:47
 msgid "VAT Number (if applicable)"
 msgstr "DIČ (pokud je k dispozici)"
 
-#: templates/admin/edit_invoice.html:55 templates/admin/new_invoice.html:52
+#: templates/admin/edit_invoice.html:55 templates/admin/new_invoice.html:55
 msgid "Client Address"
 msgstr "Adresa klienta"
 
-#: templates/admin/edit_invoice.html:93 templates/admin/new_invoice.html:88
+#: templates/admin/edit_invoice.html:93 templates/admin/new_invoice.html:91
 #: templates/admin/view_invoice.html:81
 msgid "Invoice Items"
 msgstr "Položky faktury"
 
-#: templates/admin/edit_invoice.html:102 templates/admin/new_invoice.html:97
+#: templates/admin/edit_invoice.html:102 templates/admin/new_invoice.html:100
 msgid "Add Item"
 msgstr "Přidat položku"
 
-#: templates/admin/edit_invoice.html:111 templates/admin/new_invoice.html:106
+#: templates/admin/edit_invoice.html:111 templates/admin/new_invoice.html:109
 #: templates/admin/view_invoice.html:126
 msgid "Notes"
 msgstr "Poznámky"
 
-#: templates/admin/edit_invoice.html:115 templates/admin/new_invoice.html:110
+#: templates/admin/edit_invoice.html:115 templates/admin/new_invoice.html:113
 msgid "Additional notes or terms..."
 msgstr "Dodatečné poznámky nebo podmínky..."
 
-#: templates/admin/edit_invoice.html:124 templates/admin/new_invoice.html:119
+#: templates/admin/edit_invoice.html:124 templates/admin/new_invoice.html:122
 #: templates/admin/view_invoice.html:139
 msgid "Summary"
 msgstr "Souhrn"
 
 #: templates/admin/edit_invoice.html:137 templates/admin/housekeeping.html:20
-#: templates/admin/housekeeping.html:48 templates/admin/new_invoice.html:132
+#: templates/admin/housekeeping.html:48 templates/admin/new_invoice.html:135
 #: templates/admin/view_invoice.html:152
 #: templates/housekeeper/dashboard.html:25
 msgid "Total"
@@ -1925,42 +1930,37 @@ msgid "Update Invoice"
 msgstr "Aktualizovat fakturu"
 
 #: templates/admin/edit_invoice.html:149 templates/admin/invoices.html:166
-#: templates/admin/new_invoice.html:143 templates/admin/view_invoice.html:223
+#: templates/admin/new_invoice.html:146 templates/admin/view_invoice.html:223
 #: templates/housekeeper/dashboard.html:135
 msgid "Cancel"
 msgstr "Zrušit"
 
-#: templates/admin/edit_invoice.html:170 templates/admin/new_invoice.html:163
+#: templates/admin/edit_invoice.html:172 templates/admin/new_invoice.html:168
 #: templates/admin/settings.html:278 templates/admin/view_invoice.html:89
 msgid "Description"
 msgstr "Popis"
 
-#: templates/admin/edit_invoice.html:175 templates/admin/new_invoice.html:167
+#: templates/admin/edit_invoice.html:177 templates/admin/new_invoice.html:172
 #: templates/admin/view_invoice.html:90
 msgid "Quantity"
 msgstr "Množství"
 
-#: templates/admin/edit_invoice.html:180 templates/admin/new_invoice.html:172
+#: templates/admin/edit_invoice.html:182 templates/admin/new_invoice.html:177
 #: templates/admin/view_invoice.html:91
 msgid "Unit Price"
 msgstr "Jednotková cena"
 
-#: templates/admin/edit_invoice.html:185 templates/admin/new_invoice.html:177
-#: templates/admin/view_invoice.html:92
-msgid "VAT %"
-msgstr "DPH %%"
-
-#: templates/admin/edit_invoice.html:198 templates/admin/new_invoice.html:190
+#: templates/admin/edit_invoice.html:200 templates/admin/new_invoice.html:195
 #: templates/admin/view_invoice.html:93
 msgid "Line Total"
 msgstr "Řádek celkem"
 
-#: templates/admin/edit_invoice.html:201 templates/admin/new_invoice.html:193
+#: templates/admin/edit_invoice.html:203 templates/admin/new_invoice.html:198
 #: templates/admin/view_invoice.html:94
 msgid "VAT Amount"
 msgstr "Částka DPH"
 
-#: templates/admin/edit_invoice.html:204 templates/admin/new_invoice.html:196
+#: templates/admin/edit_invoice.html:206 templates/admin/new_invoice.html:201
 #: templates/admin/view_invoice.html:95
 msgid "Total with VAT"
 msgstr "Celkem s DPH"
@@ -2330,7 +2330,7 @@ msgstr "Heslo"
 msgid "Back to Invoices"
 msgstr "Zpět k fakturám"
 
-#: templates/admin/new_invoice.html:140
+#: templates/admin/new_invoice.html:143
 msgid "Create Invoice"
 msgstr "Vytvořit fakturu"
 
@@ -2869,6 +2869,11 @@ msgstr "Informace o klientovi"
 #: templates/admin/view_invoice.html:66
 msgid "Invoice Information"
 msgstr "Informace o faktuře"
+
+#: templates/admin/view_invoice.html:92
+#, fuzzy
+msgid "VAT"
+msgstr "DPH"
 
 #: templates/admin/view_invoice.html:116
 msgid "No items found for this invoice."

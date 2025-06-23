@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-06-23 11:56+0200\n"
+"POT-Creation-Date: 2025-06-23 12:45+0200\n"
 "PO-Revision-Date: 2025-06-23 01:07+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -18,105 +18,105 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: app.py:441
+#: app.py:440
 #, python-format
 msgid "Thank you for your message, %(name)s! We will get back to you soon."
 msgstr ""
 
-#: app.py:468
+#: app.py:467
 msgid "Please enter a confirmation code"
 msgstr ""
 
-#: app.py:474 app.py:491
+#: app.py:473 app.py:490
 msgid "Invalid confirmation code. Please check your code and try again."
 msgstr ""
 
-#: app.py:530
+#: app.py:529
 #, python-format
 msgid "Document photo is required for %(age_category)s guests"
 msgstr ""
 
-#: app.py:669
+#: app.py:668
 msgid ""
 "Registration submitted successfully! You will receive an email once it is"
 " reviewed."
 msgstr ""
 
-#: app.py:688
+#: app.py:687
 msgid "Invalid username or password"
 msgstr ""
 
-#: app.py:751
+#: app.py:750
 msgid "Settings updated successfully!"
 msgstr ""
 
-#: app.py:763
+#: app.py:762
 #, python-format
 msgid "Airbnb sync successful: %(message)s"
 msgstr ""
 
-#: app.py:765
+#: app.py:764
 #, python-format
 msgid "Airbnb sync failed: %(message)s"
 msgstr ""
 
-#: app.py:790
+#: app.py:789
 msgid "Trip created successfully!"
 msgstr ""
 
-#: app.py:831
+#: app.py:830
 msgid "Registration approved and email sent to user"
 msgstr ""
 
-#: app.py:848
+#: app.py:847
 msgid "Registration rejected and email sent to user"
 msgstr ""
 
-#: app.py:918
+#: app.py:917
 msgid "Invoice created successfully!"
 msgstr ""
 
-#: app.py:984
+#: app.py:983
 msgid "Invoice updated successfully!"
 msgstr ""
 
-#: app.py:1006
+#: app.py:1005
 msgid "Invoice deleted successfully!"
 msgstr ""
 
-#: app.py:1022
+#: app.py:1021
 #, python-format
 msgid "Invoice status changed from %(old_status)s to %(new_status)s successfully!"
 msgstr ""
 
-#: app.py:1024
+#: app.py:1023
 msgid "Invalid status provided."
 msgstr ""
 
-#: app.py:1190
+#: app.py:1189
 msgid "All data has been reset successfully! Admin accounts have been preserved."
 msgstr ""
 
-#: app.py:1195
+#: app.py:1194
 #, python-format
 msgid ""
 "Error resetting data: %(error)s. Please use the command line tool: python"
 " quick_reset.py --confirm"
 msgstr ""
 
-#: app.py:1541
+#: app.py:1540
 msgid ""
 "Sample data has been seeded successfully! Created 5 trips, 7 "
 "registrations (including 1 single-person pending), 3 invoices with "
 "realistic data, and updated admin contact information."
 msgstr ""
 
-#: app.py:1544
+#: app.py:1543
 #, python-format
 msgid "Error seeding data: %(error)s"
 msgstr ""
 
-#: app.py:1767
+#: app.py:1766
 msgid ""
 "Database has been reset and seeded with sample data successfully! Admin "
 "accounts have been preserved. Created 5 trips and 6 registrations with "
@@ -124,18 +124,18 @@ msgid ""
 "directory."
 msgstr ""
 
-#: app.py:1772
+#: app.py:1771
 #, python-format
 msgid ""
 "Error during reset and seed: %(error)s. Please use the command line tool:"
 " python quick_reset.py --reset-seed"
 msgstr ""
 
-#: app.py:1779
+#: app.py:1778
 msgid "Your registration has been approved!"
 msgstr ""
 
-#: app.py:1783
+#: app.py:1782
 #, python-format
 msgid ""
 "\n"
@@ -153,11 +153,11 @@ msgid ""
 "        "
 msgstr ""
 
-#: app.py:1803
+#: app.py:1802
 msgid "Registration Update Required"
 msgstr ""
 
-#: app.py:1807
+#: app.py:1806
 #, python-format
 msgid ""
 "\n"
@@ -176,38 +176,38 @@ msgid ""
 "        "
 msgstr ""
 
-#: app.py:1880 app.py:1885
+#: app.py:1879 app.py:1884
 msgid "No photo selected"
 msgstr ""
 
-#: app.py:1901
+#: app.py:1900
 msgid "Photo uploaded successfully"
 msgstr ""
 
-#: app.py:1903
+#: app.py:1902
 msgid "Invalid file type. Please upload JPG or PNG files only."
 msgstr ""
 
-#: app.py:1953
+#: app.py:1952
 msgid "Housekeeping pay updated."
 msgstr ""
 
-#: app.py:1973 app.py:2021 app.py:2147
+#: app.py:1972 app.py:2023 app.py:2155
 msgid "Registration ID"
 msgstr ""
 
-#: app.py:1974 app.py:2022 app.py:2148 templates/admin/trip_breakdown.html:194
+#: app.py:1973 app.py:2024 app.py:2156 templates/admin/trip_breakdown.html:194
 #: templates/confirm.html:31
 msgid "Trip Title"
 msgstr ""
 
-#: app.py:1975 templates/admin/registration_breakdown.html:179
+#: app.py:1974 templates/admin/registration_breakdown.html:179
 #: templates/admin/view_invoice.html:56 templates/contact.html:45
 #: templates/gdpr.html:35 templates/gdpr.html:44 templates/gdpr.html:253
 msgid "Email"
 msgstr ""
 
-#: app.py:1976 app.py:2144 templates/admin/housekeeping.html:76
+#: app.py:1975 app.py:2152 templates/admin/housekeeping.html:76
 #: templates/admin/housekeeping.html:98
 #: templates/admin/invoice_breakdown.html:198 templates/admin/invoices.html:46
 #: templates/admin/invoices.html:106
@@ -217,170 +217,170 @@ msgstr ""
 msgid "Status"
 msgstr ""
 
-#: app.py:1977 templates/admin/registration_breakdown.html:182
+#: app.py:1976 templates/admin/registration_breakdown.html:182
 msgid "Language"
 msgstr ""
 
-#: app.py:1978 app.py:2029 app.py:2074 app.py:2145
+#: app.py:1977 app.py:2031 app.py:2079 app.py:2153
 msgid "Created Date"
 msgstr ""
 
-#: app.py:1979 app.py:2146
+#: app.py:1978 app.py:2154
 msgid "Updated Date"
 msgstr ""
 
-#: app.py:1980
+#: app.py:1979
 msgid "Guest Count"
 msgstr ""
 
-#: app.py:1981
+#: app.py:1980
 msgid "Admin Comment"
 msgstr ""
 
-#: app.py:2020
+#: app.py:2022
 msgid "Guest ID"
 msgstr ""
 
-#: app.py:2023 templates/register.html:128
+#: app.py:2025 templates/register.html:128
 msgid "First Name"
 msgstr ""
 
-#: app.py:2024 templates/register.html:134
+#: app.py:2026 templates/register.html:134
 msgid "Last Name"
 msgstr ""
 
-#: app.py:2025 templates/admin/guest_breakdown.html:199
+#: app.py:2027 templates/admin/guest_breakdown.html:199
 #: templates/register.html:140
 msgid "Age Category"
 msgstr ""
 
-#: app.py:2026 templates/admin/guest_breakdown.html:200
+#: app.py:2028 templates/admin/guest_breakdown.html:200
 #: templates/confirm.html:70 templates/register.html:152
 msgid "Document Type"
 msgstr ""
 
-#: app.py:2027 templates/confirm.html:71 templates/register.html:163
+#: app.py:2029 templates/confirm.html:71 templates/register.html:163
 msgid "Document Number"
 msgstr ""
 
-#: app.py:2028 templates/admin/guest_breakdown.html:75
+#: app.py:2030 templates/admin/guest_breakdown.html:75
 #: templates/admin/guest_breakdown.html:173
 #: templates/admin/guest_breakdown.html:202 templates/confirm.html:74
 msgid "GDPR Consent"
 msgstr ""
 
-#: app.py:2069 templates/admin/housekeeping.html:96
+#: app.py:2074 templates/admin/housekeeping.html:96
 #: templates/housekeeper/dashboard.html:54
 msgid "Trip ID"
 msgstr ""
 
-#: app.py:2070
+#: app.py:2075
 msgid "Title"
 msgstr ""
 
-#: app.py:2071 templates/confirm.html:32
+#: app.py:2076 templates/confirm.html:32
 msgid "Start Date"
 msgstr ""
 
-#: app.py:2072 templates/confirm.html:34
+#: app.py:2077 templates/confirm.html:34
 msgid "End Date"
 msgstr ""
 
-#: app.py:2073 templates/admin/trip_breakdown.html:196
+#: app.py:2078 templates/admin/trip_breakdown.html:196
 msgid "Max Guests"
 msgstr ""
 
-#: app.py:2075 templates/admin/trip_breakdown.html:45
+#: app.py:2080 templates/admin/trip_breakdown.html:45
 #: templates/admin/trip_breakdown.html:148
 #: templates/admin/trip_breakdown.html:169
 msgid "Airbnb Synced"
 msgstr ""
 
-#: app.py:2076
+#: app.py:2081
 msgid "Airbnb Guest Name"
 msgstr ""
 
-#: app.py:2077
+#: app.py:2082
 msgid "Airbnb Guest Email"
 msgstr ""
 
-#: app.py:2078
+#: app.py:2083
 msgid "Airbnb Guest Count"
 msgstr ""
 
-#: app.py:2079 templates/confirm.html:39 templates/register.html:15
+#: app.py:2084 templates/confirm.html:39 templates/register.html:15
 msgid "Confirmation Code"
 msgstr ""
 
-#: app.py:2080
+#: app.py:2085
 msgid "Registration Count"
 msgstr ""
 
-#: app.py:2081
+#: app.py:2086
 msgid "Pending Count"
 msgstr ""
 
-#: app.py:2082
+#: app.py:2087
 msgid "Approved Count"
 msgstr ""
 
-#: app.py:2083
+#: app.py:2088
 msgid "Rejected Count"
 msgstr ""
 
-#: app.py:2133
+#: app.py:2141
 msgid "Invoice ID"
 msgstr ""
 
-#: app.py:2134 templates/admin/invoice_breakdown.html:195
+#: app.py:2142 templates/admin/invoice_breakdown.html:195
 #: templates/admin/view_invoice.html:67
 msgid "Invoice Number"
 msgstr ""
 
-#: app.py:2135 templates/admin/edit_invoice.html:29
-#: templates/admin/new_invoice.html:29 templates/confirm.html:96
+#: app.py:2143 templates/admin/edit_invoice.html:29
+#: templates/admin/new_invoice.html:32 templates/confirm.html:96
 #: templates/register.html:70
 msgid "Client Name"
 msgstr ""
 
-#: app.py:2136 templates/admin/edit_invoice.html:36
-#: templates/admin/new_invoice.html:35
+#: app.py:2144 templates/admin/edit_invoice.html:36
+#: templates/admin/new_invoice.html:38
 msgid "Client Email"
 msgstr ""
 
-#: app.py:2137
+#: app.py:2145
 msgid "Client VAT Number"
 msgstr ""
 
-#: app.py:2138 templates/admin/edit_invoice.html:63
+#: app.py:2146 templates/admin/edit_invoice.html:63
 #: templates/admin/invoice_breakdown.html:200 templates/admin/invoices.html:43
-#: templates/admin/new_invoice.html:59 templates/admin/view_invoice.html:68
+#: templates/admin/new_invoice.html:62 templates/admin/view_invoice.html:68
 msgid "Issue Date"
 msgstr ""
 
-#: app.py:2139 templates/admin/edit_invoice.html:70
-#: templates/admin/invoices.html:44 templates/admin/new_invoice.html:66
+#: app.py:2147 templates/admin/edit_invoice.html:70
+#: templates/admin/invoices.html:44 templates/admin/new_invoice.html:69
 #: templates/admin/view_invoice.html:70
 msgid "Due Date"
 msgstr ""
 
-#: app.py:2140 templates/admin/edit_invoice.html:128
-#: templates/admin/new_invoice.html:123 templates/admin/view_invoice.html:143
+#: app.py:2148 templates/admin/edit_invoice.html:128
+#: templates/admin/new_invoice.html:126 templates/admin/view_invoice.html:143
 msgid "Subtotal"
 msgstr ""
 
-#: app.py:2141 templates/admin/edit_invoice.html:132
-#: templates/admin/new_invoice.html:127 templates/admin/view_invoice.html:147
+#: app.py:2149 templates/admin/edit_invoice.html:132
+#: templates/admin/new_invoice.html:130 templates/admin/view_invoice.html:147
 msgid "VAT Total"
 msgstr ""
 
-#: app.py:2142 templates/admin/invoices.html:45
+#: app.py:2150 templates/admin/invoices.html:45
 msgid "Total Amount"
 msgstr ""
 
-#: app.py:2143 templates/admin/edit_invoice.html:77
+#: app.py:2151 templates/admin/edit_invoice.html:77
 #: templates/admin/invoice_breakdown.html:199
-#: templates/admin/new_invoice.html:72 templates/admin/view_invoice.html:72
+#: templates/admin/new_invoice.html:75 templates/admin/view_invoice.html:72
 msgid "Currency"
 msgstr ""
 
@@ -1757,44 +1757,49 @@ msgstr ""
 msgid "Back to Invoice"
 msgstr ""
 
-#: templates/admin/edit_invoice.html:23 templates/admin/new_invoice.html:23
+#: templates/admin/edit_invoice.html:17 templates/admin/new_invoice.html:17
+#: templates/admin/new_invoice.html:19
+msgid "VAT Rate"
+msgstr ""
+
+#: templates/admin/edit_invoice.html:23 templates/admin/new_invoice.html:26
 #: templates/admin/view_invoice.html:28
 msgid "Invoice Details"
 msgstr ""
 
-#: templates/admin/edit_invoice.html:46 templates/admin/new_invoice.html:44
+#: templates/admin/edit_invoice.html:46 templates/admin/new_invoice.html:47
 msgid "VAT Number (if applicable)"
 msgstr ""
 
-#: templates/admin/edit_invoice.html:55 templates/admin/new_invoice.html:52
+#: templates/admin/edit_invoice.html:55 templates/admin/new_invoice.html:55
 msgid "Client Address"
 msgstr ""
 
-#: templates/admin/edit_invoice.html:93 templates/admin/new_invoice.html:88
+#: templates/admin/edit_invoice.html:93 templates/admin/new_invoice.html:91
 #: templates/admin/view_invoice.html:81
 msgid "Invoice Items"
 msgstr ""
 
-#: templates/admin/edit_invoice.html:102 templates/admin/new_invoice.html:97
+#: templates/admin/edit_invoice.html:102 templates/admin/new_invoice.html:100
 msgid "Add Item"
 msgstr ""
 
-#: templates/admin/edit_invoice.html:111 templates/admin/new_invoice.html:106
+#: templates/admin/edit_invoice.html:111 templates/admin/new_invoice.html:109
 #: templates/admin/view_invoice.html:126
 msgid "Notes"
 msgstr ""
 
-#: templates/admin/edit_invoice.html:115 templates/admin/new_invoice.html:110
+#: templates/admin/edit_invoice.html:115 templates/admin/new_invoice.html:113
 msgid "Additional notes or terms..."
 msgstr ""
 
-#: templates/admin/edit_invoice.html:124 templates/admin/new_invoice.html:119
+#: templates/admin/edit_invoice.html:124 templates/admin/new_invoice.html:122
 #: templates/admin/view_invoice.html:139
 msgid "Summary"
 msgstr ""
 
 #: templates/admin/edit_invoice.html:137 templates/admin/housekeeping.html:20
-#: templates/admin/housekeeping.html:48 templates/admin/new_invoice.html:132
+#: templates/admin/housekeeping.html:48 templates/admin/new_invoice.html:135
 #: templates/admin/view_invoice.html:152
 #: templates/housekeeper/dashboard.html:25
 msgid "Total"
@@ -1805,42 +1810,37 @@ msgid "Update Invoice"
 msgstr ""
 
 #: templates/admin/edit_invoice.html:149 templates/admin/invoices.html:166
-#: templates/admin/new_invoice.html:143 templates/admin/view_invoice.html:223
+#: templates/admin/new_invoice.html:146 templates/admin/view_invoice.html:223
 #: templates/housekeeper/dashboard.html:135
 msgid "Cancel"
 msgstr ""
 
-#: templates/admin/edit_invoice.html:170 templates/admin/new_invoice.html:163
+#: templates/admin/edit_invoice.html:172 templates/admin/new_invoice.html:168
 #: templates/admin/settings.html:278 templates/admin/view_invoice.html:89
 msgid "Description"
 msgstr ""
 
-#: templates/admin/edit_invoice.html:175 templates/admin/new_invoice.html:167
+#: templates/admin/edit_invoice.html:177 templates/admin/new_invoice.html:172
 #: templates/admin/view_invoice.html:90
 msgid "Quantity"
 msgstr ""
 
-#: templates/admin/edit_invoice.html:180 templates/admin/new_invoice.html:172
+#: templates/admin/edit_invoice.html:182 templates/admin/new_invoice.html:177
 #: templates/admin/view_invoice.html:91
 msgid "Unit Price"
 msgstr ""
 
-#: templates/admin/edit_invoice.html:185 templates/admin/new_invoice.html:177
-#: templates/admin/view_invoice.html:92
-msgid "VAT %"
-msgstr ""
-
-#: templates/admin/edit_invoice.html:198 templates/admin/new_invoice.html:190
+#: templates/admin/edit_invoice.html:200 templates/admin/new_invoice.html:195
 #: templates/admin/view_invoice.html:93
 msgid "Line Total"
 msgstr ""
 
-#: templates/admin/edit_invoice.html:201 templates/admin/new_invoice.html:193
+#: templates/admin/edit_invoice.html:203 templates/admin/new_invoice.html:198
 #: templates/admin/view_invoice.html:94
 msgid "VAT Amount"
 msgstr ""
 
-#: templates/admin/edit_invoice.html:204 templates/admin/new_invoice.html:196
+#: templates/admin/edit_invoice.html:206 templates/admin/new_invoice.html:201
 #: templates/admin/view_invoice.html:95
 msgid "Total with VAT"
 msgstr ""
@@ -2178,7 +2178,7 @@ msgstr ""
 msgid "Back to Invoices"
 msgstr ""
 
-#: templates/admin/new_invoice.html:140
+#: templates/admin/new_invoice.html:143
 msgid "Create Invoice"
 msgstr ""
 
@@ -2689,6 +2689,10 @@ msgstr ""
 msgid "Invoice Information"
 msgstr ""
 
+#: templates/admin/view_invoice.html:92
+msgid "VAT"
+msgstr ""
+
 #: templates/admin/view_invoice.html:116
 msgid "No items found for this invoice."
 msgstr ""
@@ -2795,5 +2799,8 @@ msgstr ""
 #~ msgstr ""
 
 #~ msgid "You can also trigger manual sync from the trips page"
+#~ msgstr ""
+
+#~ msgid "VAT %"
 #~ msgstr ""
 

@@ -14,7 +14,10 @@
     </div>
 </div>
 
-<form method="POST" id="invoiceForm">
+<form method="POST" id="invoiceForm" data-vat-label="{{ _('VAT Rate') }}">
+    <!-- Hidden element to store translations for JavaScript -->
+    <div data-vat-label="{{ _('VAT Rate') }}" style="display: none;"></div>
+
     <div class="row">
         <!-- Invoice Details -->
         <div class="col-lg-8">
@@ -151,6 +154,8 @@
 {% block scripts %}
 <script>
     let itemCount = 0;
+    // Get translation from data attribute to avoid Jinja2 format string issues
+    const vatLabel = document.querySelector('[data-vat-label]').getAttribute('data-vat-label');
 
     function addInvoiceItem() {
         const container = document.getElementById('invoiceItems');
@@ -174,7 +179,7 @@
                        value="0" min="0" step="0.01" required onchange="calculateItemTotal(this)">
             </div>
             <div class="col-md-2">
-                <label class="form-label">{{ _('VAT %') }}</label>
+                <label class="form-label">${vatLabel}</label>
                 <input type="number" class="form-control item-vat" name="item_vat_rate_${itemCount}" 
                        value="0" min="0" max="100" step="0.01" onchange="calculateItemTotal(this)">
             </div>
