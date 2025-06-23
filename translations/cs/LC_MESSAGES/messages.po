@@ -62,7 +62,7 @@ msgstr "Synchronizace s Airbnb selhala: %(message)s"
 
 #: app.py:799
 msgid "Trip created successfully!"
-msgstr "Výlet byl úspěšně vytvořen!"
+msgstr "Ubytovanie bylo úspěšně vytvořeno!"
 
 #: app.py:840
 msgid "Registration approved and email sent to user"
@@ -157,8 +157,7 @@ msgid ""
 "Sample data has been seeded successfully! Created 5 trips, 7 "
 "registrations (including 1 single-person pending), 3 invoices with "
 "realistic data, and updated admin contact information."
-msgstr ""
-"Ukázková data byla úspěšně načtena! Vytvořeno 5 výletů, 7 registrací "
+msgstr "Ukázková data byla úspěšně načtena! Vytvořeno 5 ubytování, 7 registrací "
 "(včetně 1 čekající jednotlivce), 3 faktury s realistickými daty a "
 "aktualizovány kontaktní informace administrátora."
 
@@ -173,9 +172,8 @@ msgid ""
 "accounts have been preserved. Created 5 trips and 6 registrations with "
 "various statuses. Sample document images have been copied to uploads "
 "directory."
-msgstr ""
-"Databáze byla úspěšně resetována a načtena ukázkovými daty! "
-"Administrátorské účty byly zachovány. Vytvořeno 5 výletů a 6 registrací s"
+msgstr "Databáze byla úspěšně resetována a načtena ukázkovými daty! "
+"Administrátorské účty byly zachovány. Vytvořeno 5 ubytování a 6 registrací s"
 " různými stavy. Ukázkové obrázky dokumentů byly zkopírovány do složky "
 "uploads."
 
@@ -279,7 +277,7 @@ msgstr "ID registrace"
 #: app.py:2079 app.py:2130 app.py:2262 templates/admin/trip_breakdown.html:194
 #: templates/confirm.html:31
 msgid "Trip Title"
-msgstr "Název výletu"
+msgstr "Název ubytování"
 
 #: app.py:2080 templates/admin/edit_user.html:11
 #: templates/admin/new_user.html:11
@@ -361,12 +359,12 @@ msgstr "Souhlas s GDPR"
 #: templates/housekeeper/dashboard.html:54
 #, fuzzy
 msgid "Trip ID"
-msgstr "Název výletu"
+msgstr "Název ubytování"
 
 #: app.py:2181
 #, fuzzy
 msgid "Title"
-msgstr "Název výletu"
+msgstr "Název ubytování"
 
 #: app.py:2182 templates/confirm.html:32
 msgid "Start Date"
@@ -622,7 +620,7 @@ msgstr "Flexibilita"
 
 #: templates/about.html:76
 msgid "Customizable trip settings"
-msgstr "Přizpůsobitelná nastavení výletů"
+msgstr "Přizpůsobitelná nastavení ubytování"
 
 #: templates/about.html:77
 msgid "Multiple document types supported"
@@ -723,7 +721,7 @@ msgstr ""
 
 #: templates/confirm.html:26
 msgid "Trip Information"
-msgstr "Informace o výletu"
+msgstr "Informace o ubytování"
 
 #: templates/confirm.html:37
 msgid "Maximum Guests"
@@ -1008,7 +1006,7 @@ msgstr "Účely zpracování:"
 
 #: templates/gdpr.html:91
 msgid "Process guest registrations for trips"
-msgstr "Zpracování registrací hostů na výlety"
+msgstr "Zpracování registrací hostů pro ubytování"
 
 #: templates/gdpr.html:92
 msgid "Verify guest identities and documents"
@@ -1036,11 +1034,11 @@ msgstr "Vaše údaje můžeme sdílet s:"
 
 #: templates/gdpr.html:107
 msgid "Trip Organizers"
-msgstr "Organizátoři výletů"
+msgstr "Organizátoři ubytování"
 
 #: templates/gdpr.html:107
 msgid "Only the specific admin managing your trip"
-msgstr "Pouze konkrétní administrátor spravující váš výlet"
+msgstr "Pouze konkrétní administrátor spravující vaše ubytování"
 
 #: templates/gdpr.html:109
 msgid "Service Providers"
@@ -1423,7 +1421,7 @@ msgstr "Obdržíte emailové oznámení s výsledkem"
 
 #: templates/index.html:59
 msgid "Available Trips"
-msgstr "Dostupné výlety"
+msgstr "Dostupná ubytování"
 
 #: templates/index.html:60
 msgid ""
@@ -1431,7 +1429,7 @@ msgid ""
 "specific\n"
 "                    trip."
 msgstr ""
-"Kontaktujte organizátora výletu pro získání registračního odkazu pro váš "
+"Kontaktujte organizátora ubytování pro získání registračního odkazu pro váš "
 "konkrétní výlet."
 
 #: templates/index.html:65
@@ -1690,7 +1688,7 @@ msgstr "Celkem výletů"
 #: templates/admin/trip_breakdown.html:30
 #: templates/admin/trip_breakdown.html:168
 msgid "Total Trips"
-msgstr "Celkem výletů"
+msgstr "Celkem ubytování"
 
 #: templates/admin/breakdowns.html:70 templates/admin/invoice_breakdown.html:45
 #: templates/admin/invoice_breakdown.html:159
@@ -1724,7 +1722,7 @@ msgstr "Odeslat registraci"
 #: templates/admin/breakdowns.html:97
 #, fuzzy
 msgid "Trip-wise registration analysis"
-msgstr "Přezkoumat registrace"
+msgstr "Analýza registrací podle ubytování"
 
 #: templates/admin/breakdowns.html:98
 msgid "Language preference breakdown"
@@ -1776,7 +1774,7 @@ msgstr "Registrace hostů"
 #: templates/admin/breakdowns.html:124
 #, fuzzy
 msgid "Trip-wise guest distribution"
-msgstr "Registrace hostů"
+msgstr "Rozdělení hostů podle ubytování"
 
 #: templates/admin/breakdowns.html:128
 #, fuzzy
@@ -1787,7 +1785,7 @@ msgstr "Přezkoumat registrace"
 #: templates/admin/trip_breakdown.html:10
 #, fuzzy
 msgid "Trip Analytics"
-msgstr "Organizátoři výletů"
+msgstr "Analýza ubytování"
 
 #: templates/admin/breakdowns.html:141
 msgid ""
@@ -1811,16 +1809,16 @@ msgstr "Jak to funguje:"
 
 #: templates/admin/breakdowns.html:147
 msgid "Trip duration analysis"
-msgstr ""
+msgstr "Analýza délky ubytování"
 
 #: templates/admin/breakdowns.html:148
 msgid "Monthly trip creation trends"
-msgstr ""
+msgstr "Měsíční trendy vytváření ubytování"
 
 #: templates/admin/breakdowns.html:152
 #, fuzzy
 msgid "View Trip Analytics"
-msgstr "Zobrazit všechny výlety"
+msgstr "Zobrazit analýzu ubytování"
 
 #: templates/admin/breakdowns.html:162 templates/admin/invoice_breakdown.html:3
 #: templates/admin/invoice_breakdown.html:10
@@ -1886,7 +1884,7 @@ msgstr "hostů"
 #: templates/admin/breakdowns.html:207
 #, fuzzy
 msgid "Export Trips"
-msgstr "Poslední výlety"
+msgstr "Exportovat ubytování"
 
 #: templates/admin/breakdowns.html:212
 #, fuzzy
@@ -1907,19 +1905,19 @@ msgstr "Spravujte svůj systém"
 
 #: templates/admin/dashboard.html:65
 msgid "Recent Trips"
-msgstr "Poslední výlety"
+msgstr "Poslední ubytování"
 
 #: templates/admin/dashboard.html:84
 msgid "No trips created yet."
-msgstr "Zatím nebyly vytvořeny žádné výlety."
+msgstr "Zatím nebyla vytvořena žádná ubytování."
 
 #: templates/admin/dashboard.html:88
 msgid "View All Trips"
-msgstr "Zobrazit všechny výlety"
+msgstr "Zobrazit všechna ubytování"
 
 #: templates/admin/dashboard.html:91
 msgid "New Trip"
-msgstr "Nový výlet"
+msgstr "Nové ubytování"
 
 #: templates/admin/dashboard.html:108
 msgid "Review Registrations"
@@ -2942,7 +2940,7 @@ msgstr ""
 #: templates/admin/trip_breakdown.html:163
 #, fuzzy
 msgid "Trip Overview"
-msgstr "Název výletu"
+msgstr "Název ubytování"
 
 #: templates/admin/trip_breakdown.html:173
 msgid "Average Duration"
@@ -2951,7 +2949,7 @@ msgstr ""
 #: templates/admin/trip_breakdown.html:187
 #, fuzzy
 msgid "Trip Details"
-msgstr "Název výletu"
+msgstr "Název ubytování"
 
 #: templates/admin/trip_breakdown.html:195
 #, fuzzy
@@ -3268,7 +3266,7 @@ msgid "Flexibility"
 msgstr "Flexibilita"
 
 msgid "Customizable trip settings"
-msgstr "Přizpůsobitelná nastavení výletů"
+msgstr "Přizpůsobitelná nastavení ubytování"
 
 msgid "Multiple document types supported"
 msgstr "Podporovány různé typy dokumentů"

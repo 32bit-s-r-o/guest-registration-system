@@ -62,7 +62,7 @@ msgstr ""
 
 #: app.py:799
 msgid "Trip created successfully!"
-msgstr ""
+msgstr "Accommodation created successfully!"
 
 #: app.py:840
 msgid "Registration approved and email sent to user"
@@ -142,10 +142,13 @@ msgstr ""
 
 #: app.py:1630
 msgid ""
-"Sample data has been seeded successfully! Created 5 trips, 7 "
+"Sample data has been seeded successfully! Created 5 accommodations, 7 "
 "registrations (including 1 single-person pending), 3 invoices with "
 "realistic data, and updated admin contact information."
 msgstr ""
+"Sample data has been seeded successfully! Created 5 accommodations, 7 "
+"registrations (including 1 single-person pending), 3 invoices with "
+"realistic data, and updated admin contact information."
 
 #: app.py:1633
 #, python-format
@@ -155,10 +158,14 @@ msgstr ""
 #: app.py:1856
 msgid ""
 "Database has been reset and seeded with sample data successfully! Admin "
-"accounts have been preserved. Created 5 trips and 6 registrations with "
+"accounts have been preserved. Created 5 accommodations and 6 registrations with "
 "various statuses. Sample document images have been copied to uploads "
 "directory."
 msgstr ""
+"Database has been reset and seeded with sample data successfully! Admin "
+"accounts have been preserved. Created 5 accommodations and 6 registrations with "
+"various statuses. Sample document images have been copied to uploads "
+"directory."
 
 #: app.py:1861
 #, python-format
@@ -227,13 +234,13 @@ msgid "Housekeeping pay updated."
 msgstr ""
 
 #: app.py:2078 app.py:2129 app.py:2261
-msgid "Registration ID"
-msgstr ""
+msgid "Trip ID"
+msgstr "Accommodation ID"
 
 #: app.py:2079 app.py:2130 app.py:2262 templates/admin/trip_breakdown.html:194
 #: templates/confirm.html:31
 msgid "Trip Title"
-msgstr ""
+msgstr "Accommodation Title"
 
 #: app.py:2080 templates/admin/edit_user.html:11
 #: templates/admin/new_user.html:11
@@ -309,7 +316,7 @@ msgstr ""
 #: app.py:2180 templates/admin/housekeeping.html:96
 #: templates/housekeeper/dashboard.html:54
 msgid "Trip ID"
-msgstr ""
+msgstr "Accommodation ID"
 
 #: app.py:2181
 msgid "Title"
