@@ -88,8 +88,8 @@ def quick_seed():
     
     try:
         with app.app_context():
-            # Use existing admin or create one if none exists
-            existing_admin = User.query.first()
+            # Use existing admin or create one if none exists (not deleted)
+            existing_admin = User.query.filter_by(is_deleted=False).first()
             if not existing_admin:
                 admin = User(
                     username='admin',

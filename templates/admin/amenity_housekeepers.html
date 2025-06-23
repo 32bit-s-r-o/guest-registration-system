@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Manage Housekeepers for') }} {{ amenity.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ _('Manage Housekeepers for') }} "{{ amenity.name }}"</h1>
+                <a href="{{ url_for('admin_amenities') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> {{ _('Back to Amenities') }}
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">{{ _('Assign New Housekeeper') }}</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('assign_housekeeper_to_amenity', amenity_id=amenity.id) }}">
+                        <div class="mb-3">
+                            <label for="housekeeper_id" class="form-label">{{ _('Select Housekeeper') }}</label>
+                            <select class="form-select" id="housekeeper_id" name="housekeeper_id" required>
+                                <option value="">{{ _('Choose a housekeeper...') }}</option>
+                                {% for housekeeper in housekeepers %}
+                                {% if housekeeper.id not in assigned_housekeeper_ids %}
+                                <option value="{{ housekeeper.id }}">{{ housekeeper.username }} ({{ housekeeper.email
+                                    }})</option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="is_default" name="is_default">
+                                <label class="form-check-label" for="is_default">
+                                    {{ _('Set as default housekeeper for this amenity') }}
+                                </label>
+                            </div>
+                            <small class="form-text text-muted">
+                                {{ _('Default housekeepers will be automatically assigned to new housekeeping tasks
+                                created during calendar sync.') }}
+                            </small>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> {{ _('Assign Housekeeper') }}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">{{ _('Current Assignments') }}</h5>
+                </div>
+                <div class="card-body">
+                    {% if assignments %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>{{ _('Housekeeper') }}</th>
+                                    <th>{{ _('Status') }}</th>
+                                    <th>{{ _('Actions') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for assignment in assignments %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ assignment.housekeeper.username }}</strong><br>
+                                        <small class="text-muted">{{ assignment.housekeeper.email }}</small>
+                                    </td>
+                                    <td>
+                                        {% if assignment.is_default %}
+                                        <span class="badge bg-success">{{ _('Default') }}</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">{{ _('Assigned') }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if not assignment.is_default %}
+                                        <form method="POST"
+                                            action="{{ url_for('set_default_housekeeper', amenity_id=amenity.id, assignment_id=assignment.id) }}"
+                                            class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-outline-primary"
+                                                title="{{ _('Set as default') }}">
+                                                <i class="fas fa-star"></i>
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                        <form method="POST"
+                                            action="{{ url_for('remove_housekeeper_from_amenity', amenity_id=amenity.id, assignment_id=assignment.id) }}"
+                                            class="d-inline"
+                                            onsubmit="return confirm('{{ _('Are you sure you want to remove this housekeeper from the amenity?') }}')">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                title="{{ _('Remove') }}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                        <h6 class="text-muted">{{ _('No housekeepers assigned') }}</h6>
+                        <p class="text-muted">{{ _('Assign housekeepers to this amenity to enable automatic task
+                            assignment.') }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if default_assignment %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                <strong>{{ _('Default Housekeeper:') }}</strong>
+                {{ default_assignment.housekeeper.username }} ({{ default_assignment.housekeeper.email }})
+                <br>
+                <small>{{ _('New housekeeping tasks created during calendar sync will be automatically assigned to this
+                    housekeeper.') }}</small>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">{{ _('How it works') }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <i class="fas fa-calendar-sync fa-2x text-primary mb-2"></i>
+                                <h6>{{ _('Calendar Sync') }}</h6>
+                                <p class="text-muted">{{ _('When you sync your calendar, new reservations are
+                                    automatically converted to trips.') }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <i class="fas fa-tasks fa-2x text-success mb-2"></i>
+                                <h6>{{ _('Task Creation') }}</h6>
+                                <p class="text-muted">{{ _('Housekeeping tasks are automatically created for the day
+                                    after each trip ends.') }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <i class="fas fa-user-check fa-2x text-warning mb-2"></i>
+                                <h6>{{ _('Auto Assignment') }}</h6>
+                                <p class="text-muted">{{ _('Tasks are automatically assigned to the default housekeeper
+                                    for the amenity.') }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

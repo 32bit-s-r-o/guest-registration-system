@@ -103,6 +103,7 @@
                 </tr>
             </thead>
             <tbody>
+                {% if tasks %}
                 {% for task in tasks %}
                 <tr>
                     <td>{{ task.date.strftime('%Y-%m-%d') }}</td>
@@ -131,15 +132,57 @@
                     <td>
                         <button type="submit" class="btn btn-sm btn-success">{{ _('Save') }}</button>
                         </form>
+                        <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal"
+                            data-bs-target="#reassignModal{{ task.id }}">
+                            <i class="fas fa-exchange-alt"></i> {{ _('Reassign') }}
+                        </button>
                     </td>
                 </tr>
+                {% endfor %}
                 {% else %}
                 <tr>
                     <td colspan="8" class="text-center">{{ _('No housekeeping tasks found.') }}</td>
                 </tr>
-                {% endfor %}
+                {% endif %}
             </tbody>
         </table>
     </div>
 </div>
+
+<!-- Reassignment Modals -->
+{% for task in tasks %}
+<div class="modal fade" id="reassignModal{{ task.id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ _('Reassign Housekeeping Task') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('reassign_housekeeping_task', task_id=task.id) }}">
+                <div class="modal-body">
+                    <p>{{ _('Current housekeeper:') }} <strong>{{ task.housekeeper.username }}</strong></p>
+                    <p>{{ _('Task:') }} {{ _('Housekeeping for Trip') }} #{{ task.trip_id }} ({{
+                        task.date.strftime('%Y-%m-%d') }})</p>
+
+                    <div class="mb-3">
+                        <label for="housekeeper_id_{{ task.id }}" class="form-label">{{ _('New Housekeeper') }}</label>
+                        <select class="form-select" id="housekeeper_id_{{ task.id }}" name="housekeeper_id" required>
+                            <option value="">{{ _('Select a housekeeper...') }}</option>
+                            {% for hk in housekeepers %}
+                            {% if hk.id != task.housekeeper_id %}
+                            <option value="{{ hk.id }}">{{ hk.username }} ({{ hk.email }})</option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Cancel') }}</button>
+                    <button type="submit" class="btn btn-warning">{{ _('Reassign Task') }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
 {% endblock %}

@@ -89,8 +89,8 @@ def create_admin_user():
     
     try:
         with app.app_context():
-            # Check if admin already exists
-            existing_admin = User.query.first()
+            # Check if admin already exists (not deleted)
+            existing_admin = User.query.filter_by(is_deleted=False).first()
             if existing_admin:
                 print(f"✅ Admin user already exists: {existing_admin.username}")
                 return True

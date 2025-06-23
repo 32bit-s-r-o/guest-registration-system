@@ -137,6 +137,8 @@ class User(UserMixin, db.Model):
     custom_line_1 = db.Column(db.String(200))
     custom_line_2 = db.Column(db.String(200))
     custom_line_3 = db.Column(db.String(200))
+    # Soft delete flag
+    is_deleted = db.Column(db.Boolean, default=False)
     
     def set_password(self, password):
         """Set password hash for the user."""
@@ -158,11 +160,32 @@ class Amenity(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     # Status
     is_active = db.Column(db.Boolean, default=True)
+    # Backward compatibility
+    default_housekeeper_id = db.Column(db.Integer, db.ForeignKey(f'{app.config["TABLE_PREFIX"]}user.id'))
     
     # Relationships
-    admin = db.relationship('User', backref='amenities')
+    admin = db.relationship('User', backref='amenities', foreign_keys=[admin_id])
+    default_housekeeper = db.relationship('User', backref='default_amenities', foreign_keys=[default_housekeeper_id])
     trips = db.relationship('Trip', backref='amenity', lazy=True)
     calendars = db.relationship('Calendar', backref='amenity', lazy=True, cascade='all, delete-orphan')
+    housekeepers = db.relationship('AmenityHousekeeper', backref='amenity', lazy=True, cascade='all, delete-orphan')
+
+class AmenityHousekeeper(db.Model):
+    __tablename__ = f"{app.config['TABLE_PREFIX']}amenity_housekeeper"
+    
+    id = db.Column(db.Integer, primary_key=True)
+    amenity_id = db.Column(db.Integer, db.ForeignKey(f'{app.config["TABLE_PREFIX"]}amenity.id'), nullable=False)
+    housekeeper_id = db.Column(db.Integer, db.ForeignKey(f'{app.config["TABLE_PREFIX"]}user.id'), nullable=False)
+    is_default = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    housekeeper = db.relationship('User', backref='amenity_assignments')
+    
+    __table_args__ = (
+        db.UniqueConstraint('amenity_id', 'housekeeper_id', name='uq_amenity_housekeeper'),
+    )
 
 class Calendar(db.Model):
     __tablename__ = f"{app.config['TABLE_PREFIX']}calendar"
@@ -298,7 +321,7 @@ class Housekeeping(db.Model):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    return User.query.filter_by(id=int(user_id), is_deleted=False).first()
 
 # Airbnb Calendar Sync Functions
 def fetch_airbnb_calendar(calendar_url):
@@ -479,26 +502,19 @@ def about():
 @app.route('/contact', methods=['GET', 'POST'])
 def contact():
     """Contact page with admin contact information."""
-    # Get the first admin's contact information
-    admin_contact = User.query.filter_by(role='admin').first()
-    
+    admin_contact = User.query.filter_by(role='admin', is_deleted=False).first()
     if request.method == 'POST':
-        # Handle contact form submission
         name = request.form.get('name')
         email = request.form.get('email')
         subject = request.form.get('subject')
         message = request.form.get('message')
-        
-        # For now, just show a success message
-        # In a real application, you would send an email here
         flash(_('Thank you for your message, %(name)s! We will get back to you soon.', name=name), 'success')
         return redirect(url_for('contact'))
-    
     return render_template('contact.html', admin_contact=admin_contact)
 
 @app.route('/gdpr')
 def gdpr():
-    admin_contact = User.query.filter_by(role='admin').first()
+    admin_contact = User.query.filter_by(role='admin', is_deleted=False).first()
     return render_template('gdpr.html', admin_contact=admin_contact)
 
 @app.route('/uploads/<filename>')
@@ -733,7 +749,7 @@ def admin_login():
         username = request.form.get('username')
         password = request.form.get('password')
         
-        admin = User.query.filter_by(username=username).first()
+        admin = User.query.filter_by(username=username, is_deleted=False).first()
         if admin and admin.check_password(password):
             login_user(admin)
             return redirect(url_for('admin_dashboard'))
@@ -2140,7 +2156,7 @@ def housekeeper_login():
         username = request.form.get('username')
         password = request.form.get('password')
         
-        user = User.query.filter_by(username=username).first()
+        user = User.query.filter_by(username=username, is_deleted=False).first()
         if user and user.check_password(password) and user.role == 'housekeeper':
             login_user(user)
             return redirect(url_for('housekeeper_dashboard'))
@@ -2736,7 +2752,7 @@ def invoice_breakdown():
 @role_required('admin')
 def admin_users():
     """Admin users list page."""
-    users = User.query.order_by(User.created_at.desc()).all()
+    users = User.query.filter_by(is_deleted=False).order_by(User.created_at.desc()).all()
     return render_template('admin/users.html', users=users)
 
 @app.route('/admin/users/new', methods=['GET', 'POST'])
@@ -2750,12 +2766,12 @@ def new_user():
         password = request.form.get('password')
         role = request.form.get('role', 'admin')
         
-        # Check if username or email already exists
-        if User.query.filter_by(username=username).first():
+        # Check if username or email already exists (not deleted)
+        if User.query.filter_by(username=username, is_deleted=False).first():
             flash(_('Username already exists'), 'error')
             return render_template('admin/new_user.html')
         
-        if User.query.filter_by(email=email).first():
+        if User.query.filter_by(email=email, is_deleted=False).first():
             flash(_('Email already exists'), 'error')
             return render_template('admin/new_user.html')
         
@@ -2780,7 +2796,7 @@ def new_user():
 @role_required('admin')
 def view_user(user_id):
     """View a specific user."""
-    user = User.query.get_or_404(user_id)
+    user = User.query.filter_by(id=user_id, is_deleted=False).first_or_404()
     return render_template('admin/view_user.html', user=user)
 
 @app.route('/admin/users/<int:user_id>/edit', methods=['GET', 'POST'])
@@ -2788,7 +2804,7 @@ def view_user(user_id):
 @role_required('admin')
 def edit_user(user_id):
     """Edit an existing user."""
-    user = User.query.get_or_404(user_id)
+    user = User.query.filter_by(id=user_id, is_deleted=False).first_or_404()
     
     if request.method == 'POST':
         username = request.form.get('username')
@@ -2796,13 +2812,13 @@ def edit_user(user_id):
         role = request.form.get('role', 'admin')
         new_password = request.form.get('new_password')
         
-        # Check if username or email already exists (excluding current user)
-        existing_user = User.query.filter_by(username=username).first()
+        # Check if username or email already exists (excluding current user, not deleted)
+        existing_user = User.query.filter_by(username=username, is_deleted=False).first()
         if existing_user and existing_user.id != user.id:
             flash(_('Username already exists'), 'error')
             return render_template('admin/edit_user.html', user=user)
         
-        existing_user = User.query.filter_by(email=email).first()
+        existing_user = User.query.filter_by(email=email, is_deleted=False).first()
         if existing_user and existing_user.id != user.id:
             flash(_('Email already exists'), 'error')
             return render_template('admin/edit_user.html', user=user)
@@ -2827,7 +2843,7 @@ def edit_user(user_id):
 @login_required
 @role_required('admin')
 def delete_user(user_id):
-    """Delete a user."""
+    """Soft delete a user."""
     user = User.query.get_or_404(user_id)
     
     # Prevent deleting the current user
@@ -2835,19 +2851,18 @@ def delete_user(user_id):
         flash(_('You cannot delete your own account'), 'error')
         return redirect(url_for('admin_users'))
     
-    # Check if user has associated data
-    has_trips = Trip.query.filter_by(admin_id=user.id).first() is not None
-    has_invoices = Invoice.query.filter_by(admin_id=user.id).first() is not None
-    has_housekeeping = Housekeeping.query.filter_by(housekeeper_id=user.id).first() is not None
-    
-    if has_trips or has_invoices or has_housekeeping:
-        flash(_('Cannot delete user with associated data. Please reassign or delete associated records first.'), 'error')
+    # Check if user is already deleted
+    if user.is_deleted:
+        flash(_('User is already deleted.'), 'info')
         return redirect(url_for('admin_users'))
-    
-    db.session.delete(user)
-    db.session.commit()
-    
-    flash(_('User deleted successfully!'), 'success')
+    try:
+        user.is_deleted = True
+        db.session.commit()
+        flash(_('User deleted successfully!'), 'success')
+    except Exception as e:
+        db.session.rollback()
+        print(f"[ERROR] Failed to soft delete user {user_id}: {e}")
+        flash(_('Error deleting user: %(error)s', error=str(e)), 'error')
     return redirect(url_for('admin_users'))
 
 @app.route('/api/backup/guests', methods=['GET'])
@@ -3081,6 +3096,7 @@ def sync_calendar_reservations(calendar_id):
         reservations = fetch_calendar_data(calendar.calendar_url, calendar.calendar_type)
         synced_count = 0
         updated_count = 0
+        housekeeping_tasks_created = 0
         
         for reservation in reservations:
             # Check if trip already exists by external reservation ID
@@ -3141,6 +3157,36 @@ def sync_calendar_reservations(calendar_id):
                     is_externally_synced=True
                 )
                 db.session.add(trip)
+                db.session.flush()  # Get the trip ID
+                
+                # Create housekeeping task for the new trip
+                # First try to get the default housekeeper from the new system
+                default_housekeeper_assignment = AmenityHousekeeper.query.filter_by(
+                    amenity_id=calendar.amenity_id,
+                    is_default=True
+                ).first()
+                
+                # Fallback to the old system if no default housekeeper is set
+                if not default_housekeeper_assignment and calendar.amenity.default_housekeeper_id:
+                    default_housekeeper_id = calendar.amenity.default_housekeeper_id
+                elif default_housekeeper_assignment:
+                    default_housekeeper_id = default_housekeeper_assignment.housekeeper_id
+                else:
+                    default_housekeeper_id = None
+                
+                if default_housekeeper_id:
+                    # Create housekeeping task for the day after the trip ends
+                    housekeeping_task = Housekeeping(
+                        trip_id=trip.id,
+                        housekeeper_id=default_housekeeper_id,
+                        date=reservation['end_date'] + timedelta(days=1),
+                        status='pending',
+                        pay_amount=50.00,  # Default pay amount
+                        paid=False
+                    )
+                    db.session.add(housekeeping_task)
+                    housekeeping_tasks_created += 1
+                
                 synced_count += 1
         
         # Update calendar last sync time
@@ -3148,7 +3194,10 @@ def sync_calendar_reservations(calendar_id):
         db.session.commit()
         
         message = f"Synced {synced_count} new reservations, updated {updated_count} existing reservations"
-        return {'success': True, 'message': message, 'synced': synced_count, 'updated': updated_count}
+        if housekeeping_tasks_created > 0:
+            message += f", created {housekeeping_tasks_created} housekeeping tasks"
+        
+        return {'success': True, 'message': message, 'synced': synced_count, 'updated': updated_count, 'housekeeping_tasks': housekeeping_tasks_created}
         
     except Exception as e:
         db.session.rollback()
@@ -3306,6 +3355,167 @@ def delete_calendar(calendar_id):
     db.session.commit()
     flash(_('Calendar deleted successfully!'), 'success')
     return redirect(url_for('admin_calendars'))
+
+@app.route('/admin/amenities/<int:amenity_id>/housekeepers')
+@login_required
+@role_required('admin')
+def amenity_housekeepers(amenity_id):
+    """Manage housekeepers for a specific amenity."""
+    amenity = Amenity.query.get_or_404(amenity_id)
+    if amenity.admin_id != current_user.id:
+        flash(_('Access denied'), 'error')
+        return redirect(url_for('admin_amenities'))
+    
+    # Get all housekeepers
+    housekeepers = User.query.filter_by(role='housekeeper').all()
+    
+    # Get current assignments
+    assignments = AmenityHousekeeper.query.filter_by(amenity_id=amenity_id).all()
+    assigned_housekeeper_ids = [a.housekeeper_id for a in assignments]
+    
+    # Get default housekeeper
+    default_assignment = next((a for a in assignments if a.is_default), None)
+    
+    return render_template('admin/amenity_housekeepers.html', 
+                         amenity=amenity, 
+                         housekeepers=housekeepers,
+                         assignments=assignments,
+                         assigned_housekeeper_ids=assigned_housekeeper_ids,
+                         default_assignment=default_assignment)
+
+@app.route('/admin/amenities/<int:amenity_id>/housekeepers/assign', methods=['POST'])
+@login_required
+@role_required('admin')
+def assign_housekeeper_to_amenity(amenity_id):
+    """Assign a housekeeper to an amenity."""
+    amenity = Amenity.query.get_or_404(amenity_id)
+    if amenity.admin_id != current_user.id:
+        flash(_('Access denied'), 'error')
+        return redirect(url_for('admin_amenities'))
+    
+    housekeeper_id = request.form.get('housekeeper_id', type=int)
+    is_default = request.form.get('is_default') == 'on'
+    
+    if not housekeeper_id:
+        flash(_('Please select a housekeeper'), 'error')
+        return redirect(url_for('amenity_housekeepers', amenity_id=amenity_id))
+    
+    # Check if housekeeper exists and is actually a housekeeper
+    housekeeper = User.query.filter_by(id=housekeeper_id, role='housekeeper').first()
+    if not housekeeper:
+        flash(_('Invalid housekeeper selected'), 'error')
+        return redirect(url_for('amenity_housekeepers', amenity_id=amenity_id))
+    
+    # Check if assignment already exists
+    existing_assignment = AmenityHousekeeper.query.filter_by(
+        amenity_id=amenity_id, 
+        housekeeper_id=housekeeper_id
+    ).first()
+    
+    if existing_assignment:
+        flash(_('Housekeeper is already assigned to this amenity'), 'error')
+        return redirect(url_for('amenity_housekeepers', amenity_id=amenity_id))
+    
+    # Create new assignment
+    assignment = AmenityHousekeeper(
+        amenity_id=amenity_id,
+        housekeeper_id=housekeeper_id,
+        is_default=is_default
+    )
+    
+    # If this is set as default, unset other defaults for this amenity
+    if is_default:
+        AmenityHousekeeper.query.filter_by(
+            amenity_id=amenity_id, 
+            is_default=True
+        ).update({'is_default': False})
+    
+    db.session.add(assignment)
+    db.session.commit()
+    
+    flash(_('Housekeeper assigned successfully'), 'success')
+    return redirect(url_for('amenity_housekeepers', amenity_id=amenity_id))
+
+@app.route('/admin/amenities/<int:amenity_id>/housekeepers/<int:assignment_id>/set-default', methods=['POST'])
+@login_required
+@role_required('admin')
+def set_default_housekeeper(amenity_id, assignment_id):
+    """Set a housekeeper as default for an amenity."""
+    amenity = Amenity.query.get_or_404(amenity_id)
+    if amenity.admin_id != current_user.id:
+        flash(_('Access denied'), 'error')
+        return redirect(url_for('admin_amenities'))
+    
+    assignment = AmenityHousekeeper.query.get_or_404(assignment_id)
+    if assignment.amenity_id != amenity_id:
+        flash(_('Invalid assignment'), 'error')
+        return redirect(url_for('amenity_housekeepers', amenity_id=amenity_id))
+    
+    # Unset all other defaults for this amenity
+    AmenityHousekeeper.query.filter_by(
+        amenity_id=amenity_id, 
+        is_default=True
+    ).update({'is_default': False})
+    
+    # Set this assignment as default
+    assignment.is_default = True
+    db.session.commit()
+    
+    flash(_('Default housekeeper updated successfully'), 'success')
+    return redirect(url_for('amenity_housekeepers', amenity_id=amenity_id))
+
+@app.route('/admin/amenities/<int:amenity_id>/housekeepers/<int:assignment_id>/remove', methods=['POST'])
+@login_required
+@role_required('admin')
+def remove_housekeeper_from_amenity(amenity_id, assignment_id):
+    """Remove a housekeeper from an amenity."""
+    amenity = Amenity.query.get_or_404(amenity_id)
+    if amenity.admin_id != current_user.id:
+        flash(_('Access denied'), 'error')
+        return redirect(url_for('admin_amenities'))
+    
+    assignment = AmenityHousekeeper.query.get_or_404(assignment_id)
+    if assignment.amenity_id != amenity_id:
+        flash(_('Invalid assignment'), 'error')
+        return redirect(url_for('amenity_housekeepers', amenity_id=amenity_id))
+    
+    db.session.delete(assignment)
+    db.session.commit()
+    
+    flash(_('Housekeeper removed from amenity successfully'), 'success')
+    return redirect(url_for('amenity_housekeepers', amenity_id=amenity_id))
+
+@app.route('/admin/housekeeping/<int:task_id>/reassign', methods=['POST'])
+@login_required
+@role_required('admin')
+def reassign_housekeeping_task(task_id):
+    """Reassign a housekeeping task to a different housekeeper."""
+    task = Housekeeping.query.get_or_404(task_id)
+    
+    # Check if admin has access to this task (through amenity ownership)
+    if task.trip.amenity.admin_id != current_user.id:
+        flash(_('Access denied'), 'error')
+        return redirect(url_for('admin_housekeeping'))
+    
+    new_housekeeper_id = request.form.get('housekeeper_id', type=int)
+    
+    if not new_housekeeper_id:
+        flash(_('Please select a housekeeper'), 'error')
+        return redirect(url_for('admin_housekeeping'))
+    
+    # Check if housekeeper exists and is actually a housekeeper
+    housekeeper = User.query.filter_by(id=new_housekeeper_id, role='housekeeper').first()
+    if not housekeeper:
+        flash(_('Invalid housekeeper selected'), 'error')
+        return redirect(url_for('admin_housekeeping'))
+    
+    # Update the task
+    task.housekeeper_id = new_housekeeper_id
+    task.updated_at = datetime.utcnow()
+    db.session.commit()
+    
+    flash(_('Housekeeping task reassigned successfully'), 'success')
+    return redirect(url_for('admin_housekeeping'))
 
 if __name__ == '__main__':
     # Parse command line arguments

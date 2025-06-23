@@ -72,8 +72,8 @@ def create_sample_admin():
     
     try:
         with app.app_context():
-            # Check if any admin exists
-            existing_admin = User.query.first()
+            # Check if any admin exists (not deleted)
+            existing_admin = User.query.filter_by(is_deleted=False).first()
             if existing_admin:
                 print(f"✅ Using existing admin: {existing_admin.username}")
                 return True
@@ -372,8 +372,8 @@ def seed_data():
     
     try:
         with app.app_context():
-            # Create sample admin if not exists
-            existing_admin = User.query.filter_by(username='admin').first()
+            # Create sample admin if not exists (not deleted)
+            existing_admin = User.query.filter_by(username='admin', is_deleted=False).first()
             if not existing_admin:
                 admin = User(
                     username='admin',
