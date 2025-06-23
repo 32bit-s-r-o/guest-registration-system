@@ -30,16 +30,35 @@ def reset_all_data():
             # Get table names for display
             tables = get_table_names()
             
-            # Delete data from specific tables instead of dropping all
+            # Import Invoice and InvoiceItem models to handle foreign key constraints
+            from app import Invoice, InvoiceItem
+            
+            # Delete data in the correct order to handle foreign key constraints
+            # 1. Delete invoice items first (references invoices)
+            InvoiceItem.query.delete()
+            print("✅ Deleted invoice items")
+            
+            # 2. Delete invoices (references registrations)
+            Invoice.query.delete()
+            print("✅ Deleted invoices")
+            
+            # 3. Delete guests (references registrations)
             Guest.query.delete()
+            print("✅ Deleted guests")
+            
+            # 4. Delete registrations (references trips)
             Registration.query.delete()
+            print("✅ Deleted registrations")
+            
+            # 5. Delete trips (no dependencies)
             Trip.query.delete()
+            print("✅ Deleted trips")
             
             # Commit the deletions
             db.session.commit()
             
-            print("✅ Data deleted successfully from trips, registrations, and guests tables")
-            print(f"   Tables reset: {tables['trip']}, {tables['registration']}, {tables['guest']}")
+            print("✅ Data deleted successfully from all tables")
+            print(f"   Tables reset: {tables['trip']}, {tables['registration']}, {tables['guest']}, invoices, invoice_items")
             print(f"   Admin preserved: {tables['admin']}")
             
             return True
@@ -348,7 +367,7 @@ def copy_sample_image(image_filename):
         return None
 
 def seed_data():
-    """Seed the database with sample data."""
+    """Seed the database with sample data. Only real reservations are seeded. 'Not Available' or blocked events are intentionally excluded to match Airbnb sync logic."""
     print("🌱 Seeding database with sample data...")
     
     try:

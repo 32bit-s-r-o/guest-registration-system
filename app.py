@@ -1432,21 +1432,39 @@ def reset_data():
         tables_to_reset = [
             f"{table_prefix}trip", 
             f"{table_prefix}registration",
-            f"{table_prefix}guest"
+            f"{table_prefix}guest",
+            f"{table_prefix}invoice",
+            f"{table_prefix}invoice_item"
         ]
         
         print(f"Starting database reset for tables: {', '.join(tables_to_reset)}")
         print(f"Preserving admin table: {table_prefix}user")
         
-        # Delete data from specific tables instead of dropping all
+        # Delete data in the correct order to handle foreign key constraints
+        # 1. Delete invoice items first (references invoices)
+        InvoiceItem.query.delete()
+        print("✅ Deleted invoice items")
+        
+        # 2. Delete invoices (references registrations)
+        Invoice.query.delete()
+        print("✅ Deleted invoices")
+        
+        # 3. Delete guests (references registrations)
         Guest.query.delete()
+        print("✅ Deleted guests")
+        
+        # 4. Delete registrations (references trips)
         Registration.query.delete()
+        print("✅ Deleted registrations")
+        
+        # 5. Delete trips (no dependencies)
         Trip.query.delete()
+        print("✅ Deleted trips")
         
         # Commit the deletions
         db.session.commit()
         
-        print("Data deleted successfully from trips, registrations, and guests tables")
+        print("Data deleted successfully from all tables")
         print("Admin accounts preserved")
         
         flash(_('All data has been reset successfully! Admin accounts have been preserved.'), 'success')
@@ -1461,7 +1479,7 @@ def reset_data():
 @app.route('/admin/seed-data', methods=['POST'])
 @login_required
 def seed_data():
-    """Seed the database with sample data."""
+    """Seed the database with sample data. Only real reservations are seeded. 'Not Available' or blocked events are intentionally excluded to match Airbnb sync logic."""
     try:
         # Create sample admin if not exists
         existing_admin = User.query.filter_by(username='admin').first()

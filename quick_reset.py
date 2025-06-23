@@ -7,7 +7,7 @@ This script provides a fast way to reset the database without the web interface.
 import os
 import sys
 import shutil
-from app import app, db, User, Trip, Registration, Guest
+from app import app, db, User, Trip, Registration, Guest, Invoice, InvoiceItem
 from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash
 
@@ -38,17 +38,35 @@ def quick_reset():
             tables_to_reset = [
                 f"{table_prefix}trip", 
                 f"{table_prefix}registration",
-                f"{table_prefix}guest"
+                f"{table_prefix}guest",
+                f"{table_prefix}invoice",
+                f"{table_prefix}invoice_item"
             ]
             admin_table = f"{table_prefix}admin"
             
             print(f"📋 Tables to reset: {', '.join(tables_to_reset)}")
             print(f"🔒 Preserving admin table: {admin_table}")
             
-            # Delete data from specific tables instead of dropping all
+            # Delete data in the correct order to handle foreign key constraints
+            # 1. Delete invoice items first (references invoices)
+            InvoiceItem.query.delete()
+            print("✅ Deleted invoice items")
+            
+            # 2. Delete invoices (references registrations)
+            Invoice.query.delete()
+            print("✅ Deleted invoices")
+            
+            # 3. Delete guests (references registrations)
             Guest.query.delete()
+            print("✅ Deleted guests")
+            
+            # 4. Delete registrations (references trips)
             Registration.query.delete()
+            print("✅ Deleted registrations")
+            
+            # 5. Delete trips (no dependencies)
             Trip.query.delete()
+            print("✅ Deleted trips")
             
             # Commit the deletions
             db.session.commit()
@@ -64,7 +82,7 @@ def quick_reset():
         return False
 
 def quick_seed():
-    """Quickly seed the database with sample data."""
+    """Quickly seed the database with sample data. Only real reservations are seeded. 'Not Available' or blocked events are intentionally excluded to match Airbnb sync logic."""
     print("🌱 Quick Database Seed")
     print("=" * 30)
     
