@@ -63,9 +63,9 @@
             <div class="card-header bg-primary text-white">
                 <div class="d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">{{ trip.title }}</h5>
-                    {% if trip.is_airbnb_synced %}
+                    {% if trip.is_externally_synced %}
                     <span class="badge bg-success">
-                        <i class="fab fa-airbnb"></i> Airbnb
+                        <i class="fas fa-sync"></i> External
                     </span>
                     {% endif %}
                 </div>
@@ -93,26 +93,26 @@
                     </div>
                 </div>
 
-                <!-- Airbnb Guest Information -->
-                {% if trip.airbnb_guest_name or trip.airbnb_guest_email %}
+                <!-- External Guest Information -->
+                {% if trip.external_guest_name or trip.external_guest_email %}
                 <div class="row mb-3">
                     <div class="col-12">
                         <div class="alert alert-light border">
-                            <h6 class="mb-2"><i class="fab fa-airbnb"></i> Airbnb Guest Info</h6>
-                            {% if trip.airbnb_guest_name %}
-                            <div><strong>Guest:</strong> {{ trip.airbnb_guest_name }}</div>
+                            <h6 class="mb-2"><i class="fas fa-sync"></i> External Guest Info</h6>
+                            {% if trip.external_guest_name %}
+                            <div><strong>Guest:</strong> {{ trip.external_guest_name }}</div>
                             {% endif %}
-                            {% if trip.airbnb_guest_email %}
-                            <div><strong>Email:</strong> {{ trip.airbnb_guest_email }}</div>
+                            {% if trip.external_guest_email %}
+                            <div><strong>Email:</strong> {{ trip.external_guest_email }}</div>
                             {% endif %}
-                            {% if trip.airbnb_guest_count %}
-                            <div><strong>Guest Count:</strong> {{ trip.airbnb_guest_count }}</div>
+                            {% if trip.external_guest_count %}
+                            <div><strong>Guest Count:</strong> {{ trip.external_guest_count }}</div>
                             {% endif %}
-                            {% if trip.airbnb_confirm_code %}
-                            <div><strong>Confirmation Code:</strong> <code>{{ trip.airbnb_confirm_code }}</code></div>
+                            {% if trip.external_confirm_code %}
+                            <div><strong>Confirmation Code:</strong> <code>{{ trip.external_confirm_code }}</code></div>
                             {% endif %}
-                            {% if trip.airbnb_synced_at %}
-                            <small class="text-muted">Synced: {{ trip.airbnb_synced_at.strftime('%Y-%m-%d %H:%M')
+                            {% if trip.external_synced_at %}
+                            <small class="text-muted">Synced: {{ trip.external_synced_at.strftime('%Y-%m-%d %H:%M')
                                 }}</small>
                             {% endif %}
                         </div>
@@ -150,20 +150,20 @@
                     </div>
                 </div>
 
-                {% if trip.airbnb_confirm_code %}
+                {% if trip.external_confirm_code %}
                 <div class="row mt-3">
                     <div class="col-12">
                         <strong>Confirmation Code Link:</strong><br>
                         <div class="input-group mb-2">
                             <input type="text" class="form-control"
-                                value="{{ url_for('register_by_code', confirm_code=trip.airbnb_confirm_code, _external=True) }}"
+                                value="{{ url_for('register_by_code', confirm_code=trip.external_confirm_code, _external=True) }}"
                                 readonly>
                             <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard(this)">
                                 <i class="fas fa-copy"></i>
                             </button>
                         </div>
                         <small class="text-muted">Direct link using confirmation code:
-                            <code>{{ trip.airbnb_confirm_code }}</code></small>
+                            <code>{{ trip.external_confirm_code }}</code></small>
                     </div>
                 </div>
                 {% endif %}
@@ -228,9 +228,10 @@
                         <p class="text-muted">Total Trips</p>
                     </div>
                     <div class="col-md-2">
-                        <h4 class="text-success">{{ trips|selectattr('is_airbnb_synced', 'equalto', true)|list|length }}
+                        <h4 class="text-success">{{ trips|selectattr('is_externally_synced', 'equalto',
+                            true)|list|length }}
                         </h4>
-                        <p class="text-muted">Airbnb Synced</p>
+                        <p class="text-muted">External Synced</p>
                     </div>
                     <div class="col-md-2">
                         <h4 class="text-info">{{ trips|map(attribute='registrations')|map('length')|sum }}</h4>

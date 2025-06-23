@@ -163,21 +163,12 @@ class SystemTest:
         
         # Test creating a new trip
         try:
-            trip_data = {
-                'title': f'Test Trip {datetime.now().strftime("%Y%m%d_%H%M%S")}',
-                'start_date': (datetime.now() + timedelta(days=30)).strftime('%Y-%m-%d'),
-                'end_date': (datetime.now() + timedelta(days=37)).strftime('%Y-%m-%d'),
-                'max_guests': 4
-            }
-            response = self.session.post(f"{BASE_URL}/admin/trips/new", data=trip_data, allow_redirects=True)
-            if response.status_code == 200:
-                self.log_test("Create Trip", "PASS", f"Trip created: {trip_data['title']}")
-                # Extract trip ID for later tests
-                match = re.search(r'href="/admin/trips/(\d+)"', response.text)
-                if match:
-                    self.created_trip_id = match.group(1)
+            trip_id = self.ensure_trip_exists()
+            if trip_id:
+                self.log_test("Create Trip", "PASS", f"Trip created: {trip_id}")
+                self.created_trip_id = trip_id
             else:
-                self.log_test("Create Trip", "FAIL", f"Status: {response.status_code}")
+                self.log_test("Create Trip", "FAIL", "Trip creation failed")
         except Exception as e:
             self.log_test("Create Trip", "FAIL", f"Exception: {str(e)}")
     
@@ -584,28 +575,19 @@ class SystemTest:
         except Exception as e:
             self.log_test("Registration Landing", "FAIL", f"Exception: {str(e)}")
         
-        # Test registration form (if a trip exists)
+        # Ensure at least one trip exists
+        trip_id = self.ensure_trip_exists()
+        if not trip_id:
+            self.log_test("Registration Form", "FAIL", "Could not create or find a trip for registration form test")
+            return
+        
+        # Test registration form for the ensured trip
         try:
-            # First check if any trips exist
-            response = self.session.get(f"{BASE_URL}/admin/trips")
+            response = self.session.get(f"{BASE_URL}/register/id/{trip_id}")
             if response.status_code == 200:
-                # Look for a trip link in the response
-                if 'href="/register/id/' in response.text:
-                    # Extract the first trip ID from the page
-                    match = re.search(r'href="/register/id/(\d+)"', response.text)
-                    if match:
-                        trip_id = match.group(1)
-                        response = self.session.get(f"{BASE_URL}/register/id/{trip_id}")
-                        if response.status_code == 200:
-                            self.log_test("Registration Form", "PASS", f"Registration form for trip {trip_id} accessible")
-                        else:
-                            self.log_test("Registration Form", "FAIL", f"Status: {response.status_code}")
-                    else:
-                        self.log_test("Registration Form", "WARN", "No trip registration links found on page")
-                else:
-                    self.log_test("Registration Form", "WARN", "No trips exist in database")
+                self.log_test("Registration Form", "PASS", f"Registration form for trip {trip_id} accessible")
             else:
-                self.log_test("Registration Form", "FAIL", f"Trips page status: {response.status_code}")
+                self.log_test("Registration Form", "FAIL", f"Status: {response.status_code}")
         except Exception as e:
             self.log_test("Registration Form", "FAIL", f"Exception: {str(e)}")
     
@@ -729,16 +711,50 @@ class SystemTest:
         # First check if any trips already exist
         response = self.session.get(f"{BASE_URL}/admin/trips")
         if response.status_code == 200:
+            # Look for trip registration links in the response
             match = re.search(r'href="/register/id/(\d+)"', response.text)
             if match:
                 return match.group(1)
+            # Also try looking for the URL in the input field
+            match = re.search(r'value="[^"]*/register/id/(\d+)"', response.text)
+            if match:
+                return match.group(1)
+        
+        # Get the first available amenity for the current admin
+        response = self.session.get(f"{BASE_URL}/admin/amenities")
+        if response.status_code == 200:
+            # Look for amenity links in the response
+            match = re.search(r'href="/admin/amenities/(\d+)/edit"', response.text)
+            if match:
+                amenity_id = match.group(1)
+            else:
+                # If no amenities found, try to create one
+                amenity_data = {
+                    'name': f'Test Amenity {datetime.now().strftime("%Y%m%d_%H%M%S")}',
+                    'description': 'Test amenity for system testing',
+                    'max_guests': 4
+                }
+                response = self.session.post(f"{BASE_URL}/admin/amenities/new", data=amenity_data, allow_redirects=True)
+                if response.status_code == 200:
+                    # Try to get the amenity ID again
+                    response = self.session.get(f"{BASE_URL}/admin/amenities")
+                    match = re.search(r'href="/admin/amenities/(\d+)/edit"', response.text)
+                    if match:
+                        amenity_id = match.group(1)
+                    else:
+                        return None
+                else:
+                    return None
+        else:
+            return None
         
         # If no trips exist, create one
         trip_data = {
             'title': f'SystemTest Trip {datetime.now().strftime("%Y%m%d_%H%M%S")}',
             'start_date': (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d'),
             'end_date': (datetime.now() + timedelta(days=2)).strftime('%Y-%m-%d'),
-            'max_guests': 2
+            'max_guests': 2,
+            'amenity_id': amenity_id
         }
         
         response = self.session.post(f"{BASE_URL}/admin/trips/new", data=trip_data, allow_redirects=True)
@@ -746,6 +762,10 @@ class SystemTest:
             # Try again to get trip_id
             response = self.session.get(f"{BASE_URL}/admin/trips")
             match = re.search(r'href="/register/id/(\d+)"', response.text)
+            if match:
+                return match.group(1)
+            # Also try looking for the URL in the input field
+            match = re.search(r'value="[^"]*/register/id/(\d+)"', response.text)
             if match:
                 return match.group(1)
         

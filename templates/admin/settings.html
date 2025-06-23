@@ -67,71 +67,105 @@
                 </div>
             </div>
 
-            <!-- Airbnb Integration -->
+            <!-- Multi-Calendar Integration -->
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-success text-white">
-                    <h4 class="mb-0"><i class="fab fa-airbnb"></i> {{ _('Airbnb Calendar Integration') }}</h4>
+                    <h4 class="mb-0"><i class="fas fa-calendar-alt"></i> {{ _('Multi-Calendar Integration') }}</h4>
                 </div>
                 <div class="card-body">
                     <div class="alert alert-info" role="alert">
                         <i class="fas fa-info-circle"></i>
-                        <strong>{{ _('Airbnb Calendar Sync') }}:</strong> {{ _('Automatically import reservations from
-                        your Airbnb calendar and create registration forms.') }}
+                        <strong>{{ _('Multi-Calendar System') }}:</strong> {{ _('Manage multiple calendar sources
+                        (Airbnb, Booking.com, VRBO, etc.) and automatically import reservations to create registration
+                        forms.') }}
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="airbnb_listing_id" class="form-label">{{ _('Airbnb Listing ID') }}</label>
-                                <input type="text" class="form-control" id="airbnb_listing_id" name="airbnb_listing_id"
-                                    value="{{ current_user.airbnb_listing_id or '' }}" placeholder="e.g., 12345678">
-                                <div class="form-text">{{ _('Your Airbnb listing ID (found in your listing URL)') }}
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="airbnb_sync_enabled" class="form-label">{{ _('Enable Sync') }}</label>
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="airbnb_sync_enabled"
-                                        name="airbnb_sync_enabled" {% if current_user.airbnb_sync_enabled %}checked{%
-                                        endif %}>
-                                    <label class="form-check-label" for="airbnb_sync_enabled">
-                                        {{ _('Enable automatic Airbnb calendar sync') }}
-                                    </label>
-                                </div>
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5>{{ _('Calendar Management') }}</h5>
+                                <a href="{{ url_for('admin_calendars') }}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-cog"></i> {{ _('Manage Calendars') }}
+                                </a>
                             </div>
                         </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="airbnb_calendar_url" class="form-label">{{ _('Airbnb Calendar URL') }}</label>
-                        <input type="url" class="form-control" id="airbnb_calendar_url" name="airbnb_calendar_url"
-                            value="{{ current_user.airbnb_calendar_url or '' }}"
-                            placeholder="https://www.airbnb.com/calendar/ical/YOUR_LISTING_ID.ics?s=YOUR_SECRET_KEY">
-                        <div class="form-text">
-                            <strong>{{ _('How to get your calendar URL:') }}</strong>
-                            <ol class="mt-2">
-                                <li>{{ _('Go to your Airbnb listing') }}</li>
-                                <li>{{ _('Click "Calendar" tab') }}</li>
-                                <li>{{ _('Click "Export Calendar"') }}</li>
-                                <li>{{ _('Copy the iCal URL') }}</li>
-                            </ol>
-                        </div>
+                    {% if calendars %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>{{ _('Calendar Name') }}</th>
+                                    <th>{{ _('Type') }}</th>
+                                    <th>{{ _('Status') }}</th>
+                                    <th>{{ _('Last Sync') }}</th>
+                                    <th>{{ _('Actions') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for calendar in calendars %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ calendar.name }}</strong>
+                                        {% if calendar.description %}
+                                        <br><small class="text-muted">{{ calendar.description }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ calendar.calendar_type }}</span>
+                                    </td>
+                                    <td>
+                                        {% if calendar.is_active %}
+                                        <span class="badge bg-success">{{ _('Active') }}</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">{{ _('Inactive') }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if calendar.last_sync %}
+                                        {{ calendar.last_sync.strftime('%Y-%m-%d %H:%M') }}
+                                        {% else %}
+                                        <span class="text-muted">{{ _('Never') }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="{{ url_for('edit_calendar', calendar_id=calendar.id) }}"
+                                                class="btn btn-outline-primary" title="{{ _('Edit') }}">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-outline-success"
+                                                onclick="syncCalendar({{ calendar.id }})" title="{{ _('Sync Now') }}">
+                                                <i class="fas fa-sync"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
-
-                    {% if current_user.airbnb_last_sync %}
-                    <div class="mb-3">
-                        <label class="form-label">{{ _('Last Sync') }}</label>
-                        <input type="text" class="form-control"
-                            value="{{ current_user.airbnb_last_sync.strftime('%Y-%m-%d %H:%M:%S') }}" readonly>
+                    {% else %}
+                    <div class="alert alert-warning" role="alert">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>{{ _('No Calendars Configured') }}:</strong> {{ _('You haven\'t set up any calendar
+                        integrations yet.') }}
                     </div>
                     {% endif %}
 
-                    <div class="alert alert-warning" role="alert">
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <a href="{{ url_for('new_calendar') }}" class="btn btn-success">
+                                <i class="fas fa-plus"></i> {{ _('Add New Calendar') }}
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-warning mt-3" role="alert">
                         <i class="fas fa-exclamation-triangle"></i>
-                        <strong>{{ _('Important') }}:</strong> {{ _('The calendar URL contains sensitive information.
-                        Keep it secure and don\'t share it publicly.') }}
+                        <strong>{{ _('Important') }}:</strong> {{ _('Calendar URLs contain sensitive information. Keep
+                        them secure and don\'t share them publicly.') }}
                     </div>
                 </div>
             </div>
@@ -408,5 +442,16 @@
             calendarUrl.placeholder = `https://www.airbnb.com/calendar/ical/${listingId}.ics?s=YOUR_SECRET_KEY`;
         }
     });
+
+    // Calendar sync function
+    function syncCalendar(calendarId) {
+        if (confirm('{{ _("Are you sure you want to sync this calendar now?") }}')) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/admin/sync-calendar/${calendarId}`;
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
 </script>
 {% endblock %}

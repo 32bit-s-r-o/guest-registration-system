@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Add New Calendar') }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-calendar-plus"></i> {{ _('Add New Calendar') }}</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">{{ _('Calendar Name') }} *</label>
+                                    <input type="text" class="form-control" id="name" name="name" required
+                                        placeholder="{{ _('e.g., Airbnb Main, Booking.com, VRBO') }}">
+                                    <div class="form-text">{{ _('A descriptive name for this calendar') }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="amenity_id" class="form-label">{{ _('Amenity') }} *</label>
+                                    <select class="form-select" id="amenity_id" name="amenity_id" required>
+                                        <option value="">{{ _('Select an amenity') }}</option>
+                                        {% for amenity in amenities %}
+                                        <option value="{{ amenity.id }}" {% if
+                                            request.args.get('amenity')|int==amenity.id %}selected{% endif %}>
+                                            {{ amenity.name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">{{ _('Description') }}</label>
+                            <textarea class="form-control" id="description" name="description" rows="3"
+                                placeholder="{{ _('Optional description for this calendar') }}"></textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="calendar_type" class="form-label">{{ _('Calendar Type') }} *</label>
+                                    <select class="form-select" id="calendar_type" name="calendar_type" required>
+                                        <option value="airbnb">Airbnb</option>
+                                        <option value="booking">Booking.com</option>
+                                        <option value="vrbo">VRBO</option>
+                                        <option value="custom">Custom iCal</option>
+                                    </select>
+                                    <div class="form-text">{{ _('The type of calendar this represents') }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="sync_frequency" class="form-label">{{ _('Sync Frequency') }} *</label>
+                                    <select class="form-select" id="sync_frequency" name="sync_frequency" required>
+                                        <option value="hourly">{{ _('Hourly') }}</option>
+                                        <option value="daily" selected>{{ _('Daily') }}</option>
+                                        <option value="weekly">{{ _('Weekly') }}</option>
+                                    </select>
+                                    <div class="form-text">{{ _('How often to sync this calendar') }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="calendar_url" class="form-label">{{ _('Calendar URL') }} *</label>
+                            <input type="url" class="form-control" id="calendar_url" name="calendar_url" required
+                                placeholder="{{ _('https://www.airbnb.com/calendar/ical/YOUR_LISTING_ID.ics?s=YOUR_SECRET_KEY') }}">
+                            <div class="form-text">
+                                <strong>{{ _('How to get your calendar URL:') }}</strong>
+                                <ul class="mt-2">
+                                    <li>{{ _('Go to your listing on the platform') }}</li>
+                                    <li>{{ _('Find the calendar or export section') }}</li>
+                                    <li>{{ _('Copy the iCal URL') }}</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="sync_enabled"
+                                            name="sync_enabled" checked>
+                                        <label class="form-check-label" for="sync_enabled">
+                                            {{ _('Enable Sync') }}
+                                        </label>
+                                    </div>
+                                    <div class="form-text">{{ _('Enable automatic syncing for this calendar') }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="is_active" name="is_active"
+                                            checked>
+                                        <label class="form-check-label" for="is_active">
+                                            {{ _('Active') }}
+                                        </label>
+                                    </div>
+                                    <div class="form-text">{{ _('Make this calendar active') }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info" role="alert">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>{{ _('Important') }}:</strong> {{ _('The calendar URL contains sensitive
+                            information. Keep it secure and don\'t share it publicly.') }}
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('admin_calendars') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> {{ _('Cancel') }}
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> {{ _('Create Calendar') }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Calendar type helper
+    document.getElementById('calendar_type').addEventListener('change', function () {
+        const calendarType = this.value;
+        const urlField = document.getElementById('calendar_url');
+
+        switch (calendarType) {
+            case 'airbnb':
+                urlField.placeholder = 'https://www.airbnb.com/calendar/ical/YOUR_LISTING_ID.ics?s=YOUR_SECRET_KEY';
+                break;
+            case 'booking':
+                urlField.placeholder = 'https://admin.booking.com/hotel/hoteladmin/extranet_ng/manage/ical.html?hotel_id=YOUR_HOTEL_ID';
+                break;
+            case 'vrbo':
+                urlField.placeholder = 'https://www.vrbo.com/calendar/ical/YOUR_PROPERTY_ID.ics';
+                break;
+            case 'custom':
+                urlField.placeholder = 'https://example.com/calendar.ics';
+                break;
+        }
+    });
+</script>
+{% endblock %}

@@ -156,17 +156,34 @@ class Amenity(db.Model):
     admin_id = db.Column(db.Integer, db.ForeignKey(f'{app.config["TABLE_PREFIX"]}user.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    # Airbnb settings
-    airbnb_listing_id = db.Column(db.String(100))
-    airbnb_calendar_url = db.Column(db.Text)
-    airbnb_sync_enabled = db.Column(db.Boolean, default=False)
-    airbnb_last_sync = db.Column(db.DateTime)
     # Status
     is_active = db.Column(db.Boolean, default=True)
     
     # Relationships
     admin = db.relationship('User', backref='amenities')
     trips = db.relationship('Trip', backref='amenity', lazy=True)
+    calendars = db.relationship('Calendar', backref='amenity', lazy=True, cascade='all, delete-orphan')
+
+class Calendar(db.Model):
+    __tablename__ = f"{app.config['TABLE_PREFIX']}calendar"
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text)
+    amenity_id = db.Column(db.Integer, db.ForeignKey(f'{app.config["TABLE_PREFIX"]}amenity.id'), nullable=False)
+    # Calendar settings
+    calendar_url = db.Column(db.Text, nullable=False)
+    calendar_type = db.Column(db.String(50), default='airbnb')  # airbnb, booking, vrbo, custom
+    sync_enabled = db.Column(db.Boolean, default=True)
+    last_sync = db.Column(db.DateTime)
+    sync_frequency = db.Column(db.String(20), default='daily')  # hourly, daily, weekly
+    # Status
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    trips = db.relationship('Trip', backref='calendar', lazy=True)
 
 class Trip(db.Model):
     __tablename__ = f"{app.config['TABLE_PREFIX']}trip"
@@ -179,16 +196,17 @@ class Trip(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     admin_id = db.Column(db.Integer, db.ForeignKey(f'{app.config["TABLE_PREFIX"]}user.id'), nullable=False)
     amenity_id = db.Column(db.Integer, db.ForeignKey(f'{app.config["TABLE_PREFIX"]}amenity.id'), nullable=False)
+    calendar_id = db.Column(db.Integer, db.ForeignKey(f'{app.config["TABLE_PREFIX"]}calendar.id'))
     registrations = db.relationship('Registration', backref='trip', lazy=True)
-    # Airbnb sync fields
-    airbnb_reservation_id = db.Column(db.String(100), unique=True)
-    airbnb_guest_name = db.Column(db.String(200))
-    airbnb_guest_email = db.Column(db.String(200))
-    airbnb_guest_count = db.Column(db.Integer)
-    airbnb_synced_at = db.Column(db.DateTime)
-    is_airbnb_synced = db.Column(db.Boolean, default=False)
-    # Airbnb confirmation code
-    airbnb_confirm_code = db.Column(db.String(50), unique=True)
+    # External sync fields
+    external_reservation_id = db.Column(db.String(100), unique=True)
+    external_guest_name = db.Column(db.String(200))
+    external_guest_email = db.Column(db.String(200))
+    external_guest_count = db.Column(db.Integer)
+    external_synced_at = db.Column(db.DateTime)
+    is_externally_synced = db.Column(db.Boolean, default=False)
+    # External confirmation code
+    external_confirm_code = db.Column(db.String(50), unique=True)
 
 class Registration(db.Model):
     __tablename__ = f"{app.config['TABLE_PREFIX']}registration"
@@ -393,84 +411,13 @@ def parse_airbnb_guest_info(summary, description):
 
 def sync_airbnb_reservations(amenity_id):
     """Sync Airbnb reservations for a specific amenity, ensuring unique confirmation codes."""
-    amenity = Amenity.query.get(amenity_id)
-    if not amenity or not amenity.airbnb_calendar_url or not amenity.airbnb_sync_enabled:
-        return {'success': False, 'message': 'Airbnb sync not configured for this amenity'}
-    try:
-        reservations = fetch_airbnb_calendar(amenity.airbnb_calendar_url)
-        synced_count = 0
-        updated_count = 0
-        for reservation in reservations:
-            # Check if trip already exists by airbnb_reservation_id
-            existing_trip = Trip.query.filter_by(
-                airbnb_reservation_id=reservation['id'],
-                amenity_id=amenity_id
-            ).first()
-            
-            # Also check if trip exists by confirmation code (reservation code)
-            confirm_code = reservation['confirm_code']
-            existing_code_trip = None
-            if confirm_code:
-                existing_code_trip = Trip.query.filter_by(
-                    airbnb_confirm_code=confirm_code
-                ).first()
-            
-            # Use amenity's max_guests if guest count not parsed from calendar
-            guest_count = reservation['guest_count'] if reservation['guest_count'] > 0 else amenity.max_guests
-            
-            if existing_trip:
-                # Update existing trip by reservation ID
-                existing_trip.title = reservation['title']
-                existing_trip.start_date = reservation['start_date']
-                existing_trip.end_date = reservation['end_date']
-                existing_trip.max_guests = guest_count
-                existing_trip.airbnb_guest_name = reservation['guest_name']
-                existing_trip.airbnb_guest_email = reservation['guest_email']
-                existing_trip.airbnb_confirm_code = reservation['confirm_code']
-                existing_trip.airbnb_synced_at = datetime.utcnow()
-                updated_count += 1
-            elif existing_code_trip:
-                # Update existing trip by confirmation code (dates may have changed)
-                existing_code_trip.title = reservation['title']
-                existing_code_trip.start_date = reservation['start_date']
-                existing_code_trip.end_date = reservation['end_date']
-                existing_code_trip.max_guests = guest_count
-                existing_code_trip.airbnb_guest_name = reservation['guest_name']
-                existing_code_trip.airbnb_guest_email = reservation['guest_email']
-                existing_code_trip.airbnb_reservation_id = reservation['id']
-                existing_code_trip.airbnb_synced_at = datetime.utcnow()
-                updated_count += 1
-            else:
-                # Create new trip
-                new_trip = Trip(
-                    title=reservation['title'],
-                    start_date=reservation['start_date'],
-                    end_date=reservation['end_date'],
-                    max_guests=guest_count,
-                    admin_id=amenity.admin_id,
-                    amenity_id=amenity_id,
-                    airbnb_reservation_id=reservation['id'],
-                    airbnb_guest_name=reservation['guest_name'],
-                    airbnb_guest_email=reservation['guest_email'],
-                    airbnb_guest_count=reservation['guest_count'],
-                    airbnb_confirm_code=confirm_code,
-                    airbnb_synced_at=datetime.utcnow(),
-                    is_airbnb_synced=True
-                )
-                db.session.add(new_trip)
-                synced_count += 1
-        amenity.airbnb_last_sync = datetime.utcnow()
-        db.session.commit()
-        return {
-            'success': True,
-            'message': f'Synced {synced_count} new reservations, updated {updated_count} existing for {amenity.name}',
-            'synced': synced_count,
-            'updated': updated_count,
-            'amenity_name': amenity.name
-        }
-    except Exception as e:
-        db.session.rollback()
-        return {'success': False, 'message': f'Error syncing amenity {amenity.name}: {str(e)}'}
+    # This function is deprecated - use sync_calendar_reservations instead
+    # Find the first calendar for this amenity and sync it
+    calendar = Calendar.query.filter_by(amenity_id=amenity_id, calendar_type='airbnb').first()
+    if calendar:
+        return sync_calendar_reservations(calendar.id)
+    else:
+        return {'success': False, 'message': 'No Airbnb calendar found for this amenity'}
 
 def sync_all_amenities_for_admin(admin_id):
     """Sync all amenities for a specific admin."""
@@ -561,7 +508,7 @@ def submit_confirm_code():
         return redirect(url_for('register_landing'))
     
     # Check if confirmation code exists
-    trip = Trip.query.filter_by(airbnb_confirm_code=confirm_code).first()
+    trip = Trip.query.filter_by(external_confirm_code=confirm_code).first()
     if not trip:
         flash(_('Invalid confirmation code. Please check your code and try again.'), 'error')
         return redirect(url_for('register_landing'))
@@ -578,7 +525,7 @@ def register(trip_id):
 @app.route('/register/<confirm_code>')
 def register_by_code(confirm_code):
     """Registration form using confirmation code."""
-    trip = Trip.query.filter_by(airbnb_confirm_code=confirm_code).first()
+    trip = Trip.query.filter_by(external_confirm_code=confirm_code).first()
     if not trip:
         flash(_('Invalid confirmation code. Please check your code and try again.'), 'error')
         return redirect(url_for('register_landing'))
@@ -806,7 +753,17 @@ def role_required(role):
 def admin_dashboard():
     trips = Trip.query.filter_by(admin_id=current_user.id).all()
     pending_registrations = Registration.query.filter_by(status='pending').count()
-    return render_template('admin/dashboard.html', trips=trips, pending_registrations=pending_registrations)
+    
+    # Get calendars for all amenities owned by this admin
+    amenities = Amenity.query.filter_by(admin_id=current_user.id).all()
+    calendars = []
+    for amenity in amenities:
+        calendars.extend(amenity.calendars)
+    
+    return render_template('admin/dashboard.html', 
+                         trips=trips, 
+                         pending_registrations=pending_registrations,
+                         calendars=calendars)
 
 @app.route('/admin/settings', methods=['GET', 'POST'])
 @login_required
@@ -846,38 +803,44 @@ def admin_settings():
         flash(_('Settings updated successfully!'), 'success')
         return redirect(url_for('admin_settings'))
     
-    return render_template('admin/settings.html')
+    # Get calendars for all amenities owned by this admin
+    amenities = Amenity.query.filter_by(admin_id=current_user.id).all()
+    calendars = []
+    for amenity in amenities:
+        calendars.extend(amenity.calendars)
+    
+    return render_template('admin/settings.html', calendars=calendars)
 
 @app.route('/admin/sync-airbnb', methods=['POST'])
 @login_required
 def sync_airbnb():
-    """Sync with Airbnb calendar for all amenities."""
-    result = sync_all_amenities_for_admin(current_user.id)
+    """Sync with all calendars for the current admin."""
+    result = sync_all_calendars_for_admin(current_user.id)
     
     if result['success']:
-        flash(_('Airbnb sync successful: %(message)s', message=result['message']), 'success')
+        flash(_('Calendar sync successful: %(message)s', message=result['message']), 'success')
     else:
-        flash(_('Airbnb sync failed: %(message)s', message=result['message']), 'error')
+        flash(_('Calendar sync failed: %(message)s', message=result['message']), 'error')
     
     return redirect(url_for('admin_trips'))
 
-@app.route('/admin/sync-amenity/<int:amenity_id>', methods=['POST'])
+@app.route('/admin/sync-calendar/<int:calendar_id>', methods=['POST'])
 @login_required
-def sync_amenity(amenity_id):
-    """Sync with Airbnb calendar for a specific amenity."""
-    amenity = Amenity.query.get_or_404(amenity_id)
-    if amenity.admin_id != current_user.id:
+def sync_calendar(calendar_id):
+    """Sync with a specific calendar."""
+    calendar = Calendar.query.get_or_404(calendar_id)
+    if calendar.amenity.admin_id != current_user.id:
         flash(_('Access denied'), 'error')
         return redirect(url_for('admin_amenities'))
     
-    result = sync_airbnb_reservations(amenity_id)
+    result = sync_calendar_reservations(calendar_id)
     
     if result['success']:
-        flash(_('Airbnb sync successful for %(amenity)s: %(message)s', 
-                amenity=amenity.name, message=result['message']), 'success')
+        flash(_('Calendar sync successful for %(calendar)s: %(message)s', 
+                calendar=calendar.name, message=result['message']), 'success')
     else:
-        flash(_('Airbnb sync failed for %(amenity)s: %(message)s', 
-                amenity=amenity.name, message=result['message']), 'error')
+        flash(_('Calendar sync failed for %(calendar)s: %(message)s', 
+                calendar=calendar.name, message=result['message']), 'error')
     
     return redirect(url_for('admin_amenities'))
 
@@ -900,9 +863,6 @@ def new_amenity():
             description=request.form.get('description'),
             max_guests=int(request.form.get('max_guests', 1)),
             admin_id=current_user.id,
-            airbnb_listing_id=request.form.get('airbnb_listing_id'),
-            airbnb_calendar_url=request.form.get('airbnb_calendar_url'),
-            airbnb_sync_enabled=request.form.get('airbnb_sync_enabled') == 'on',
             is_active=request.form.get('is_active') == 'on'
         )
         db.session.add(amenity)
@@ -926,9 +886,6 @@ def edit_amenity(amenity_id):
         amenity.name = request.form.get('name')
         amenity.description = request.form.get('description')
         amenity.max_guests = int(request.form.get('max_guests', 1))
-        amenity.airbnb_listing_id = request.form.get('airbnb_listing_id')
-        amenity.airbnb_calendar_url = request.form.get('airbnb_calendar_url')
-        amenity.airbnb_sync_enabled = request.form.get('airbnb_sync_enabled') == 'on'
         amenity.is_active = request.form.get('is_active') == 'on'
         
         db.session.commit()
@@ -968,7 +925,12 @@ def admin_trips():
     for amenity in amenities:
         trips_by_amenity[amenity] = Trip.query.filter_by(amenity_id=amenity.id).order_by(Trip.start_date).all()
     
-    return render_template('admin/trips.html', trips_by_amenity=trips_by_amenity, amenities=amenities)
+    # Flatten trips for the template
+    trips = []
+    for amenity_trips in trips_by_amenity.values():
+        trips.extend(amenity_trips)
+    
+    return render_template('admin/trips.html', trips=trips, trips_by_amenity=trips_by_amenity, amenities=amenities)
 
 @app.route('/admin/trips/new', methods=['GET', 'POST'])
 @login_required
@@ -2380,11 +2342,13 @@ def export_trips_csv():
         _('End Date'),
         _('Max Guests'),
         _('Created Date'),
-        _('Airbnb Synced'),
-        _('Airbnb Guest Name'),
-        _('Airbnb Guest Email'),
-        _('Airbnb Guest Count'),
-        _('Confirmation Code'),
+        _('Amenity'),
+        _('Calendar'),
+        _('Externally Synced'),
+        _('External Guest Name'),
+        _('External Guest Email'),
+        _('External Guest Count'),
+        _('External Confirmation Code'),
         _('Registration Count'),
         _('Pending Count'),
         _('Approved Count'),
@@ -2405,11 +2369,13 @@ def export_trips_csv():
             trip.end_date.strftime('%Y-%m-%d'),
             trip.max_guests,
             trip.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-            'Yes' if trip.is_airbnb_synced else 'No',
-            trip.airbnb_guest_name or '',
-            trip.airbnb_guest_email or '',
-            trip.airbnb_guest_count or '',
-            trip.airbnb_confirm_code or '',
+            trip.amenity.name if trip.amenity else '',
+            trip.calendar.name if trip.calendar else '',
+            'Yes' if trip.is_externally_synced else 'No',
+            trip.external_guest_name or '',
+            trip.external_guest_email or '',
+            trip.external_guest_count or '',
+            trip.external_confirm_code or '',
             len(registrations),
             pending_count,
             approved_count,
@@ -2634,9 +2600,9 @@ def trip_breakdown():
         month_key = trip.created_at.strftime('%Y-%m')
         monthly_trip_counts[month_key] += 1
     
-    # Airbnb sync statistics
-    airbnb_synced_count = sum(1 for trip in trips if trip.is_airbnb_synced)
-    airbnb_not_synced_count = len(trips) - airbnb_synced_count
+    # External sync statistics
+    externally_synced_count = sum(1 for trip in trips if trip.is_externally_synced)
+    externally_not_synced_count = len(trips) - externally_synced_count
     
     # Duration statistics
     trip_durations = []
@@ -2648,8 +2614,8 @@ def trip_breakdown():
     
     stats = {
         'total_trips': len(trips),
-        'airbnb_synced_count': airbnb_synced_count,
-        'airbnb_not_synced_count': airbnb_not_synced_count,
+        'externally_synced_count': externally_synced_count,
+        'externally_not_synced_count': externally_not_synced_count,
         'avg_duration_days': round(avg_duration, 1),
         'trip_registration_counts': trip_registration_counts,
         'trip_guest_counts': trip_guest_counts,
@@ -3051,6 +3017,220 @@ def rollback_migration(version):
     except Exception as e:
         flash(_('Rollback error: %(error)s', error=str(e)), 'error')
         return redirect(url_for('admin_migrations'))
+
+def sync_calendar_reservations(calendar_id):
+    """Sync reservations for a specific calendar, ensuring unique confirmation codes."""
+    calendar = Calendar.query.get(calendar_id)
+    if not calendar or not calendar.calendar_url or not calendar.sync_enabled:
+        return {'success': False, 'message': 'Calendar sync not configured or disabled'}
+    
+    try:
+        reservations = fetch_calendar_data(calendar.calendar_url, calendar.calendar_type)
+        synced_count = 0
+        updated_count = 0
+        
+        for reservation in reservations:
+            # Check if trip already exists by external reservation ID
+            existing_trip = Trip.query.filter_by(
+                external_reservation_id=reservation['id'],
+                calendar_id=calendar_id
+            ).first()
+            
+            # Also check if trip exists by confirmation code
+            confirm_code = reservation['confirm_code']
+            existing_code_trip = None
+            if confirm_code:
+                existing_code_trip = Trip.query.filter_by(
+                    external_confirm_code=confirm_code
+                ).first()
+            
+            # Use amenity's max_guests if guest count not parsed from calendar
+            guest_count = reservation['guest_count'] if reservation['guest_count'] > 0 else calendar.amenity.max_guests
+            
+            if existing_trip:
+                # Update existing trip by reservation ID
+                existing_trip.title = reservation['title']
+                existing_trip.start_date = reservation['start_date']
+                existing_trip.end_date = reservation['end_date']
+                existing_trip.max_guests = guest_count
+                existing_trip.external_guest_name = reservation['guest_name']
+                existing_trip.external_guest_email = reservation['guest_email']
+                existing_trip.external_confirm_code = reservation['confirm_code']
+                existing_trip.external_synced_at = datetime.utcnow()
+                updated_count += 1
+            elif existing_code_trip:
+                # Update existing trip by confirmation code (dates may have changed)
+                existing_code_trip.title = reservation['title']
+                existing_code_trip.start_date = reservation['start_date']
+                existing_code_trip.end_date = reservation['end_date']
+                existing_code_trip.max_guests = guest_count
+                existing_code_trip.external_guest_name = reservation['guest_name']
+                existing_code_trip.external_guest_email = reservation['guest_email']
+                existing_code_trip.external_reservation_id = reservation['id']
+                existing_code_trip.calendar_id = calendar_id
+                existing_code_trip.external_synced_at = datetime.utcnow()
+                updated_count += 1
+            else:
+                # Create new trip
+                trip = Trip(
+                    title=reservation['title'],
+                    start_date=reservation['start_date'],
+                    end_date=reservation['end_date'],
+                    max_guests=guest_count,
+                    admin_id=calendar.amenity.admin_id,
+                    amenity_id=calendar.amenity_id,
+                    calendar_id=calendar_id,
+                    external_reservation_id=reservation['id'],
+                    external_guest_name=reservation['guest_name'],
+                    external_guest_email=reservation['guest_email'],
+                    external_confirm_code=reservation['confirm_code'],
+                    external_synced_at=datetime.utcnow(),
+                    is_externally_synced=True
+                )
+                db.session.add(trip)
+                synced_count += 1
+        
+        # Update calendar last sync time
+        calendar.last_sync = datetime.utcnow()
+        db.session.commit()
+        
+        message = f"Synced {synced_count} new reservations, updated {updated_count} existing reservations"
+        return {'success': True, 'message': message, 'synced': synced_count, 'updated': updated_count}
+        
+    except Exception as e:
+        db.session.rollback()
+        return {'success': False, 'message': f'Sync failed: {str(e)}'}
+
+def sync_all_calendars_for_admin(admin_id):
+    """Sync all calendars for a specific admin."""
+    try:
+        # Get all active calendars for the admin
+        calendars = Calendar.query.join(Amenity).filter(
+            Amenity.admin_id == admin_id,
+            Calendar.sync_enabled == True,
+            Calendar.is_active == True
+        ).all()
+        
+        total_synced = 0
+        total_updated = 0
+        failed_calendars = []
+        
+        for calendar in calendars:
+            result = sync_calendar_reservations(calendar.id)
+            if result['success']:
+                total_synced += result.get('synced', 0)
+                total_updated += result.get('updated', 0)
+            else:
+                failed_calendars.append(f"{calendar.name}: {result['message']}")
+        
+        if failed_calendars:
+            message = f"Synced {total_synced} new, updated {total_updated} existing reservations. Failed: {'; '.join(failed_calendars)}"
+        else:
+            message = f"Successfully synced {total_synced} new reservations and updated {total_updated} existing reservations"
+        
+        return {'success': True, 'message': message, 'synced': total_synced, 'updated': total_updated}
+        
+    except Exception as e:
+        return {'success': False, 'message': f'Sync failed: {str(e)}'}
+
+def fetch_calendar_data(calendar_url, calendar_type='airbnb'):
+    """Fetch and parse calendar data based on type."""
+    if calendar_type == 'airbnb':
+        return fetch_airbnb_calendar(calendar_url)
+    else:
+        # For other calendar types, use the same parsing logic for now
+        return fetch_airbnb_calendar(calendar_url)
+
+# Calendar Management Routes
+@app.route('/admin/calendars')
+@login_required
+@role_required('admin')
+def admin_calendars():
+    """Manage calendars."""
+    amenities = Amenity.query.filter_by(admin_id=current_user.id).order_by(Amenity.name).all()
+    calendars_by_amenity = {}
+    
+    for amenity in amenities:
+        calendars_by_amenity[amenity] = Calendar.query.filter_by(amenity_id=amenity.id).order_by(Calendar.name).all()
+    
+    return render_template('admin/calendars.html', calendars_by_amenity=calendars_by_amenity, amenities=amenities)
+
+@app.route('/admin/calendars/new', methods=['GET', 'POST'])
+@login_required
+@role_required('admin')
+def new_calendar():
+    """Create a new calendar."""
+    if request.method == 'POST':
+        amenity_id = request.form.get('amenity_id')
+        amenity = Amenity.query.get(amenity_id)
+        
+        if not amenity or amenity.admin_id != current_user.id:
+            flash(_('Invalid amenity selected'), 'error')
+            return redirect(url_for('new_calendar'))
+        
+        calendar = Calendar(
+            name=request.form.get('name'),
+            description=request.form.get('description'),
+            amenity_id=amenity_id,
+            calendar_url=request.form.get('calendar_url'),
+            calendar_type=request.form.get('calendar_type', 'airbnb'),
+            sync_enabled=request.form.get('sync_enabled') == 'on',
+            sync_frequency=request.form.get('sync_frequency', 'daily'),
+            is_active=request.form.get('is_active') == 'on'
+        )
+        db.session.add(calendar)
+        db.session.commit()
+        flash(_('Calendar created successfully!'), 'success')
+        return redirect(url_for('admin_calendars'))
+    
+    amenities = Amenity.query.filter_by(admin_id=current_user.id, is_active=True).order_by(Amenity.name).all()
+    return render_template('admin/new_calendar.html', amenities=amenities)
+
+@app.route('/admin/calendars/<int:calendar_id>/edit', methods=['GET', 'POST'])
+@login_required
+@role_required('admin')
+def edit_calendar(calendar_id):
+    """Edit a calendar."""
+    calendar = Calendar.query.get_or_404(calendar_id)
+    if calendar.amenity.admin_id != current_user.id:
+        flash(_('Access denied'), 'error')
+        return redirect(url_for('admin_calendars'))
+    
+    if request.method == 'POST':
+        calendar.name = request.form.get('name')
+        calendar.description = request.form.get('description')
+        calendar.calendar_url = request.form.get('calendar_url')
+        calendar.calendar_type = request.form.get('calendar_type', 'airbnb')
+        calendar.sync_enabled = request.form.get('sync_enabled') == 'on'
+        calendar.sync_frequency = request.form.get('sync_frequency', 'daily')
+        calendar.is_active = request.form.get('is_active') == 'on'
+        
+        db.session.commit()
+        flash(_('Calendar updated successfully!'), 'success')
+        return redirect(url_for('admin_calendars'))
+    
+    amenities = Amenity.query.filter_by(admin_id=current_user.id, is_active=True).order_by(Amenity.name).all()
+    return render_template('admin/edit_calendar.html', calendar=calendar, amenities=amenities)
+
+@app.route('/admin/calendars/<int:calendar_id>/delete', methods=['POST'])
+@login_required
+@role_required('admin')
+def delete_calendar(calendar_id):
+    """Delete a calendar."""
+    calendar = Calendar.query.get_or_404(calendar_id)
+    if calendar.amenity.admin_id != current_user.id:
+        flash(_('Access denied'), 'error')
+        return redirect(url_for('admin_calendars'))
+    
+    # Check if calendar has trips
+    if calendar.trips:
+        flash(_('Cannot delete calendar with existing trips'), 'error')
+        return redirect(url_for('admin_calendars'))
+    
+    db.session.delete(calendar)
+    db.session.commit()
+    flash(_('Calendar deleted successfully!'), 'success')
+    return redirect(url_for('admin_calendars'))
 
 if __name__ == '__main__':
     # Parse command line arguments

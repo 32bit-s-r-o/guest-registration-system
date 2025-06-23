@@ -11,7 +11,7 @@
     </div>
 
     <div class="row mb-4">
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card bg-primary text-white">
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
@@ -26,7 +26,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card bg-warning text-white">
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
@@ -41,7 +41,22 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">{{ _('Active Calendars') }}</h5>
+                            <h2 class="mb-0">{{ calendars|length if calendars else 0 }}</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-calendar-alt fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
             <div class="card bg-success text-white">
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
@@ -98,47 +113,97 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
+                    <h5><i class="fas fa-calendar-alt"></i> {{ _('Calendar Management') }}</h5>
+                </div>
+                <div class="card-body">
+                    {% if calendars %}
+                    <div class="list-group list-group-flush">
+                        {% for calendar in calendars[:3] %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">{{ calendar.name }}</h6>
+                                <small class="text-muted">
+                                    {{ calendar.calendar_type }} - {{ _('Last sync:') }}
+                                    {% if calendar.last_sync %}
+                                    {{ calendar.last_sync.strftime('%Y-%m-%d %H:%M') }}
+                                    {% else %}
+                                    {{ _('Never') }}
+                                    {% endif %}
+                                </small>
+                            </div>
+                            <span class="badge bg-{{ 'success' if calendar.is_active else 'secondary' }} rounded-pill">
+                                {{ _('Active') if calendar.is_active else _('Inactive') }}
+                            </span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted">{{ _('No calendars configured yet.') }}</p>
+                    {% endif %}
+                    <div class="mt-3">
+                        <a href="{{ url_for('admin_calendars') }}" class="btn btn-outline-info btn-sm">
+                            {{ _('Manage Calendars') }}
+                        </a>
+                        <a href="{{ url_for('new_calendar') }}" class="btn btn-info btn-sm">
+                            <i class="fas fa-plus"></i> {{ _('New Calendar') }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
                     <h5><i class="fas fa-users"></i> {{ _('Quick Actions') }}</h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-6 mb-3">
+                        <div class="col-6 col-md-3 mb-3">
                             <a href="{{ url_for('admin_registrations') }}" class="btn btn-outline-warning w-100">
                                 <i class="fas fa-clock"></i><br>
                                 {{ _('Review Registrations') }}
                             </a>
                         </div>
-                        <div class="col-6 mb-3">
+                        <div class="col-6 col-md-3 mb-3">
                             <a href="{{ url_for('admin_invoices') }}" class="btn btn-outline-info w-100">
                                 <i class="fas fa-file-invoice"></i><br>
                                 {{ _('Manage Invoices') }}
                             </a>
                         </div>
-                        <div class="col-6 mb-3">
+                        <div class="col-6 col-md-3 mb-3">
+                            <a href="{{ url_for('admin_calendars') }}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-calendar-alt"></i><br>
+                                {{ _('Calendar Management') }}
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3 mb-3">
                             <a href="{{ url_for('admin_settings') }}" class="btn btn-outline-secondary w-100">
                                 <i class="fas fa-cog"></i><br>
                                 {{ _('Settings') }}
                             </a>
                         </div>
-                        <div class="col-6 mb-3">
+                        <div class="col-6 col-md-3 mb-3">
                             <a href="{{ url_for('data_management') }}" class="btn btn-outline-danger w-100">
                                 <i class="fas fa-database"></i><br>
                                 {{ _('Data Management') }}
                             </a>
                         </div>
-                        <div class="col-6 mb-3">
+                        <div class="col-6 col-md-3 mb-3">
                             <a href="{{ url_for('admin_breakdowns') }}" class="btn btn-outline-success w-100">
                                 <i class="fas fa-chart-bar"></i><br>
                                 {{ _('Analytics') }}
                             </a>
                         </div>
-                        <div class="col-6 mb-3">
+                        <div class="col-6 col-md-3 mb-3">
                             <a href="{{ url_for('admin_housekeeping') }}" class="btn btn-outline-primary w-100">
                                 <i class="fas fa-broom"></i><br>
                                 {{ _('Housekeeping') }}
                             </a>
                         </div>
-                        <div class="col-6 mb-3">
+                        <div class="col-6 col-md-3 mb-3">
                             <a href="{{ url_for('admin_system_backup') }}" class="btn btn-outline-dark w-100">
                                 <i class="fas fa-download"></i><br>
                                 {{ _('System Backup') }}

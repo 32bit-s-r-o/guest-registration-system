@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Manage Calendars') }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="fas fa-calendar-alt"></i> {{ _('Manage Calendars') }}</h1>
+                <div>
+                    <a href="{{ url_for('admin_amenities') }}" class="btn btn-secondary me-2">
+                        <i class="fas fa-building"></i> {{ _('Manage Amenities') }}
+                    </a>
+                    <a href="{{ url_for('new_calendar') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> {{ _('Add Calendar') }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if calendars_by_amenity %}
+    <div class="row g-4">
+        {% for amenity, calendars in calendars_by_amenity.items() %}
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-building text-primary"></i> {{ amenity.name }}
+                        </h5>
+                        <a href="{{ url_for('new_calendar') }}?amenity={{ amenity.id }}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-plus"></i> {{ _('Add Calendar') }}
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if calendars %}
+                    <div class="row g-3">
+                        {% for calendar in calendars %}
+                        <div class="col-lg-6 col-xl-4">
+                            <div class="card border h-100">
+                                <div
+                                    class="card-header bg-{{ 'success' if calendar.is_active else 'secondary' }} text-white">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0">{{ calendar.name }}</h6>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-light dropdown-toggle" type="button"
+                                                data-bs-toggle="dropdown">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item"
+                                                        href="{{ url_for('edit_calendar', calendar_id=calendar.id) }}">
+                                                        <i class="fas fa-edit"></i> {{ _('Edit') }}
+                                                    </a></li>
+                                                <li><a class="dropdown-item"
+                                                        href="{{ url_for('sync_calendar', calendar_id=calendar.id) }}"
+                                                        onclick="return confirm('{{ _('Sync this calendar now?') }}')">
+                                                        <i class="fas fa-sync"></i> {{ _('Sync Now') }}
+                                                    </a></li>
+                                                <li>
+                                                    <hr class="dropdown-divider">
+                                                </li>
+                                                <li>
+                                                    <form method="POST"
+                                                        action="{{ url_for('delete_calendar', calendar_id=calendar.id) }}"
+                                                        style="display: inline;"
+                                                        onsubmit="return confirm('{{ _('Are you sure you want to delete this calendar?') }}')">
+                                                        <button type="submit" class="dropdown-item text-danger">
+                                                            <i class="fas fa-trash"></i> {{ _('Delete') }}
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    {% if calendar.description %}
+                                    <p class="text-muted small mb-2">{{ calendar.description }}</p>
+                                    {% endif %}
+
+                                    <div class="row text-center mb-2">
+                                        <div class="col-6">
+                                            <h6 class="text-primary">{{ calendar.trips|length }}</h6>
+                                            <small class="text-muted">{{ _('Trips') }}</small>
+                                        </div>
+                                        <div class="col-6">
+                                            <h6 class="text-info">{{
+                                                calendar.trips|selectattr('is_externally_synced')|list|length }}</h6>
+                                            <small class="text-muted">{{ _('Synced') }}</small>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-2">
+                                        <span class="badge bg-secondary">{{ calendar.calendar_type|upper }}</span>
+                                        <span class="badge bg-{{ 'success' if calendar.sync_enabled else 'warning' }}">
+                                            {% if calendar.sync_enabled %}{{ _('Sync On') }}{% else %}{{ _('Sync Off')
+                                            }}{% endif %}
+                                        </span>
+                                        <span class="badge bg-info">{{ calendar.sync_frequency }}</span>
+                                    </div>
+
+                                    {% if calendar.last_sync %}
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock"></i> {{ _('Last sync') }}: {{
+                                        calendar.last_sync.strftime('%Y-%m-%d %H:%M') }}
+                                    </small>
+                                    {% else %}
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock"></i> {{ _('Never synced') }}
+                                    </small>
+                                    {% endif %}
+                                </div>
+                                <div class="card-footer bg-light">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <form method="POST"
+                                                action="{{ url_for('sync_calendar', calendar_id=calendar.id) }}"
+                                                style="display: inline;">
+                                                <button type="submit" class="btn btn-sm btn-outline-success w-100"
+                                                    onclick="return confirm('{{ _('Sync this calendar now?') }}')">
+                                                    <i class="fas fa-sync"></i> {{ _('Sync') }}
+                                                </button>
+                                            </form>
+                                        </div>
+                                        <div class="col-6">
+                                            <a href="{{ url_for('admin_trips') }}?calendar={{ calendar.id }}"
+                                                class="btn btn-sm btn-outline-primary w-100">
+                                                <i class="fas fa-plane"></i> {{ _('Trips') }}
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-calendar-alt fa-2x text-muted mb-2"></i>
+                        <p class="text-muted">{{ _('No calendars configured for this amenity.') }}</p>
+                        <a href="{{ url_for('new_calendar') }}?amenity={{ amenity.id }}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> {{ _('Add First Calendar') }}
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">{{ _('No Calendars Found') }}</h4>
+                    <p class="text-muted">{{ _('Get started by creating your first calendar for an amenity.') }}</p>
+                    <a href="{{ url_for('new_calendar') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> {{ _('Create First Calendar') }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Quick Stats -->
+{% if calendars_by_amenity %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-chart-bar"></i> {{ _('Calendar Stats') }}</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <h3 class="text-primary">{{ calendars_by_amenity.values() | sum(attribute='|length') }}</h3>
+                        <p class="text-muted">{{ _('Total Calendars') }}</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h3 class="text-success">{{ calendars_by_amenity.values() |
+                            sum(attribute='|selectattr("sync_enabled")|list|length') }}</h3>
+                        <p class="text-muted">{{ _('Sync Enabled') }}</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h3 class="text-info">{{ calendars_by_amenity.values() |
+                            sum(attribute='|sum(attribute="trips|length")') }}</h3>
+                        <p class="text-muted">{{ _('Total Trips') }}</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h3 class="text-warning">{{ calendars_by_amenity.values() |
+                            sum(attribute='|sum(attribute="trips|selectattr(\"is_externally_synced\")|list|length")') }}
+                        </h3>
+                        <p class="text-muted">{{ _('Synced Trips') }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

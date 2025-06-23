@@ -42,8 +42,8 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
                         <div>
-                            <h5 class="card-title">{{ _('Airbnb Synced') }}</h5>
-                            <h2 class="mb-0">{{ stats.airbnb_synced_count }}</h2>
+                            <h5 class="card-title">{{ _('Externally Synced') }}</h5>
+                            <h2 class="mb-0">{{ stats.externally_synced_count }}</h2>
                         </div>
                         <div class="align-self-center">
                             <i class="fab fa-airbnb fa-2x"></i>
@@ -58,7 +58,7 @@
                     <div class="d-flex justify-content-between">
                         <div>
                             <h5 class="card-title">{{ _('Not Synced') }}</h5>
-                            <h2 class="mb-0">{{ stats.airbnb_not_synced_count }}</h2>
+                            <h2 class="mb-0">{{ stats.externally_not_synced_count }}</h2>
                         </div>
                         <div class="align-self-center">
                             <i class="fas fa-exclamation-triangle fa-2x"></i>
@@ -143,9 +143,10 @@
                 <div class="card-body">
                     <div class="row text-center">
                         <div class="col-6">
-                            <h4 class="text-success">{{ "%.1f"|format((stats.airbnb_synced_count / stats.total_trips *
+                            <h4 class="text-success">{{ "%.1f"|format((stats.externally_synced_count / stats.total_trips
+                                *
                                 100) if stats.total_trips > 0 else 0) }}%</h4>
-                            <p class="text-muted">{{ _('Airbnb Synced') }}</p>
+                            <p class="text-muted">{{ _('Externally Synced') }}</p>
                         </div>
                         <div class="col-6">
                             <h4 class="text-info">{{ stats.avg_duration_days }}</h4>
@@ -166,9 +167,11 @@
                     <div class="row">
                         <div class="col-12">
                             <h6>{{ _('Total Trips') }}: <span class="badge bg-info">{{ stats.total_trips }}</span></h6>
-                            <h6>{{ _('Airbnb Synced') }}: <span class="badge bg-success">{{ stats.airbnb_synced_count
+                            <h6>{{ _('Externally Synced') }}: <span class="badge bg-success">{{
+                                    stats.externally_synced_count
                                     }}</span></h6>
-                            <h6>{{ _('Not Synced') }}: <span class="badge bg-warning">{{ stats.airbnb_not_synced_count
+                            <h6>{{ _('Not Synced') }}: <span class="badge bg-warning">{{
+                                    stats.externally_not_synced_count
                                     }}</span></h6>
                             <h6>{{ _('Average Duration') }}: <span class="badge bg-primary">{{ stats.avg_duration_days
                                     }} {{ _('days') }}</span></h6>
@@ -210,7 +213,7 @@
                                     <td>{{ trip.registrations|length }}</td>
                                     <td>{{ trip.registrations|map(attribute='guests')|map('length')|sum }}</td>
                                     <td>
-                                        {% if trip.is_airbnb_synced %}
+                                        {% if trip.is_externally_synced %}
                                         <span class="badge bg-success">{{ _('Synced') }}</span>
                                         {% else %}
                                         <span class="badge bg-warning">{{ _('Not Synced') }}</span>
@@ -307,7 +310,7 @@
         data: {
             labels: ['{{ _("Synced") }}', '{{ _("Not Synced") }}'],
             datasets: [{
-                data: [{{ stats.airbnb_synced_count }}, {{ stats.airbnb_not_synced_count }}],
+                data: [{{ stats.externally_synced_count }}, {{ stats.externally_not_synced_count }}],
         backgroundColor: ['#28a745', '#ffc107']
     }]
     },
