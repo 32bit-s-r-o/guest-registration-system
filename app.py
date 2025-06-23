@@ -318,6 +318,20 @@ def fetch_airbnb_calendar(calendar_url):
                 start_date = component.get('dtstart').dt
                 end_date = component.get('dtend').dt
                 
+                # Skip "Not Available" events - only process actual reservations
+                not_available_patterns = [
+                    'not available',
+                    'unavailable',
+                    'blocked',
+                    'maintenance',
+                    'cleaning',
+                    'no availability'
+                ]
+                
+                summary_lower = summary.lower()
+                if any(pattern in summary_lower for pattern in not_available_patterns):
+                    continue  # Skip this event
+                
                 # Parse guest information from summary/description
                 guest_info = parse_airbnb_guest_info(summary, description)
                 
