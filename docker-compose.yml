@@ -23,24 +23,6 @@ services:
     networks:
       - guest_registration_network
 
-  # Redis for caching and sessions
-  redis:
-    image: redis:7-alpine
-    container_name: guest_registration_redis
-    command: redis-server --appendonly yes
-    volumes:
-      - redis_data:/data
-    ports:
-      - "6379:6379"
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    restart: unless-stopped
-    networks:
-      - guest_registration_network
-
   # Main Application (includes setup and migrations)
   app:
     build:
@@ -54,7 +36,6 @@ services:
       - FLASK_APP=app.py
       - FLASK_ENV=production
       - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/guest_registration
-      - REDIS_URL=redis://redis:6379/0
       - SECRET_KEY=${SECRET_KEY:-your-secret-key-here}
       - MAIL_SERVER=${MAIL_SERVER:-smtp.gmail.com}
       - MAIL_PORT=${MAIL_PORT:-587}
@@ -79,10 +60,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
-        condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health/readiness"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -95,27 +74,22 @@ services:
   nginx:
     image: nginx:alpine
     container_name: guest_registration_nginx
+    ports:
+      - "80:80"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - app_uploads:/app/static/uploads:ro
-    ports:
-      - "80:80"
-      - "443:443"
     depends_on:
-      - app
+      app:
+        condition: service_healthy
     restart: unless-stopped
     networks:
       - guest_registration_network
 
 volumes:
   postgres_data:
-    driver: local
-  redis_data:
-    driver: local
   app_uploads:
-    driver: local
   app_logs:
-    driver: local
 
 networks:
   guest_registration_network:

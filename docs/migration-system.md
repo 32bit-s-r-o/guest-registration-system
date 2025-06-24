@@ -10,6 +10,14 @@ The Guest Registration System includes an automated migration and setup system t
 4. **Docker Integration**: Automatic setup and migration execution in the main application container
 5. **Python Migration System**: `migrations.py` - Core migration logic
 
+## 🏗️ System Architecture
+
+The migration system is designed to work with:
+
+- **PostgreSQL Database** - Primary data storage
+- **Flask Application** - Main application server
+- **File System** - Upload storage and configuration files
+
 ## How It Works
 
 ### Automatic Setup and Migration in Docker
@@ -95,8 +103,6 @@ app:
     dockerfile: Dockerfile
   depends_on:
     postgres:
-      condition: service_healthy
-    redis:
       condition: service_healthy
   # Setup and migrations run automatically on startup
 ```

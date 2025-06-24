@@ -222,7 +222,7 @@ def test_requirements():
     print("\n🔍 Testing Production Requirements")
     print("=" * 50)
     
-    required_packages = ['gunicorn', 'redis']
+    required_packages = ['gunicorn']
     
     try:
         with open('requirements.txt', 'r') as f:

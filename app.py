@@ -6,6 +6,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from werkzeug.exceptions import RequestEntityTooLarge
 import os
+import sys
 from datetime import datetime, timedelta
 import uuid
 from dotenv import load_dotenv
@@ -3915,7 +3916,7 @@ def admin_housekeeping_task_detail(task_id):
 
 @app.route('/health')
 def health_check():
-    """Health check endpoint for Docker and load balancers."""
+    """Basic health check endpoint for Docker and load balancers."""
     try:
         # Test database connection
         db.session.execute('SELECT 1')
@@ -3933,6 +3934,260 @@ def health_check():
             'database': 'disconnected',
             'error': str(e)
         }), 503
+
+@app.route('/health/detailed')
+def detailed_health_check():
+    """Detailed health check with comprehensive system status."""
+    health_status = {
+        'status': 'healthy',
+        'timestamp': datetime.utcnow().isoformat(),
+        'version': version_manager.get_current_version(),
+        'checks': {},
+        'overall_status': 'healthy'
+    }
+    
+    # Database health check
+    try:
+        db.session.execute('SELECT 1')
+        db_result = db.session.execute('SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = \'public\'')
+        table_count = db_result.scalar()
+        
+        health_status['checks']['database'] = {
+            'status': 'healthy',
+            'connected': True,
+            'table_count': table_count,
+            'response_time_ms': 0  # Could be enhanced with timing
+        }
+    except Exception as e:
+        health_status['checks']['database'] = {
+            'status': 'unhealthy',
+            'connected': False,
+            'error': str(e)
+        }
+        health_status['overall_status'] = 'unhealthy'
+    
+    # File system health check
+    try:
+        upload_folder = app.config.get('UPLOAD_FOLDER', 'uploads')
+        if os.path.exists(upload_folder):
+            free_space = shutil.disk_usage(upload_folder).free
+            free_space_mb = free_space / (1024 * 1024)
+            
+            health_status['checks']['filesystem'] = {
+                'status': 'healthy',
+                'upload_folder': upload_folder,
+                'exists': True,
+                'writable': os.access(upload_folder, os.W_OK),
+                'free_space_mb': round(free_space_mb, 2)
+            }
+        else:
+            health_status['checks']['filesystem'] = {
+                'status': 'unhealthy',
+                'upload_folder': upload_folder,
+                'exists': False,
+                'error': 'Upload folder does not exist'
+            }
+            health_status['overall_status'] = 'unhealthy'
+    except Exception as e:
+        health_status['checks']['filesystem'] = {
+            'status': 'unhealthy',
+            'error': str(e)
+        }
+        health_status['overall_status'] = 'unhealthy'
+    
+    # Application health check
+    try:
+        # Check if critical modules are available
+        import PIL
+        import cffi
+        import weasyprint
+        
+        health_status['checks']['application'] = {
+            'status': 'healthy',
+            'flask_version': Flask.__version__,
+            'python_version': sys.version.split()[0],
+            'critical_modules': {
+                'PIL': PIL.__version__,
+                'cffi': cffi.__version__,
+                'weasyprint': weasyprint.__version__
+            }
+        }
+    except Exception as e:
+        health_status['checks']['application'] = {
+            'status': 'unhealthy',
+            'error': str(e)
+        }
+        health_status['overall_status'] = 'unhealthy'
+    
+    # Migration status check
+    try:
+        current_version = migration_manager.get_current_version()
+        applied_migrations = migration_manager.get_applied_migrations()
+        pending_migrations = migration_manager.get_pending_migrations()
+        
+        health_status['checks']['migrations'] = {
+            'status': 'healthy' if not pending_migrations else 'warning',
+            'current_version': current_version,
+            'applied_count': len(applied_migrations),
+            'pending_count': len(pending_migrations),
+            'up_to_date': len(pending_migrations) == 0
+        }
+        
+        if pending_migrations:
+            health_status['overall_status'] = 'warning'
+    except Exception as e:
+        health_status['checks']['migrations'] = {
+            'status': 'unhealthy',
+            'error': str(e)
+        }
+        health_status['overall_status'] = 'unhealthy'
+    
+    # Memory usage check
+    try:
+        import psutil
+        process = psutil.Process()
+        memory_info = process.memory_info()
+        memory_mb = memory_info.rss / (1024 * 1024)
+        
+        health_status['checks']['memory'] = {
+            'status': 'healthy',
+            'memory_usage_mb': round(memory_mb, 2),
+            'memory_percent': round(process.memory_percent(), 2)
+        }
+    except ImportError:
+        health_status['checks']['memory'] = {
+            'status': 'not_available',
+            'message': 'psutil not installed'
+        }
+    except Exception as e:
+        health_status['checks']['memory'] = {
+            'status': 'unhealthy',
+            'error': str(e)
+        }
+    
+    # Determine HTTP status code
+    if health_status['overall_status'] == 'healthy':
+        status_code = 200
+    elif health_status['overall_status'] == 'warning':
+        status_code = 200  # Still return 200 for warnings
+    else:
+        status_code = 503
+    
+    return jsonify(health_status), status_code
+
+@app.route('/health/readiness')
+def readiness_check():
+    """Readiness check for Kubernetes and orchestration systems."""
+    try:
+        # Basic database connectivity
+        db.session.execute('SELECT 1')
+        
+        # Check if application is ready to serve requests
+        upload_folder = app.config.get('UPLOAD_FOLDER', 'uploads')
+        if not os.path.exists(upload_folder):
+            os.makedirs(upload_folder, exist_ok=True)
+        
+        return jsonify({
+            'status': 'ready',
+            'timestamp': datetime.utcnow().isoformat(),
+            'version': version_manager.get_current_version()
+        }), 200
+    except Exception as e:
+        return jsonify({
+            'status': 'not_ready',
+            'timestamp': datetime.utcnow().isoformat(),
+            'version': version_manager.get_current_version(),
+            'error': str(e)
+        }), 503
+
+@app.route('/health/liveness')
+def liveness_check():
+    """Liveness check for Kubernetes and orchestration systems."""
+    try:
+        # Simple check to ensure the application is alive
+        return jsonify({
+            'status': 'alive',
+            'timestamp': datetime.utcnow().isoformat(),
+            'version': version_manager.get_current_version()
+        }), 200
+    except Exception as e:
+        return jsonify({
+            'status': 'dead',
+            'timestamp': datetime.utcnow().isoformat(),
+            'version': version_manager.get_current_version(),
+            'error': str(e)
+        }), 503
+
+@app.route('/health/metrics')
+def health_metrics():
+    """Health metrics endpoint for monitoring systems."""
+    try:
+        metrics = {
+            'timestamp': datetime.utcnow().isoformat(),
+            'version': version_manager.get_current_version(),
+            'metrics': {}
+        }
+        
+        # Database metrics
+        try:
+            db_result = db.session.execute('SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = \'public\'')
+            table_count = db_result.scalar()
+            
+            # Get user count
+            user_count = User.query.filter_by(is_deleted=False).count()
+            
+            # Get registration count
+            registration_count = Registration.query.count()
+            
+            # Get trip count
+            trip_count = Trip.query.count()
+            
+            metrics['metrics']['database'] = {
+                'tables': table_count,
+                'users': user_count,
+                'registrations': registration_count,
+                'trips': trip_count
+            }
+        except Exception as e:
+            metrics['metrics']['database'] = {'error': str(e)}
+        
+        # File system metrics
+        try:
+            upload_folder = app.config.get('UPLOAD_FOLDER', 'uploads')
+            if os.path.exists(upload_folder):
+                file_count = len([f for f in os.listdir(upload_folder) if os.path.isfile(os.path.join(upload_folder, f))])
+                folder_size = sum(os.path.getsize(os.path.join(upload_folder, f)) for f in os.listdir(upload_folder) if os.path.isfile(os.path.join(upload_folder, f)))
+                
+                metrics['metrics']['filesystem'] = {
+                    'upload_files': file_count,
+                    'upload_size_bytes': folder_size,
+                    'upload_size_mb': round(folder_size / (1024 * 1024), 2)
+                }
+        except Exception as e:
+            metrics['metrics']['filesystem'] = {'error': str(e)}
+        
+        # Memory metrics
+        try:
+            import psutil
+            process = psutil.Process()
+            memory_info = process.memory_info()
+            
+            metrics['metrics']['memory'] = {
+                'rss_mb': round(memory_info.rss / (1024 * 1024), 2),
+                'vms_mb': round(memory_info.vms / (1024 * 1024), 2),
+                'percent': round(process.memory_percent(), 2)
+            }
+        except ImportError:
+            metrics['metrics']['memory'] = {'error': 'psutil not available'}
+        except Exception as e:
+            metrics['metrics']['memory'] = {'error': str(e)}
+        
+        return jsonify(metrics), 200
+    except Exception as e:
+        return jsonify({
+            'error': str(e),
+            'timestamp': datetime.utcnow().isoformat()
+        }), 500
 
 if __name__ == '__main__':
     # Parse command line arguments

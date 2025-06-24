@@ -56,6 +56,7 @@ class SystemManager:
             'backup': self.run_backups,
             'utility': self.run_utilities,
             'status': self.show_status,
+            'health': self.health_check,
             'clean': self.cleanup,
             'setup': self.setup_system,
             'docker': self.docker_operations,
@@ -235,6 +236,35 @@ class SystemManager:
             print(f"  {category.title()}: {len(scripts)} scripts")
         
         return True
+    
+    def health_check(self, args=None):
+        """Run comprehensive health checks"""
+        print("🏥 Health Check")
+        print("=" * 50)
+        
+        # Check if health_check.py script exists
+        if os.path.exists('health_check.py'):
+            print("🔍 Running comprehensive health checks...")
+            try:
+                # Run the health check script
+                result = subprocess.run([sys.executable, 'health_check.py', '--detailed', '--metrics'], 
+                                      capture_output=True, text=True)
+                
+                if result.returncode == 0:
+                    print("✅ Health checks completed successfully")
+                    print(result.stdout)
+                    return True
+                else:
+                    print("❌ Health checks failed")
+                    print(result.stdout)
+                    print(result.stderr)
+                    return False
+            except Exception as e:
+                print(f"❌ Error running health checks: {e}")
+                return False
+        else:
+            print("❌ health_check.py script not found")
+            return False
     
     def cleanup(self, args=None):
         """Clean up temporary files and caches"""
@@ -1151,6 +1181,7 @@ Examples:
   python manage.py backup                  # Run backup operations
   python manage.py utility                 # List available utilities
   python manage.py status                  # Show system status
+  python manage.py health                  # Run comprehensive health checks
   python manage.py clean                   # Clean up temporary files
   python manage.py setup                   # Setup system from scratch
   python manage.py all                     # Run all operations
@@ -1195,7 +1226,7 @@ Examples:
     )
     
     parser.add_argument('command', 
-                       choices=['test', 'migrate', 'seed', 'backup', 'utility', 'status', 'clean', 'setup', 'docker', 'all'],
+                       choices=['test', 'migrate', 'seed', 'backup', 'utility', 'status', 'health', 'clean', 'setup', 'docker', 'all'],
                        help='Command to execute')
     
     parser.add_argument('args', nargs='*', 

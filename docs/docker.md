@@ -6,6 +6,14 @@
 
 This guide covers Docker deployment for the Guest Registration System, including multi-platform support, production-ready configuration, and management commands.
 
+## 🏗️ Architecture
+
+The system consists of three main services:
+
+1. **PostgreSQL** - Primary database
+2. **Flask Application** - Main web application
+3. **Nginx** - Reverse proxy and static file server
+
 ## 🐳 Docker Architecture
 
 The system uses a multi-service Docker Compose setup:
@@ -13,9 +21,8 @@ The system uses a multi-service Docker Compose setup:
 ### Services
 
 1. **PostgreSQL Database** - Primary data storage
-2. **Redis** - Caching and session storage
-3. **Flask Application** - Main application with Gunicorn
-4. **Nginx** - Reverse proxy and load balancer
+2. **Flask Application** - Main application with Gunicorn
+3. **Nginx** - Reverse proxy and load balancer
 
 ### Multi-Platform Support
 
@@ -60,7 +67,6 @@ python manage.py docker status
 - **Application**: http://localhost:8000
 - **Nginx Proxy**: http://localhost:80
 - **Database**: localhost:5432
-- **Redis**: localhost:6379
 
 ## 🔧 Docker Management Commands
 
@@ -172,7 +178,6 @@ FROM --platform=$TARGETPLATFORM python:3.11-slim
 ```yaml
 services:
   postgres:     # PostgreSQL database
-  redis:        # Redis cache
   app:          # Flask application (multi-platform)
   nginx:        # Reverse proxy
 ```
@@ -408,7 +413,6 @@ docker inspect guest_registration_app
 
 - **Gunicorn workers** based on CPU cores
 - **Nginx caching** for static files
-- **Redis caching** for database queries
 - **Gzip compression** for responses
 
 ### Resource Limits

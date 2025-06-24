@@ -35,7 +35,7 @@ log "Running as user: $(whoami), PID: $$"
 
 # Dump selected critical environment variables
 log "Dumping selected critical environment variables:"
-log "POSTGRES_DB=${POSTGRES_DB:-<unset>}, POSTGRES_USER=${POSTGRES_USER:-<unset>}, POSTGRES_PASSWORD=${POSTGRES_PASSWORD:+***MASKED***}, REDIS_URL=${REDIS_URL:-<unset>}, DATABASE_URL=${DATABASE_URL:-<unset>}, TABLE_PREFIX=${TABLE_PREFIX:-<unset>}"
+log "POSTGRES_DB=${POSTGRES_DB:-<unset>}, POSTGRES_USER=${POSTGRES_USER:-<unset>}, POSTGRES_PASSWORD=${POSTGRES_PASSWORD:+***MASKED***}, DATABASE_URL=${DATABASE_URL:-<unset>}, TABLE_PREFIX=${TABLE_PREFIX:-<unset>}"
 log "SECRET_KEY=${SECRET_KEY:+***MASKED***}, MAIL_SERVER=${MAIL_SERVER:-<unset>}, MAIL_PORT=${MAIL_PORT:-<unset>}, MAIL_USE_TLS=${MAIL_USE_TLS:-<unset>}, MAIL_USERNAME=${MAIL_USERNAME:-<unset>}, MAIL_PASSWORD=${MAIL_PASSWORD:+***MASKED***}"
 log "UPLOAD_FOLDER=${UPLOAD_FOLDER:-<unset>}, MAX_CONTENT_LENGTH=${MAX_CONTENT_LENGTH:-<unset>}"
 # Full environment dump (for deeper debugging)

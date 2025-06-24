@@ -16,5 +16,5 @@ WeasyPrint==59.0
 pydyf==0.8.0
 Flask-Babel>=3.1.0
 gunicorn==21.2.0
-redis==5.0.1 
 cffi>=1.15.1
+psutil>=5.9.0

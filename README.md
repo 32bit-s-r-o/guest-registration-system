@@ -62,6 +62,65 @@ python start.py --mode prod --port 80 --workers 4
 python start.py --mode auto
 ```
 
+### Health Check System
+
+The system includes comprehensive health check endpoints for monitoring and orchestration:
+
+**Basic Health Check:**
+```bash
+curl http://localhost:5000/health
+```
+
+**Detailed Health Check:**
+```bash
+curl http://localhost:5000/health/detailed
+```
+
+**Readiness Check (for Kubernetes):**
+```bash
+curl http://localhost:5000/health/readiness
+```
+
+**Liveness Check (for Kubernetes):**
+```bash
+curl http://localhost:5000/health/liveness
+```
+
+**System Metrics:**
+```bash
+curl http://localhost:5000/health/metrics
+```
+
+**Health Check Script:**
+```bash
+# Run comprehensive health checks
+python health_check.py
+
+# With detailed information
+python health_check.py --detailed --metrics
+
+# JSON output for monitoring systems
+python health_check.py --json
+
+# Custom URL
+python health_check.py --url http://your-server:5000
+```
+
+**Management Script Integration:**
+```bash
+# Run health checks via manage.py
+python manage.py health
+```
+
+**Health Check Features:**
+- Database connectivity monitoring
+- File system health and disk space
+- Application module availability
+- Migration status checking
+- Memory usage monitoring
+- System metrics collection
+- Kubernetes-ready endpoints
+
 ### Flask App Parameters
 
 The application supports various command-line parameters for flexible deployment:

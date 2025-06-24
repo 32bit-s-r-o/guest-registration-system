@@ -149,7 +149,7 @@ def test_migration_script():
         with open(docker_compose, 'r') as f:
             compose_content = f.read()
         # Check for simplified approach (no separate setup/migration services)
-        if "app:" in compose_content and "postgres:" in compose_content and "redis:" in compose_content:
+        if "app:" in compose_content and "postgres:" in compose_content:
             if "setup:" not in compose_content and "migrations:" not in compose_content:
                 print("✅ Docker Compose uses simplified approach (setup/migrations in main app)")
             else:
