@@ -28,7 +28,7 @@ import json
 import csv
 from io import StringIO, BytesIO
 from flask_babel import lazy_gettext as _l
-from sqlalchemy import func, and_, or_
+from sqlalchemy import func, and_, or_, text
 from collections import defaultdict
 import calendar
 import subprocess
@@ -1113,6 +1113,57 @@ def new_trip():
     
     amenities = Amenity.query.filter_by(admin_id=current_user.id, is_active=True).order_by(Amenity.name).all()
     return render_template('admin/new_trip.html', amenities=amenities)
+
+@app.route('/admin/trips/<int:trip_id>/edit', methods=['GET', 'POST'])
+@login_required
+@role_required('admin')
+def edit_trip(trip_id):
+    """Edit an existing trip."""
+    trip = Trip.query.get_or_404(trip_id)
+    if trip.admin_id != current_user.id:
+        flash(_('Access denied'), 'error')
+        return redirect(url_for('admin_trips'))
+    
+    if request.method == 'POST':
+        amenity_id = request.form.get('amenity_id')
+        amenity = Amenity.query.get(amenity_id)
+        
+        if not amenity or amenity.admin_id != current_user.id:
+            flash(_('Invalid amenity selected'), 'error')
+            return redirect(url_for('edit_trip', trip_id=trip_id))
+        
+        trip.title = request.form.get('title')
+        trip.start_date = datetime.strptime(request.form.get('start_date'), '%Y-%m-%d').date()
+        trip.end_date = datetime.strptime(request.form.get('end_date'), '%Y-%m-%d').date()
+        trip.max_guests = int(request.form.get('max_guests'))
+        trip.amenity_id = amenity_id
+        
+        db.session.commit()
+        flash(_('Trip updated successfully!'), 'success')
+        return redirect(url_for('admin_trips'))
+    
+    amenities = Amenity.query.filter_by(admin_id=current_user.id, is_active=True).order_by(Amenity.name).all()
+    return render_template('admin/edit_trip.html', trip=trip, amenities=amenities)
+
+@app.route('/admin/trips/<int:trip_id>/delete', methods=['POST'])
+@login_required
+@role_required('admin')
+def delete_trip(trip_id):
+    """Delete a trip."""
+    trip = Trip.query.get_or_404(trip_id)
+    if trip.admin_id != current_user.id:
+        flash(_('Access denied'), 'error')
+        return redirect(url_for('admin_trips'))
+    
+    # Check if trip has registrations
+    if trip.registrations:
+        flash(_('Cannot delete trip with existing registrations'), 'error')
+        return redirect(url_for('admin_trips'))
+    
+    db.session.delete(trip)
+    db.session.commit()
+    flash(_('Trip deleted successfully!'), 'success')
+    return redirect(url_for('admin_trips'))
 
 @app.route('/admin/registrations')
 @login_required
@@ -3948,7 +3999,7 @@ def health_check():
     """Basic health check endpoint for Docker and load balancers."""
     try:
         # Test database connection
-        db.session.execute('SELECT 1')
+        db.session.execute(text('SELECT 1'))
         return jsonify({
             'status': 'healthy',
             'timestamp': datetime.utcnow().isoformat(),
@@ -3977,8 +4028,8 @@ def detailed_health_check():
     
     # Database health check
     try:
-        db.session.execute('SELECT 1')
-        db_result = db.session.execute('SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = \'public\'')
+        db.session.execute(text('SELECT 1'))
+        db_result = db.session.execute(text('SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = \'public\''))
         table_count = db_result.scalar()
         
         health_status['checks']['database'] = {
