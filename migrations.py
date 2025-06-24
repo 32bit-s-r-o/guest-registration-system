@@ -229,6 +229,11 @@ class MigrationManager:
         up_sql = parts[0].split('-- Up Migration', 1)[1].strip()
         down_sql = parts[1].strip() if len(parts) > 1 else None
         
+        # Replace hardcoded prefix with actual table prefix
+        up_sql = up_sql.replace('guest_reg_', self.table_prefix)
+        if down_sql:
+            down_sql = down_sql.replace('guest_reg_', self.table_prefix)
+        
         # Extract version and name from filename
         parts = filename.replace('.sql', '').split('_')
         version = parts[1]

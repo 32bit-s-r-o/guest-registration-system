@@ -29,12 +29,20 @@ class SystemManager:
                 'test_standalone.py',
                 'test_server_url.py'
             ],
+            'test_suite': [
+                'test_config.py',
+                'test_seeder.py',
+                'test_server.py',
+                'run_test_suite.py',
+                'test_runner.py'
+            ],
             'migrations': [
                 'migrations.py'
             ],
             'seeds': [
                 'create_test_registration.py',
-                'create_housekeeper_data.py'
+                'create_housekeeper_data.py',
+                'test_seeder.py'
             ],
             'backups': [
                 'test_backup_functionality.py'
@@ -55,6 +63,11 @@ class SystemManager:
         
         self.available_commands = {
             'test': self.run_tests,
+            'test-suite': self.run_test_suite,
+            'test-setup': self.setup_test_environment,
+            'test-seed': self.seed_test_data,
+            'test-server': self.start_test_server,
+            'test-cleanup': self.cleanup_test_environment,
             'migrate': self.run_migrations,
             'seed': self.run_seeds,
             'backup': self.run_backups,
@@ -134,6 +147,71 @@ class SystemManager:
         
         print(f"\nTests Passed: {passed_tests}/{total_tests}")
         return passed_tests == total_tests
+    
+    def run_test_suite(self, args=None):
+        """Run the comprehensive test suite with isolated environment"""
+        print("🚀 Running Comprehensive Test Suite")
+        print("=" * 60)
+        print("This will:")
+        print("1. Set up test environment (port 5001, test database)")
+        print("2. Seed comprehensive test data")
+        print("3. Start test server on port 5001")
+        print("4. Run all tests against the test server")
+        print("5. Provide detailed summary")
+        print("=" * 60)
+        
+        return self.run_script('run_test_suite.py', args)
+    
+    def setup_test_environment(self, args=None):
+        """Set up test environment only"""
+        print("🔧 Setting Up Test Environment")
+        print("=" * 50)
+        print("This will:")
+        print("- Configure test port (5001)")
+        print("- Set up test database")
+        print("- Configure test table prefix")
+        print("- Create test upload directory")
+        print("=" * 50)
+        
+        return self.run_script('run_test_suite.py', ['setup'])
+    
+    def seed_test_data(self, args=None):
+        """Seed test data only"""
+        print("🌱 Seeding Test Data")
+        print("=" * 50)
+        print("This will create:")
+        print("- 5 test trips with confirmation codes")
+        print("- 10 test registrations with various statuses")
+        print("- 20 test guests with realistic data")
+        print("- 8 test invoices with different amounts")
+        print("=" * 50)
+        
+        return self.run_script('run_test_suite.py', ['seed'])
+    
+    def start_test_server(self, args=None):
+        """Start test server only"""
+        print("🚀 Starting Test Server")
+        print("=" * 50)
+        print("This will:")
+        print("- Start Flask app on port 5001")
+        print("- Use test configuration")
+        print("- Provide access to pre-seeded test data")
+        print("- Press Ctrl+C to stop")
+        print("=" * 50)
+        
+        return self.run_script('run_test_suite.py', ['server'])
+    
+    def cleanup_test_environment(self, args=None):
+        """Clean up test environment"""
+        print("🧹 Cleaning Up Test Environment")
+        print("=" * 50)
+        print("This will:")
+        print("- Stop test server")
+        print("- Clear test environment variables")
+        print("- Clean up temporary files")
+        print("=" * 50)
+        
+        return self.run_script('run_test_suite.py', ['cleanup'])
     
     def run_migrations(self, args=None):
         """Run migration operations"""
@@ -1190,6 +1268,13 @@ Examples:
   python manage.py setup                   # Setup system from scratch
   python manage.py all                     # Run all operations
 
+  # Test Suite Operations (Isolated Testing)
+  python manage.py test-suite              # Run complete test suite (setup + seed + server + tests)
+  python manage.py test-setup              # Set up test environment only
+  python manage.py test-seed               # Seed test data only
+  python manage.py test-server             # Start test server on port 5001
+  python manage.py test-cleanup            # Clean up test environment
+
   # Docker operations
   python manage.py docker                                    # List Docker operations
   python manage.py docker buildx-setup                       # Setup buildx for multiplatform
@@ -1230,7 +1315,7 @@ Examples:
     )
     
     parser.add_argument('command', 
-                       choices=['test', 'migrate', 'seed', 'backup', 'utility', 'status', 'health', 'clean', 'setup', 'docker', 'all'],
+                       choices=['test', 'test-suite', 'test-setup', 'test-seed', 'test-server', 'test-cleanup', 'migrate', 'seed', 'backup', 'utility', 'status', 'health', 'clean', 'setup', 'docker', 'all'],
                        help='Command to execute')
     
     parser.add_argument('args', nargs='*', 

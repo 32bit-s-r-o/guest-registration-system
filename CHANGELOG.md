@@ -73,6 +73,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Improved test reliability and consistency
   - Better integration with management script
 
+## [1.9.1] - 2025-06-24
+### Fixed
+- Migration system now dynamically replaces table prefix in migration SQL files, enabling true test database isolation.
+- Test suite now creates and migrates tables with the correct test prefix (`test_guest_reg_`), preventing interference with production data.
+- Added logic to reset test database and re-apply migrations for prefix changes.
+
 ## [1.8.0] - 2025-01-XX
 
 ### Added

@@ -9,6 +9,8 @@ import json
 from datetime import datetime
 from typing import Dict, List, Optional
 
+__version__ = '1.9.1'
+
 class VersionManager:
     def __init__(self, version_file: str = "version.json"):
         self.version_file = version_file
