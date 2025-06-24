@@ -1,139 +1,103 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_from_directory, send_file, abort
+import os
+import uuid
+import argparse
+from datetime import datetime, timedelta
+from decimal import Decimal
+from io import StringIO, BytesIO
+import tempfile
+import zipfile
+import csv
+import shutil
+import subprocess
+import sys
+from collections import defaultdict
+
+from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory, send_file, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from flask_mail import Mail, Message
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+from flask_babel import Babel, gettext as _
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-from werkzeug.exceptions import RequestEntityTooLarge
-import os
-import sys
-from datetime import datetime, timedelta
-import uuid
-from dotenv import load_dotenv
-import requests
-import icalendar
-from dateutil import parser
-import re
-import threading
-import time
-import shutil
-from markupsafe import Markup
+from sqlalchemy import text
 from weasyprint import HTML, CSS
 from weasyprint.text.fonts import FontConfiguration
-import tempfile
-from decimal import Decimal
-from flask_babel import Babel, gettext as _
-from functools import wraps
-import json
-import csv
-from io import StringIO, BytesIO
-from flask_babel import lazy_gettext as _l
-from sqlalchemy import func, and_, or_, text
-from collections import defaultdict
-import calendar
-import subprocess
-import zipfile
+from flask_mail import Mail, Message
+import requests
+from icalendar import Calendar as iCalCalendar
+import pytz
 
-# Add version management imports
-from version import version_manager, check_version_compatibility, get_version_changelog
+# Import version and migration managers
+from version import VersionManager, version_manager, check_version_compatibility, get_version_changelog
 from migrations import MigrationManager
-import argparse
 
-load_dotenv()
-
-# Create migration manager instance
-migration_manager = MigrationManager()
-
-# Database configuration
-def get_database_url():
-    """Construct database URL from environment variables or use default."""
-    # Check if DATABASE_URL is explicitly set
-    database_url = os.getenv('DATABASE_URL')
-    if database_url:
-        # If it contains Docker-style variable substitution, handle it
-        if '${POSTGRES_PASSWORD:-postgres}' in database_url:
-            postgres_password = os.getenv('POSTGRES_PASSWORD', 'postgres')
-            database_url = database_url.replace('${POSTGRES_PASSWORD:-postgres}', postgres_password)
-        return database_url
-    
-    # Construct URL from individual components
-    db_host = os.getenv('DB_HOST', 'localhost')
-    db_port = os.getenv('DB_PORT', '5432')
-    db_name = os.getenv('DB_NAME', 'guest_registration')
-    db_user = os.getenv('DB_USER', 'postgres')
-    db_password = os.getenv('POSTGRES_PASSWORD', 'postgres')
-    
-    return f'postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}'
-
+# Initialize Flask app
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key-here')
-app.config['SQLALCHEMY_DATABASE_URI'] = get_database_url()
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['UPLOAD_FOLDER'] = 'uploads'
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
-# Table prefix configuration
-app.config['TABLE_PREFIX'] = os.getenv('TABLE_PREFIX', 'guest_reg_')
+# Configuration
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-here')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///guest_registration.db')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['UPLOAD_FOLDER'] = os.environ.get('UPLOAD_FOLDER', 'uploads')
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+app.config['TABLE_PREFIX'] = os.environ.get('TABLE_PREFIX', '')
+app.config['VERSION'] = os.environ.get('VERSION', '1.0.0')
 
 # Email configuration
-app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
-app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', 587))
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
-app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
+app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
+app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
+app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'true').lower() == 'true'
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME', '')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD', '')
 
-# Flask-Babel setup
-app.config['BABEL_DEFAULT_LOCALE'] = 'en'
-app.config['BABEL_SUPPORTED_LOCALES'] = ['en', 'cs', 'sk']
-app.config['BABEL_TRANSLATION_DIRECTORIES'] = 'translations'
+# Initialize extensions
+db = SQLAlchemy(app)
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'auth.admin_login'
+babel = Babel(app)
+mail = Mail(app)
 
-# Language picker configuration
-app.config['LANGUAGE_PICKER_ENABLED'] = os.getenv('LANGUAGE_PICKER_ENABLED', 'true').lower() == 'true'
+# Initialize migration manager
+migration_manager = MigrationManager()
+
+def get_database_url():
+    """Get database URL from environment or use default."""
+    database_url = os.environ.get('DATABASE_URL')
+    if database_url:
+        return database_url
+    
+    # Default to SQLite
+    return 'sqlite:///guest_registration.db'
 
 def get_locale():
     # If language picker is disabled, always return English
-    if not app.config['LANGUAGE_PICKER_ENABLED']:
+    if os.environ.get('DISABLE_LANGUAGE_PICKER', 'false').lower() == 'true':
         return 'en'
     
-    # Try to get language from session, then from request, fallback to default
-    from flask import session, request
-    lang = session.get('lang')
-    if lang in app.config['BABEL_SUPPORTED_LOCALES']:
-        return lang
-    return request.accept_languages.best_match(app.config['BABEL_SUPPORTED_LOCALES'])
+    # Check if user has selected a language
+    if 'language' in session:
+        return session['language']
+    
+    # Try to get language from request
+    if request:
+        return request.accept_languages.best_match(['en', 'cs', 'sk'])
+    
+    return 'en'
 
-babel = Babel(app, locale_selector=get_locale)
-
-# Make get_locale available in templates
 @app.context_processor
 def inject_get_locale():
-    return dict(
-        get_locale=get_locale,
-        language_picker_enabled=app.config['LANGUAGE_PICKER_ENABLED']
-    )
-
-db = SQLAlchemy(app)
-mail = Mail(app)
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = 'admin_login'
-
-# Ensure upload directory exists
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    return dict(get_locale=get_locale)
 
 def copy_sample_image(image_filename):
-    """Copy a sample image from static/sample_images to uploads directory."""
-    sample_image_path = os.path.join('static', 'sample_images', image_filename)
-    upload_image_path = os.path.join(app.config['UPLOAD_FOLDER'], image_filename)
+    """Copy a sample image to the uploads folder if it doesn't exist."""
+    sample_path = os.path.join('static', 'sample_images', image_filename)
+    upload_path = os.path.join(app.config['UPLOAD_FOLDER'], image_filename)
     
-    if os.path.exists(sample_image_path):
-        shutil.copy2(sample_image_path, upload_image_path)
-        return image_filename
-    else:
-        print(f"Warning: Sample image not found: {sample_image_path}")
-        return None
+    if os.path.exists(sample_path) and not os.path.exists(upload_path):
+        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+        shutil.copy2(sample_path, upload_path)
 
-# Database Models with table prefix support
+# Database Models
 class User(UserMixin, db.Model):
     __tablename__ = f"{app.config['TABLE_PREFIX']}user"
     
@@ -167,11 +131,9 @@ class User(UserMixin, db.Model):
     is_deleted = db.Column(db.Boolean, default=False)
     
     def set_password(self, password):
-        """Set password hash for the user."""
         self.password_hash = generate_password_hash(password)
     
     def check_password(self, password):
-        """Check if the provided password matches the hash."""
         return check_password_hash(self.password_hash, password)
 
 class Amenity(db.Model):
@@ -354,384 +316,331 @@ class HousekeepingPhoto(db.Model):
 
     task = db.relationship('Housekeeping', backref=db.backref('photos', lazy=True, cascade='all, delete-orphan'))
 
+# Login manager
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.filter_by(id=int(user_id), is_deleted=False).first()
+    return User.query.get(int(user_id))
 
-# Airbnb Calendar Sync Functions
+# Utility functions
 def parse_airbnb_guest_info(summary, description):
     """Parse guest information from Airbnb calendar event."""
-    print(f"🔍 Parsing guest info from summary: '{summary[:100]}...'")
-    print(f"🔍 Parsing guest info from description: '{description[:100]}...'")
-    
     guest_info = {
         'name': '',
         'email': '',
         'count': 1,
-        'confirm_code': ''
+        'confirmation_code': ''
     }
-    guest_count_found = False
     
     # Try to extract guest name from summary
-    name_patterns = [
-        r'^(.+?)\s*-\s*Airbnb',
-        r'^(.+?)\s*\(\d+\s*guests?\)',
-        r'^(.+?)\s*-\s*\d+\s*guests?'
-    ]
-    for pattern in name_patterns:
-        match = re.search(pattern, summary, re.IGNORECASE)
+    if summary:
+        # Common patterns in Airbnb summaries
+        import re
+        
+        # Pattern 1: "Guest Name - Confirmation Code"
+        match = re.search(r'^([^-]+?)\s*-\s*([A-Z0-9]+)$', summary.strip())
         if match:
             guest_info['name'] = match.group(1).strip()
-            print(f"✅ Found guest name: {guest_info['name']}")
-            break
+            guest_info['confirmation_code'] = match.group(2).strip()
+        
+        # Pattern 2: "Guest Name (X guests)"
+        match = re.search(r'^([^(]+?)\s*\((\d+)\s*guests?\)', summary.strip())
+        if match:
+            guest_info['name'] = match.group(1).strip()
+            guest_info['count'] = int(match.group(2))
+        
+        # Pattern 3: Just guest name
+        if not guest_info['name'] and not re.search(r'[A-Z0-9]{6,}', summary):
+            guest_info['name'] = summary.strip()
     
     # Try to extract email from description
-    email_pattern = r'[\w\.-]+@[\w\.-]+\.\w+'
-    email_match = re.search(email_pattern, description)
-    if email_match:
-        guest_info['email'] = email_match.group(0)
-        print(f"✅ Found guest email: {guest_info['email']}")
+    if description:
+        import re
+        email_match = re.search(r'[\w\.-]+@[\w\.-]+\.\w+', description)
+        if email_match:
+            guest_info['email'] = email_match.group(0)
     
-    # Try to extract guest count
-    count_patterns = [
-        r'(\d+)\s*guests?',
-        r'(\d+)\s*people'
-    ]
-    search_text = summary + ' ' + description
-    print(f"🔍 Searching for guest count in: '{search_text[:200]}...'")
-    for pattern in count_patterns:
-        match = re.search(pattern, search_text, re.IGNORECASE)
-        if match:
-            guest_info['count'] = int(match.group(1))
-            guest_count_found = True
-            print(f"✅ Found guest count: {guest_info['count']} (pattern: {pattern})")
-            break
-    if not guest_count_found:
-        print(f"⚠️  Using default guest count: {guest_info['count']}")
-    
-    # Try to extract confirmation code from Airbnb reservation URL
-    confirm_patterns = [
-        r'/de\s*\n\s*tails/([A-Z0-9]{10})',
-        r'/details/([A-Z0-9]{10})',
-        r'tails/([A-Z0-9]{10})',
-        r'confirmation\s+code:\s*([A-Z0-9]{6,})',
-        r'code:\s*([A-Z0-9]{6,})',
-        r'\b([A-Z0-9]{10})(?=\s|$|\\n)'
-    ]
-    for pattern in confirm_patterns:
-        match = re.search(pattern, summary + ' ' + description, re.IGNORECASE)
-        if match:
-            guest_info['confirm_code'] = match.group(1).upper()
-            print(f"✅ Found confirmation code: {guest_info['confirm_code']}")
-            break
-    if not guest_info['confirm_code']:
-        normalized_text = summary + ' ' + description.replace('\n', ' ').replace('\\n', ' ')
-        for pattern in confirm_patterns:
-            match = re.search(pattern, normalized_text, re.IGNORECASE)
-            if match:
-                guest_info['confirm_code'] = match.group(1).upper()
-                print(f"✅ Found confirmation code (normalized): {guest_info['confirm_code']}")
-                break
-    print(f"📋 Final parsed guest info: {guest_info}, guest_count_found={guest_count_found}")
-    return guest_info, guest_count_found
+    return guest_info
 
 def fetch_airbnb_calendar(calendar_url):
-    """Fetch and parse Airbnb calendar data."""
+    """Fetch calendar data from Airbnb URL."""
     try:
-        response = requests.get(calendar_url, timeout=30)
+        response = requests.get(calendar_url, timeout=10)
         response.raise_for_status()
-        cal = icalendar.Calendar.from_ical(response.content)
-        reservations = []
-        for component in cal.walk():
-            if component.name == "VEVENT":
-                summary = str(component.get('summary', ''))
-                description = str(component.get('description', ''))
-                start_date = component.get('dtstart').dt
-                end_date = component.get('dtend').dt
-                not_available_patterns = [
-                    'not available',
-                    'unavailable',
-                    'blocked',
-                    'maintenance',
-                    'cleaning',
-                    'no availability'
-                ]
-                summary_lower = summary.lower()
-                if any(pattern in summary_lower for pattern in not_available_patterns):
-                    continue
-                guest_info, guest_count_found = parse_airbnb_guest_info(summary, description)
-                reservation = {
-                    'id': str(component.get('uid', '')),
-                    'title': summary,
-                    'start_date': start_date,
-                    'end_date': end_date,
-                    'guest_name': guest_info.get('name', ''),
-                    'guest_email': guest_info.get('email', ''),
-                    'guest_count': guest_info.get('count', 1),
-                    'guest_count_found': guest_count_found,
-                    'confirm_code': guest_info.get('confirm_code', ''),
-                    'description': description
-                }
-                reservations.append(reservation)
-        return reservations
-    except Exception as e:
-        print(f"Error fetching Airbnb calendar: {e}")
-        return []
+        return response.text
+    except requests.RequestException as e:
+        print(f"Error fetching calendar: {e}")
+        return None
 
 def sync_airbnb_reservations(amenity_id):
-    """Sync Airbnb reservations for a specific amenity, ensuring unique confirmation codes."""
-    # This function is deprecated - use sync_calendar_reservations instead
-    # Find the first calendar for this amenity and sync it
-    calendar = Calendar.query.filter_by(amenity_id=amenity_id, calendar_type='airbnb').first()
-    if calendar:
-        return sync_calendar_reservations(calendar.id)
-    else:
-        return {'success': False, 'message': 'No Airbnb calendar found for this amenity'}
+    """Sync Airbnb reservations for a specific amenity."""
+    amenity = Amenity.query.get(amenity_id)
+    if not amenity:
+        return {'success': False, 'message': 'Amenity not found'}
+    
+    # Get all calendars for this amenity
+    calendars = Calendar.query.filter_by(amenity_id=amenity_id, sync_enabled=True).all()
+    
+    if not calendars:
+        return {'success': False, 'message': 'No calendars found for this amenity'}
+    
+    synced_count = 0
+    errors = []
+    
+    for calendar in calendars:
+        try:
+            result = sync_calendar_reservations(calendar.id)
+            if result['success']:
+                synced_count += result.get('count', 0)
+            else:
+                errors.append(f"Calendar {calendar.name}: {result['message']}")
+        except Exception as e:
+            errors.append(f"Calendar {calendar.name}: {str(e)}")
+    
+    if errors:
+        return {'success': False, 'message': f"Sync completed with errors: {'; '.join(errors)}"}
+    
+    return {'success': True, 'message': f"Successfully synced {synced_count} reservations"}
 
 def sync_all_amenities_for_admin(admin_id):
     """Sync all amenities for a specific admin."""
-    amenities = Amenity.query.filter_by(admin_id=admin_id, airbnb_sync_enabled=True, is_active=True).all()
-    if not amenities:
-        return {'success': False, 'message': 'No active amenities with sync enabled found'}
+    amenities = Amenity.query.filter_by(admin_id=admin_id).all()
     
     total_synced = 0
-    total_updated = 0
-    results = []
+    errors = []
     
     for amenity in amenities:
-        result = sync_airbnb_reservations(amenity.id)
-        if result['success']:
-            total_synced += result['synced']
-            total_updated += result['updated']
-        results.append(result)
+        try:
+            result = sync_airbnb_reservations(amenity.id)
+            if result['success']:
+                # Extract count from message if possible
+                import re
+                count_match = re.search(r'(\d+)', result['message'])
+                if count_match:
+                    total_synced += int(count_match.group(1))
+            else:
+                errors.append(f"Amenity {amenity.name}: {result['message']}")
+        except Exception as e:
+            errors.append(f"Amenity {amenity.name}: {str(e)}")
     
-    return {
-        'success': True,
-        'message': f'Synced {total_synced} new reservations, updated {total_updated} existing across {len(amenities)} amenities',
-        'total_synced': total_synced,
-        'total_updated': total_updated,
-        'amenities_processed': len(amenities),
-        'results': results
-    }
+    if errors:
+        return {'success': False, 'message': f"Sync completed with errors: {'; '.join(errors)}"}
+    
+    return {'success': True, 'message': f"Successfully synced {total_synced} reservations across all amenities"}
 
 def sync_calendar_reservations(calendar_id):
-    """Sync reservations for a specific calendar, ensuring unique confirmation codes."""
+    """Sync reservations from a specific calendar."""
     calendar = Calendar.query.get(calendar_id)
-    if not calendar or not calendar.calendar_url or not calendar.sync_enabled:
-        return {'success': False, 'message': 'Calendar sync not configured or disabled'}
+    if not calendar:
+        return {'success': False, 'message': 'Calendar not found'}
+    
+    if not calendar.sync_enabled:
+        return {'success': False, 'message': 'Calendar sync is disabled'}
+    
     try:
-        print(f"🔍 Starting sync for calendar: {calendar.name}")
-        reservations = fetch_calendar_data(calendar.calendar_url, calendar.calendar_type)
-        print(f"📅 Found {len(reservations)} reservations to process")
+        # Fetch calendar data
+        calendar_data = fetch_calendar_data(calendar.calendar_url, calendar.calendar_type)
+        if not calendar_data:
+            return {'success': False, 'message': 'Failed to fetch calendar data'}
+        
+        # Parse calendar
+        cal = iCalCalendar.from_ical(calendar_data)
+        
         synced_count = 0
-        updated_count = 0
-        housekeeping_tasks_created = 0
-        for reservation in reservations:
-            print(f"🔄 Processing reservation: {reservation['title']}")
-            print(f"   Guest count from calendar: {reservation.get('guest_count', 'NOT FOUND')}")
-            print(f"   Guest name: {reservation.get('guest_name', 'NOT FOUND')}")
-            # Check if trip already exists by external reservation ID
-            existing_trip = Trip.query.filter_by(
-                external_reservation_id=reservation['id'],
-                calendar_id=calendar_id
-            ).first()
-            # Also check if trip exists by confirmation code
-            confirm_code = reservation['confirm_code']
-            existing_code_trip = None
-            if confirm_code:
-                existing_code_trip = Trip.query.filter_by(
-                    external_confirm_code=confirm_code
-                ).first()
-            # Use amenity's max_guests if guest count not parsed from calendar
-            if reservation.get('guest_count_found'):
-                guest_count = reservation['guest_count']
-                print(f"   Final guest count to use: {guest_count} (from calendar data)")
-            else:
-                guest_count = calendar.amenity.max_guests
-                print(f"   Final guest count to use: {guest_count} (from amenity default)")
-            if existing_trip:
-                print(f"   📝 Updating existing trip (ID: {existing_trip.id})")
-                print(f"   Old max_guests: {existing_trip.max_guests} -> New max_guests: {guest_count}")
-                existing_trip.title = reservation['title']
-                existing_trip.start_date = reservation['start_date']
-                existing_trip.end_date = reservation['end_date']
-                existing_trip.max_guests = guest_count
-                existing_trip.external_guest_name = reservation['guest_name']
-                existing_trip.external_guest_email = reservation['guest_email']
-                existing_trip.external_confirm_code = reservation['confirm_code']
-                existing_trip.external_synced_at = datetime.utcnow()
-                updated_count += 1
-            elif existing_code_trip:
-                print(f"   📝 Updating existing trip by confirmation code (ID: {existing_code_trip.id})")
-                print(f"   Old max_guests: {existing_code_trip.max_guests} -> New max_guests: {guest_count}")
-                existing_code_trip.title = reservation['title']
-                existing_code_trip.start_date = reservation['start_date']
-                existing_code_trip.end_date = reservation['end_date']
-                existing_code_trip.max_guests = guest_count
-                existing_code_trip.external_guest_name = reservation['guest_name']
-                existing_code_trip.external_guest_email = reservation['guest_email']
-                existing_code_trip.external_reservation_id = reservation['id']
-                existing_code_trip.calendar_id = calendar_id
-                existing_code_trip.external_synced_at = datetime.utcnow()
-                updated_count += 1
-            else:
-                print(f"   ➕ Creating new trip with max_guests: {guest_count}")
-                trip = Trip(
-                    title=reservation['title'],
-                    start_date=reservation['start_date'],
-                    end_date=reservation['end_date'],
-                    max_guests=guest_count,
-                    admin_id=calendar.amenity.admin_id,
-                    amenity_id=calendar.amenity_id,
-                    calendar_id=calendar_id,
-                    external_reservation_id=reservation['id'],
-                    external_guest_name=reservation['guest_name'],
-                    external_guest_email=reservation['guest_email'],
-                    external_confirm_code=reservation['confirm_code'],
-                    external_synced_at=datetime.utcnow(),
-                    is_externally_synced=True
-                )
-                db.session.add(trip)
-                db.session.flush()
-                default_housekeeper_assignment = AmenityHousekeeper.query.filter_by(
-                    amenity_id=calendar.amenity_id,
-                    is_default=True
-                ).first()
-                if not default_housekeeper_assignment and calendar.amenity.default_housekeeper_id:
-                    default_housekeeper_id = calendar.amenity.default_housekeeper_id
-                elif default_housekeeper_assignment:
-                    default_housekeeper_id = default_housekeeper_assignment.housekeeper_id
-                else:
-                    default_housekeeper_id = None
-                if default_housekeeper_id:
-                    housekeeper = User.query.get(default_housekeeper_id)
-                    pay = float(housekeeper.default_housekeeper_pay) if housekeeper and housekeeper.default_housekeeper_pay else 20
-                    housekeeping_task = Housekeeping(
-                        trip_id=trip.id,
-                        housekeeper_id=default_housekeeper_id,
-                        date=reservation['end_date'] + timedelta(days=1),
-                        status='pending',
-                        pay_amount=pay,
-                        paid=False
-                    )
-                    db.session.add(housekeeping_task)
-                    housekeeping_tasks_created += 1
-                synced_count += 1
-        missing_tasks_created = create_missing_housekeeping_tasks_for_calendar(calendar_id)
-        total_housekeeping_tasks = housekeeping_tasks_created + missing_tasks_created
+        errors = []
+        
+        for component in cal.walk():
+            if component.name == "VEVENT":
+                try:
+                    # Extract event data
+                    summary = str(component.get('summary', ''))
+                    description = str(component.get('description', ''))
+                    start_date = component.get('dtstart').dt
+                    end_date = component.get('dtend').dt
+                    
+                    # Convert to date if it's a datetime
+                    if hasattr(start_date, 'date'):
+                        start_date = start_date.date()
+                    if hasattr(end_date, 'date'):
+                        end_date = end_date.date()
+                    
+                    # Parse guest information
+                    guest_info = parse_airbnb_guest_info(summary, description)
+                    
+                    # Check if trip already exists
+                    existing_trip = Trip.query.filter_by(
+                        external_reservation_id=str(component.get('uid', '')),
+                        amenity_id=calendar.amenity_id
+                    ).first()
+                    
+                    if existing_trip:
+                        # Update existing trip
+                        existing_trip.title = summary or f"Reservation {start_date} - {end_date}"
+                        existing_trip.start_date = start_date
+                        existing_trip.end_date = end_date
+                        existing_trip.external_guest_name = guest_info['name']
+                        existing_trip.external_guest_email = guest_info['email']
+                        existing_trip.external_guest_count = guest_info['count']
+                        existing_trip.external_confirm_code = guest_info['confirmation_code']
+                        existing_trip.external_synced_at = datetime.utcnow()
+                        existing_trip.is_externally_synced = True
+                    else:
+                        # Create new trip
+                        trip = Trip(
+                            title=summary or f"Reservation {start_date} - {end_date}",
+                            start_date=start_date,
+                            end_date=end_date,
+                            max_guests=calendar.amenity.max_guests,
+                            admin_id=calendar.amenity.admin_id,
+                            amenity_id=calendar.amenity_id,
+                            calendar_id=calendar.id,
+                            external_reservation_id=str(component.get('uid', '')),
+                            external_guest_name=guest_info['name'],
+                            external_guest_email=guest_info['email'],
+                            external_guest_count=guest_info['count'],
+                            external_confirm_code=guest_info['confirmation_code'],
+                            external_synced_at=datetime.utcnow(),
+                            is_externally_synced=True
+                        )
+                        db.session.add(trip)
+                    
+                    synced_count += 1
+                    
+                except Exception as e:
+                    errors.append(f"Event {summary}: {str(e)}")
+        
+        # Update calendar last sync time
         calendar.last_sync = datetime.utcnow()
         db.session.commit()
-        print(f"✅ Sync completed: {synced_count} new, {updated_count} updated")
-        message = f"Synced {synced_count} new reservations, updated {updated_count} existing reservations"
-        if total_housekeeping_tasks > 0:
-            message += f", created {total_housekeeping_tasks} housekeeping tasks"
-        return {'success': True, 'message': message, 'synced': synced_count, 'updated': updated_count, 'housekeeping_tasks': total_housekeeping_tasks}
+        
+        if errors:
+            return {'success': True, 'message': f"Synced {synced_count} reservations with {len(errors)} errors", 'count': synced_count, 'errors': errors}
+        
+        return {'success': True, 'message': f"Successfully synced {synced_count} reservations", 'count': synced_count}
+        
     except Exception as e:
         db.session.rollback()
-        print(f"❌ Sync failed: {str(e)}")
-        return {'success': False, 'message': f'Sync failed: {str(e)}'}
+        return {'success': False, 'message': f"Error syncing calendar: {str(e)}"}
 
 def sync_all_calendars_for_admin(admin_id):
     """Sync all calendars for a specific admin."""
-    try:
-        # Get all active calendars for the admin
-        calendars = Calendar.query.join(Amenity).filter(
-            Amenity.admin_id == admin_id,
-            Calendar.sync_enabled == True,
-            Calendar.is_active == True
-        ).all()
-        
-        total_synced = 0
-        total_updated = 0
-        failed_calendars = []
+    # Get all amenities for this admin
+    amenities = Amenity.query.filter_by(admin_id=admin_id).all()
+    
+    total_synced = 0
+    errors = []
+    
+    for amenity in amenities:
+        # Get all calendars for this amenity
+        calendars = Calendar.query.filter_by(amenity_id=amenity.id, sync_enabled=True).all()
         
         for calendar in calendars:
-            result = sync_calendar_reservations(calendar.id)
-            if result['success']:
-                total_synced += result.get('synced', 0)
-                total_updated += result.get('updated', 0)
-            else:
-                failed_calendars.append(f"{calendar.name}: {result['message']}")
-        
-        if failed_calendars:
-            message = f"Synced {total_synced} new, updated {total_updated} existing reservations. Failed: {'; '.join(failed_calendars)}"
-        else:
-            message = f"Successfully synced {total_synced} new reservations and updated {total_updated} existing reservations"
-        
-        return {'success': True, 'message': message, 'synced': total_synced, 'updated': total_updated}
-        
-    except Exception as e:
-        return {'success': False, 'message': f'Sync failed: {str(e)}'}
+            try:
+                result = sync_calendar_reservations(calendar.id)
+                if result['success']:
+                    total_synced += result.get('count', 0)
+                else:
+                    errors.append(f"Calendar {calendar.name}: {result['message']}")
+            except Exception as e:
+                errors.append(f"Calendar {calendar.name}: {str(e)}")
+    
+    if errors:
+        return {'success': False, 'message': f"Sync completed with errors: {'; '.join(errors)}"}
+    
+    return {'success': True, 'message': f"Successfully synced {total_synced} reservations across all calendars"}
 
 def fetch_calendar_data(calendar_url, calendar_type='airbnb'):
-    """Fetch and parse calendar data based on type."""
-    if calendar_type == 'airbnb':
-        return fetch_airbnb_calendar(calendar_url)
-    else:
-        # For other calendar types, use the same parsing logic for now
-        return fetch_airbnb_calendar(calendar_url)
+    """Fetch calendar data from URL."""
+    try:
+        response = requests.get(calendar_url, timeout=10)
+        response.raise_for_status()
+        return response.text
+    except requests.RequestException as e:
+        print(f"Error fetching calendar: {e}")
+        return None
 
 def create_missing_housekeeping_tasks_for_calendar(calendar_id):
-    """Create housekeeping tasks for trips in a calendar that don't already have one."""
-    calendar = Calendar.query.get_or_404(calendar_id)
-    
-    # Get default housekeeper for this amenity
-    default_assignment = AmenityHousekeeper.query.filter_by(
-        amenity_id=calendar.amenity_id, is_default=True).first()
-    
-    if not default_assignment and not calendar.amenity.default_housekeeper_id:
-        return 0  # No default housekeeper assigned
+    """Create housekeeping tasks for all trips in a calendar that don't have them."""
+    calendar = Calendar.query.get(calendar_id)
+    if not calendar:
+        return {'success': False, 'message': 'Calendar not found'}
     
     # Get all trips for this calendar
     trips = Trip.query.filter_by(calendar_id=calendar_id).all()
     
     created_count = 0
+    errors = []
+    
     for trip in trips:
-        # Check if housekeeping task already exists for this trip
-        existing_task = Housekeeping.query.filter_by(trip_id=trip.id).first()
-        
-        if not existing_task:
-            # Create housekeeping task for the day after the trip ends
-            housekeeping_date = trip.end_date + timedelta(days=1)
+        try:
+            # Check if housekeeping tasks already exist for this trip
+            existing_tasks = Housekeeping.query.filter_by(trip_id=trip.id).all()
             
-            # Determine housekeeper
-            housekeeper_id = None
-            if default_assignment:
-                housekeeper_id = default_assignment.housekeeper_id
-            elif calendar.amenity.default_housekeeper_id:
-                housekeeper_id = calendar.amenity.default_housekeeper_id
+            if existing_tasks:
+                continue  # Skip if tasks already exist
             
-            if housekeeper_id:
-                task = Housekeeping(
-                    trip_id=trip.id,
-                    housekeeper_id=housekeeper_id,
-                    date=housekeeping_date,
-                    pay_amount=calendar.amenity.admin.default_housekeeper_pay or 20,
-                    status='pending'
-                )
-                db.session.add(task)
-                created_count += 1
+            # Get the default housekeeper for this amenity
+            default_housekeeper = None
+            if calendar.amenity.default_housekeeper_id:
+                default_housekeeper = User.query.get(calendar.amenity.default_housekeeper_id)
+            else:
+                # Try to find a default housekeeper assignment
+                assignment = AmenityHousekeeper.query.filter_by(
+                    amenity_id=calendar.amenity_id,
+                    is_default=True
+                ).first()
+                if assignment:
+                    default_housekeeper = assignment.housekeeper
+            
+            if not default_housekeeper:
+                errors.append(f"No default housekeeper found for amenity {calendar.amenity.name}")
+                continue
+            
+            # Create housekeeping task for the end date of the trip
+            housekeeping_task = Housekeeping(
+                trip_id=trip.id,
+                housekeeper_id=default_housekeeper.id,
+                date=trip.end_date,
+                status='pending',
+                pay_amount=calendar.amenity.admin.default_housekeeper_pay or 20
+            )
+            
+            db.session.add(housekeeping_task)
+            created_count += 1
+            
+        except Exception as e:
+            errors.append(f"Trip {trip.title}: {str(e)}")
     
-    if created_count > 0:
+    try:
         db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return {'success': False, 'message': f"Database error: {str(e)}"}
     
-    return created_count
+    if errors:
+        return {'success': True, 'message': f"Created {created_count} housekeeping tasks with {len(errors)} errors", 'count': created_count, 'errors': errors}
+    
+    return {'success': True, 'message': f"Successfully created {created_count} housekeeping tasks", 'count': created_count}
 
-# Custom Jinja2 filters
+# Template filters
 @app.template_filter('nl2br')
 def nl2br_filter(text):
-    """Convert newlines to <br> tags for HTML display."""
+    """Convert newlines to <br> tags."""
     if text:
         return text.replace('\n', '<br>')
-    return text
+    return ''
 
 @app.template_filter('format_date')
 def format_date_filter(date_obj):
-    """Format date using the current user's preferred format (PHP/JS style) by converting to Python strftime."""
+    """Format date according to user preference."""
     if not date_obj:
         return ''
     
-    # Map PHP/JS style to Python strftime
+    # Get user's preferred date format
+    date_format = 'd.m.Y'  # Default
+    if current_user.is_authenticated and hasattr(current_user, 'date_format') and current_user.date_format:
+        date_format = current_user.date_format
+    
+    # Convert PHP/JS style to Python strftime format
     format_map = [
         ('d', '%d'),
         ('j', '%-d'),
@@ -741,3795 +650,58 @@ def format_date_filter(date_obj):
         ('y', '%y'),
     ]
     
-    date_format = 'd.m.Y'  # Default for unauthenticated users
-    try:
-        if current_user.is_authenticated and hasattr(current_user, 'date_format') and current_user.date_format:
-            date_format = current_user.date_format
-    except Exception:
-        date_format = 'd.m.Y'
-    
-    # Convert to Python strftime format
     py_format = date_format
     for php, py in format_map:
         py_format = py_format.replace(php, py)
     
     try:
-        if hasattr(date_obj, 'strftime'):
-            return date_obj.strftime(py_format)
-        else:
-            from datetime import datetime
-            if isinstance(date_obj, str):
-                parsed_date = datetime.strptime(date_obj, '%Y-%m-%d').date()
-                return parsed_date.strftime(py_format)
-            else:
-                return str(date_obj)
-    except Exception:
-        try:
-            return date_obj.strftime('%d.%m.%Y')
-        except:
-            return str(date_obj)
+        return date_obj.strftime(py_format)
+    except:
+        return date_obj.strftime('%d.%m.%Y')
 
-# Helper for registration display name
 @app.template_filter('registration_name')
 def registration_name(reg):
-    if reg.trip and reg.trip.start_date and reg.trip.end_date:
-        # Convert PHP/JS style to Python strftime format
-        format_map = [
-            ('d', '%d'),
-            ('j', '%-d'),
-            ('m', '%m'),
-            ('n', '%-m'),
-            ('Y', '%Y'),
-            ('y', '%y'),
-        ]
-        
-        date_format = 'd.m.Y'  # Default
-        if current_user.is_authenticated and hasattr(current_user, 'date_format') and current_user.date_format:
-            date_format = current_user.date_format
-        
-        # Convert format
-        py_format = date_format
-        for php, py in format_map:
-            py_format = py_format.replace(php, py)
-        
-        start_date = reg.trip.start_date.strftime(py_format)
-        end_date = reg.trip.end_date.strftime(py_format)
-        return f"Registration - {start_date} to {end_date} (#{reg.id})"
-    else:
-        return f"Registration #{reg.id}"
-
-# Routes
-@app.route('/')
-def index():
-    return render_template('index.html')
-
-@app.route('/about')
-def about():
-    return render_template('about.html')
-
-@app.route('/contact', methods=['GET', 'POST'])
-def contact():
-    """Contact page with admin contact information."""
-    admin_contact = User.query.filter_by(role='admin', is_deleted=False).first()
-    if request.method == 'POST':
-        name = request.form.get('name')
-        email = request.form.get('email')
-        subject = request.form.get('subject')
-        message = request.form.get('message')
-        flash(_('Thank you for your message, %(name)s! We will get back to you soon.', name=name), 'success')
-        return redirect(url_for('contact'))
-    return render_template('contact.html', admin_contact=admin_contact)
-
-@app.route('/gdpr')
-def gdpr():
-    admin_contact = User.query.filter_by(role='admin', is_deleted=False).first()
-    return render_template('gdpr.html', admin_contact=admin_contact)
-
-@app.route('/uploads/<filename>')
-@login_required
-def uploaded_file(filename):
-    """Serve uploaded files (only accessible to admins)"""
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-
-@app.route('/register')
-def register_landing():
-    """Landing page for registration with confirmation code form."""
-    return render_template('register_landing.html')
-
-@app.route('/register', methods=['POST'])
-def submit_confirm_code():
-    """Handle confirmation code submission and redirect to registration form."""
-    confirm_code = request.form.get('confirm_code', '').strip().upper()
-    
-    if not confirm_code:
-        flash(_('Please enter a confirmation code'), 'error')
-        return redirect(url_for('register_landing'))
-    
-    # Check if confirmation code exists
-    trip = Trip.query.filter_by(external_confirm_code=confirm_code).first()
-    if not trip:
-        flash(_('Invalid confirmation code. Please check your code and try again.'), 'error')
-        return redirect(url_for('register_landing'))
-    
-    return redirect(url_for('register', trip_id=trip.id))
-
-@app.route('/register/id/<int:trip_id>')
-def register(trip_id):
-    """Registration form for a specific trip."""
-    trip = Trip.query.get_or_404(trip_id)
-    admin = User.query.get(trip.admin_id)
-    return render_template('register.html', trip=trip, admin=admin)
-
-@app.route('/register/<confirm_code>')
-def register_by_code(confirm_code):
-    """Registration form using confirmation code."""
-    trip = Trip.query.filter_by(external_confirm_code=confirm_code).first()
-    if not trip:
-        flash(_('Invalid confirmation code. Please check your code and try again.'), 'error')
-        return redirect(url_for('register_landing'))
-    
-    admin = User.query.get(trip.admin_id)
-    return render_template('register.html', trip=trip, admin=admin)
-
-@app.route('/register/id/<int:trip_id>', methods=['POST'])
-def submit_registration(trip_id):
-    trip = Trip.query.get_or_404(trip_id)
-    admin = User.query.get(trip.admin_id)
-    
-    # Get form data
-    email = request.form.get('email')
-    language = session.get('lang', 'en')  # Get current language from session
-    guests_data = []
-    
-    # Collect guest data
-    guest_index = 1
-    while True:
-        first_name = request.form.get(f'first_name_{guest_index}')
-        last_name = request.form.get(f'last_name_{guest_index}')
-        age_category = request.form.get(f'age_category_{guest_index}')
-        document_type = request.form.get(f'document_type_{guest_index}')
-        document_number = request.form.get(f'document_number_{guest_index}')
-        gdpr_consent = request.form.get(f'gdpr_consent_{guest_index}') == 'on'
-        
-        if not first_name or not last_name:  # Stop if no more guest data
-            break
-            
-        # Check photo requirement based on age category and admin settings
-        photo_required = False
-        if age_category == 'adult' and admin.photo_required_adults:
-            photo_required = True
-        elif age_category == 'child' and admin.photo_required_children:
-            photo_required = True
-        
-        # Check if photo is uploaded when required
-        document_image = request.files.get(f'document_image_{guest_index}')
-        if photo_required and (not document_image or not document_image.filename):
-            flash(_('Document photo is required for %(age_category)s guests', age_category=age_category), 'error')
-            return redirect(request.url)
-        
-        guests_data.append({
-            'first_name': first_name,
-            'last_name': last_name,
-            'age_category': age_category,
-            'document_type': document_type,
-            'document_number': document_number,
-            'gdpr_consent': gdpr_consent,
-            'photo_required': photo_required
-        })
-        
-        guest_index += 1
-    
-    # Handle file uploads
-    uploaded_files = []
-    for i, guest_data in enumerate(guests_data):
-        document_image = request.files.get(f'document_image_{i+1}')
-        if document_image and document_image.filename:
-            filename = secure_filename(f"{uuid.uuid4()}_{document_image.filename}")
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            document_image.save(file_path)
-            uploaded_files.append(filename)
-        else:
-            uploaded_files.append(None)
-    
-    # Handle invoice request
-    invoice_request = request.form.get('invoice_request') == 'on'
-    invoice_data = None
-    
-    if invoice_request:
-        invoice_data = {
-            'client_name': request.form.get('invoice_name'),
-            'vat_number': request.form.get('invoice_vat'),
-            'address': request.form.get('invoice_address')
-        }
-    
-    # Store in session for confirmation
-    session['registration_data'] = {
-        'trip_id': trip_id,
-        'email': email,
-        'language': language,
-        'guests': guests_data,
-        'uploaded_files': uploaded_files,
-        'invoice_request': invoice_request,
-        'invoice_data': invoice_data
-    }
-    
-    return redirect(url_for('confirm_registration'))
-
-@app.route('/confirm')
-def confirm_registration():
-    if 'registration_data' not in session:
-        return redirect(url_for('index'))
-    
-    data = session['registration_data']
-    trip = Trip.query.get(data['trip_id'])
-    
-    return render_template('confirm.html', data=data, trip=trip)
-
-@app.route('/submit', methods=['POST'])
-def submit_for_approval():
-    if 'registration_data' not in session:
-        return redirect(url_for('index'))
-    
-    data = session['registration_data']
-    trip = Trip.query.get(data['trip_id'])
-    
-    # Create registration
-    registration = Registration(
-        trip_id=data['trip_id'],
-        email=data['email'],
-        language=data.get('language', 'en')
-    )
-    db.session.add(registration)
-    db.session.flush()  # Get the registration ID
-    
-    # Create guests
-    for i, guest_data in enumerate(data['guests']):
-        guest = Guest(
-            registration_id=registration.id,
-            first_name=guest_data['first_name'],
-            last_name=guest_data['last_name'],
-            age_category=guest_data['age_category'],
-            document_type=guest_data['document_type'],
-            document_number=guest_data['document_number'],
-            document_image=data['uploaded_files'][i] if i < len(data['uploaded_files']) else None,
-            gdpr_consent=guest_data['gdpr_consent']
-        )
-        db.session.add(guest)
-    
-    # Create draft invoice if requested
-    if data.get('invoice_request') and data.get('invoice_data'):
-        # Generate invoice number
-        invoice_number = f"INV-{datetime.now().strftime('%Y%m%d')}-{Invoice.query.filter_by(admin_id=trip.admin_id).count() + 1:03d}"
-        
-        # Determine client name
-        client_name = data['invoice_data']['client_name'] if data['invoice_data']['client_name'] else f"{data['guests'][0]['first_name']} {data['guests'][0]['last_name']}"
-        
-        # Create draft invoice
-        invoice = Invoice(
-            invoice_number=invoice_number,
-            admin_id=trip.admin_id,
-            registration_id=registration.id,
-            client_name=client_name,
-            client_email=data['email'],
-            client_vat_number=data['invoice_data']['vat_number'],
-            client_address=data['invoice_data']['address'],
-            issue_date=datetime.utcnow().date(),
-            currency=data['invoice_data']['currency'],
-            notes=f"Registration: {trip.title}\nGuest Notes: {data['invoice_data']['notes']}\nVAT Number: {data['invoice_data']['vat_number']}" if data['invoice_data']['vat_number'] else f"Registration: {trip.title}\nGuest Notes: {data['invoice_data']['notes']}",
-            status='draft'
-        )
-        db.session.add(invoice)
-        
-        # Add a placeholder item for the admin to complete
-        placeholder_item = InvoiceItem(
-            invoice_id=invoice.id,
-            description=f"Registration for {trip.title} - {len(data['guests'])} guest(s)",
-            quantity=1,
-            unit_price=0,
-            vat_rate=0,
-            line_total=0,
-            vat_amount=0,
-            total_with_vat=0
-        )
-        db.session.add(placeholder_item)
-    
-    db.session.commit()
-    
-    # Clear session
-    session.pop('registration_data', None)
-    # Store last confirmation code registration link for sharing
-    if trip.airbnb_confirm_code:
-        session['last_confirm_code_url'] = url_for('register_by_code', confirm_code=trip.airbnb_confirm_code, _external=True)
-    else:
-        session['last_confirm_code_url'] = ''
-    
-    flash(_('Registration submitted successfully! You will receive an email once it is reviewed.'), 'success')
-    return redirect(url_for('registration_success'))
-
-@app.route('/success')
-def registration_success():
-    return render_template('success.html')
-
-# Admin routes
-@app.route('/admin/login', methods=['GET', 'POST'])
-def admin_login():
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        
-        admin = User.query.filter_by(username=username, is_deleted=False).first()
-        if admin and admin.check_password(password):
-            login_user(admin)
-            return redirect(url_for('admin_dashboard'))
-        else:
-            flash(_('Invalid username or password'), 'error')
-    
-    return render_template('admin/login.html')
-
-@app.route('/admin/logout')
-@login_required
-def admin_logout():
-    logout_user()
-    return redirect(url_for('admin_login'))
-
-def role_required(role):
-    def decorator(f):
-        @wraps(f)
-        def decorated_function(*args, **kwargs):
-            if not current_user.is_authenticated:
-                # Let Flask-Login handle the redirect
-                return login_manager.unauthorized()
-            if current_user.role != role:
-                abort(403)
-            return f(*args, **kwargs)
-        return decorated_function
-    return decorator
-
-@app.route('/admin/dashboard')
-@login_required
-@role_required('admin')
-def admin_dashboard():
-    trips = Trip.query.filter_by(admin_id=current_user.id).all()
-    pending_registrations = Registration.query.filter_by(status='pending').count()
-    
-    # Get all registrations for this admin
-    registrations = Registration.query.join(Trip).filter(Trip.admin_id == current_user.id).all()
-    
-    # Get all invoices for this admin
-    invoices = Invoice.query.filter_by(admin_id=current_user.id).all()
-    
-    # Get calendars for all amenities owned by this admin
-    amenities = Amenity.query.filter_by(admin_id=current_user.id).all()
-    calendars = []
-    for amenity in amenities:
-        calendars.extend(amenity.calendars)
-    
-    return render_template('admin/dashboard.html', 
-                         trips=trips, 
-                         pending_registrations=pending_registrations,
-                         registrations=registrations,
-                         invoices=invoices,
-                         calendars=calendars)
-
-@app.route('/admin/settings', methods=['GET', 'POST'])
-@login_required
-@role_required('admin')
-def admin_settings():
-    """Admin settings page for configuration."""
-    if request.method == 'POST':
-        # Update admin profile
-        current_user.email = request.form.get('email')
-        current_user.company_name = request.form.get('company_name')
-        current_user.company_ico = request.form.get('company_ico')
-        current_user.company_vat = request.form.get('company_vat')
-        current_user.contact_name = request.form.get('contact_name')
-        current_user.contact_phone = request.form.get('contact_phone')
-        current_user.contact_address = request.form.get('contact_address')
-        current_user.contact_website = request.form.get('contact_website')
-        current_user.contact_description = request.form.get('contact_description')
-        current_user.custom_line_1 = request.form.get('custom_line_1')
-        current_user.custom_line_2 = request.form.get('custom_line_2')
-        current_user.custom_line_3 = request.form.get('custom_line_3')
-        
-        # Update Airbnb settings
-        current_user.airbnb_listing_id = request.form.get('airbnb_listing_id')
-        current_user.airbnb_calendar_url = request.form.get('airbnb_calendar_url')
-        current_user.airbnb_sync_enabled = request.form.get('airbnb_sync_enabled') == 'on'
-        
-        # Update photo upload settings
-        current_user.photo_required_adults = request.form.get('photo_required_adults') == 'on'
-        current_user.photo_required_children = request.form.get('photo_required_children') == 'on'
-        
-        # Update date format setting
-        current_user.date_format = request.form.get('date_format', 'd.m.Y')
-        # Update default housekeeper pay
-        try:
-            current_user.default_housekeeper_pay = float(request.form.get('default_housekeeper_pay', 20))
-        except Exception:
-            current_user.default_housekeeper_pay = 20
-        
-        # Update password if provided
-        new_password = request.form.get('new_password')
-        if new_password:
-            current_user.set_password(new_password)
-        
-        db.session.commit()
-        flash(_('Settings updated successfully!'), 'success')
-        return redirect(url_for('admin_settings'))
-    
-    # Get calendars for all amenities owned by this admin
-    amenities = Amenity.query.filter_by(admin_id=current_user.id).all()
-    calendars = []
-    for amenity in amenities:
-        calendars.extend(amenity.calendars)
-    
-    return render_template('admin/settings.html', calendars=calendars)
-
-@app.route('/admin/sync-airbnb', methods=['POST'])
-@login_required
-def sync_airbnb():
-    """Sync with all calendars for the current admin."""
-    result = sync_all_calendars_for_admin(current_user.id)
-    
-    if result['success']:
-        flash(_('Calendar sync successful: %(message)s', message=result['message']), 'success')
-    else:
-        flash(_('Calendar sync failed: %(message)s', message=result['message']), 'error')
-    
-    return redirect(url_for('admin_trips'))
-
-@app.route('/admin/sync-calendar/<int:calendar_id>', methods=['POST'])
-@login_required
-def sync_calendar(calendar_id):
-    """Sync with a specific calendar."""
-    calendar = Calendar.query.get_or_404(calendar_id)
-    if calendar.amenity.admin_id != current_user.id:
-        flash(_('Access denied'), 'error')
-        return redirect(url_for('admin_amenities'))
-    
-    result = sync_calendar_reservations(calendar_id)
-    
-    if result['success']:
-        flash(_('Calendar sync successful for %(calendar)s: %(message)s', 
-                calendar=calendar.name, message=result['message']), 'success')
-    else:
-        flash(_('Calendar sync failed for %(calendar)s: %(message)s', 
-                calendar=calendar.name, message=result['message']), 'error')
-    
-    return redirect(url_for('admin_amenities'))
-
-@app.route('/admin/amenities')
-@login_required
-@role_required('admin')
-def admin_amenities():
-    """Manage amenities."""
-    amenities = Amenity.query.filter_by(admin_id=current_user.id).order_by(Amenity.name).all()
-    return render_template('admin/amenities.html', amenities=amenities)
-
-@app.route('/admin/amenities/new', methods=['GET', 'POST'])
-@login_required
-@role_required('admin')
-def new_amenity():
-    """Create a new amenity."""
-    if request.method == 'POST':
-        amenity = Amenity(
-            name=request.form.get('name'),
-            description=request.form.get('description'),
-            max_guests=int(request.form.get('max_guests', 1)),
-            admin_id=current_user.id,
-            is_active=request.form.get('is_active') == 'on'
-        )
-        db.session.add(amenity)
-        db.session.commit()
-        flash(_('Amenity created successfully!'), 'success')
-        return redirect(url_for('admin_amenities'))
-    
-    return render_template('admin/new_amenity.html')
-
-@app.route('/admin/amenities/<int:amenity_id>/edit', methods=['GET', 'POST'])
-@login_required
-@role_required('admin')
-def edit_amenity(amenity_id):
-    """Edit an amenity."""
-    amenity = Amenity.query.get_or_404(amenity_id)
-    if amenity.admin_id != current_user.id:
-        flash(_('Access denied'), 'error')
-        return redirect(url_for('admin_amenities'))
-    
-    if request.method == 'POST':
-        amenity.name = request.form.get('name')
-        amenity.description = request.form.get('description')
-        amenity.max_guests = int(request.form.get('max_guests', 1))
-        amenity.is_active = request.form.get('is_active') == 'on'
-        
-        db.session.commit()
-        flash(_('Amenity updated successfully!'), 'success')
-        return redirect(url_for('admin_amenities'))
-    
-    return render_template('admin/edit_amenity.html', amenity=amenity)
-
-@app.route('/admin/amenities/<int:amenity_id>/delete', methods=['POST'])
-@login_required
-@role_required('admin')
-def delete_amenity(amenity_id):
-    """Delete an amenity."""
-    amenity = Amenity.query.get_or_404(amenity_id)
-    if amenity.admin_id != current_user.id:
-        flash(_('Access denied'), 'error')
-        return redirect(url_for('admin_amenities'))
-    
-    # Check if amenity has trips
-    if amenity.trips:
-        flash(_('Cannot delete amenity with existing trips'), 'error')
-        return redirect(url_for('admin_amenities'))
-    
-    db.session.delete(amenity)
-    db.session.commit()
-    flash(_('Amenity deleted successfully!'), 'success')
-    return redirect(url_for('admin_amenities'))
-
-@app.route('/admin/trips')
-@login_required
-@role_required('admin')
-def admin_trips():
-    # Get trips grouped by amenity
-    amenities = Amenity.query.filter_by(admin_id=current_user.id, is_active=True).order_by(Amenity.name).all()
-    trips_by_amenity = {}
-    
-    for amenity in amenities:
-        trips_by_amenity[amenity] = Trip.query.filter_by(amenity_id=amenity.id).order_by(Trip.start_date).all()
-    
-    # Flatten trips for the template
-    trips = []
-    for amenity_trips in trips_by_amenity.values():
-        trips.extend(amenity_trips)
-    
-    return render_template('admin/trips.html', trips=trips, trips_by_amenity=trips_by_amenity, amenities=amenities)
-
-@app.route('/admin/trips/new', methods=['GET', 'POST'])
-@login_required
-@role_required('admin')
-def new_trip():
-    if request.method == 'POST':
-        amenity_id = request.form.get('amenity_id')
-        amenity = Amenity.query.get(amenity_id)
-        
-        if not amenity or amenity.admin_id != current_user.id:
-            flash(_('Invalid amenity selected'), 'error')
-            return redirect(url_for('new_trip'))
-        
-        # Get max_guests from form, fallback to amenity's max_guests
-        try:
-            max_guests = int(request.form.get('max_guests', '').strip())
-            if max_guests < 1:
-                raise ValueError
-        except Exception:
-            max_guests = amenity.max_guests
-        
-        trip = Trip(
-            title=request.form.get('title'),
-            start_date=datetime.strptime(request.form.get('start_date'), '%Y-%m-%d').date(),
-            end_date=datetime.strptime(request.form.get('end_date'), '%Y-%m-%d').date(),
-            max_guests=max_guests,
-            admin_id=current_user.id,
-            amenity_id=amenity_id
-        )
-        db.session.add(trip)
-        db.session.commit()
-        flash(_('Trip created successfully!'), 'success')
-        return redirect(url_for('admin_trips'))
-    
-    amenities = Amenity.query.filter_by(admin_id=current_user.id, is_active=True).order_by(Amenity.name).all()
-    return render_template('admin/new_trip.html', amenities=amenities)
-
-@app.route('/admin/trips/<int:trip_id>/edit', methods=['GET', 'POST'])
-@login_required
-@role_required('admin')
-def edit_trip(trip_id):
-    """Edit an existing trip."""
-    trip = Trip.query.get_or_404(trip_id)
-    if trip.admin_id != current_user.id:
-        flash(_('Access denied'), 'error')
-        return redirect(url_for('admin_trips'))
-    
-    if request.method == 'POST':
-        amenity_id = request.form.get('amenity_id')
-        amenity = Amenity.query.get(amenity_id)
-        
-        if not amenity or amenity.admin_id != current_user.id:
-            flash(_('Invalid amenity selected'), 'error')
-            return redirect(url_for('edit_trip', trip_id=trip_id))
-        
-        # Get max_guests from form, fallback to amenity's max_guests
-        try:
-            max_guests = int(request.form.get('max_guests', '').strip())
-            if max_guests < 1:
-                raise ValueError
-        except Exception:
-            max_guests = amenity.max_guests
-        
-        trip.title = request.form.get('title')
-        trip.start_date = datetime.strptime(request.form.get('start_date'), '%Y-%m-%d').date()
-        trip.end_date = datetime.strptime(request.form.get('end_date'), '%Y-%m-%d').date()
-        trip.max_guests = max_guests
-        trip.amenity_id = amenity_id
-        
-        db.session.commit()
-        flash(_('Trip updated successfully!'), 'success')
-        return redirect(url_for('admin_trips'))
-    
-    amenities = Amenity.query.filter_by(admin_id=current_user.id, is_active=True).order_by(Amenity.name).all()
-    return render_template('admin/edit_trip.html', trip=trip, amenities=amenities)
-
-@app.route('/admin/trips/<int:trip_id>/delete', methods=['POST'])
-@login_required
-@role_required('admin')
-def delete_trip(trip_id):
-    """Delete a trip."""
-    trip = Trip.query.get_or_404(trip_id)
-    if trip.admin_id != current_user.id:
-        flash(_('Access denied'), 'error')
-        return redirect(url_for('admin_trips'))
-    
-    # Check if trip has registrations
-    if trip.registrations:
-        flash(_('Cannot delete trip with existing registrations'), 'error')
-        return redirect(url_for('admin_trips'))
-    
-    db.session.delete(trip)
-    db.session.commit()
-    flash(_('Trip deleted successfully!'), 'success')
-    return redirect(url_for('admin_trips'))
-
-@app.route('/admin/registrations')
-@login_required
-@role_required('admin')
-def admin_registrations():
-    registrations = Registration.query.filter_by(status='pending').all()
-    return render_template('admin/registrations.html', registrations=registrations)
-
-@app.route('/admin/registration/<int:registration_id>')
-@login_required
-@role_required('admin')
-def view_registration(registration_id):
-    registration = Registration.query.get_or_404(registration_id)
-    return render_template('admin/view_registration.html', registration=registration)
-
-@app.route('/admin/registration/<int:registration_id>/approve', methods=['POST'])
-@login_required
-@role_required('admin')
-def approve_registration(registration_id):
-    registration = Registration.query.get_or_404(registration_id)
-    registration.status = 'approved'
-    registration.updated_at = datetime.utcnow()
-    
-    # Delete document images after approval (GDPR compliance)
-    for guest in registration.guests:
-        if guest.document_image:
-            try:
-                os.remove(os.path.join(app.config['UPLOAD_FOLDER'], guest.document_image))
-                guest.document_image = None
-            except:
-                pass  # File might already be deleted
-    
-    db.session.commit()
-    
-    # Send approval email
-    send_approval_email(registration)
-    
-    flash(_('Registration approved and email sent to user'), 'success')
-    return redirect(url_for('admin_registrations'))
-
-@app.route('/admin/registration/<int:registration_id>/reject', methods=['POST'])
-@login_required
-@role_required('admin')
-def reject_registration(registration_id):
-    registration = Registration.query.get_or_404(registration_id)
-    registration.status = 'rejected'
-    registration.admin_comment = request.form.get('comment')
-    registration.updated_at = datetime.utcnow()
-    
-    db.session.commit()
-    
-    # Send rejection email
-    send_rejection_email(registration)
-    
-    flash(_('Registration rejected and email sent to user'), 'success')
-    return redirect(url_for('admin_registrations'))
-
-# Invoice Management Routes
-@app.route('/admin/invoices')
-@login_required
-@role_required('admin')
-def admin_invoices():
-    """Admin invoices list page."""
-    invoices = Invoice.query.filter_by(admin_id=current_user.id).order_by(Invoice.created_at.desc()).all()
-    return render_template('admin/invoices.html', invoices=invoices)
-
-@app.route('/admin/invoices/new', methods=['GET', 'POST'])
-@login_required
-@role_required('admin')
-def new_invoice():
-    """Create a new invoice."""
-    if request.method == 'POST':
-        # Generate invoice number
-        invoice_number = f"INV-{datetime.now().strftime('%Y%m%d')}-{Invoice.query.filter_by(admin_id=current_user.id).count() + 1:03d}"
-        
-        # Create invoice
-        invoice = Invoice(
-            invoice_number=invoice_number,
-            admin_id=current_user.id,
-            registration_id=request.form.get('registration_id'),
-            client_name=request.form.get('client_name'),
-            client_email=request.form.get('client_email'),
-            client_vat_number=request.form.get('client_vat_number'),
-            client_address=request.form.get('client_address'),
-            issue_date=datetime.strptime(request.form.get('issue_date'), '%Y-%m-%d').date(),
-            due_date=datetime.strptime(request.form.get('due_date'), '%Y-%m-%d').date() if request.form.get('due_date') else None,
-            currency=request.form.get('currency', 'EUR'),
-            notes=request.form.get('notes')
-        )
-        
-        db.session.add(invoice)
-        db.session.flush()  # Get the invoice ID
-        
-        # Process invoice items
-        item_count = int(request.form.get('item_count', 0))
-        for i in range(item_count):
-            description = request.form.get(f'item_description_{i}')
-            quantity = float(request.form.get(f'item_quantity_{i}', 1))
-            unit_price = float(request.form.get(f'item_unit_price_{i}', 0))
-            vat_rate = float(request.form.get(f'item_vat_rate_{i}', 0))
-            
-            if description and unit_price > 0:
-                line_total = quantity * unit_price
-                vat_amount = line_total * (vat_rate / 100)
-                total_with_vat = line_total + vat_amount
-                
-                item = InvoiceItem(
-                    invoice_id=invoice.id,
-                    description=description,
-                    quantity=quantity,
-                    unit_price=unit_price,
-                    vat_rate=vat_rate,
-                    line_total=line_total,
-                    vat_amount=vat_amount,
-                    total_with_vat=total_with_vat
-                )
-                db.session.add(item)
-        
-        # Calculate totals
-        invoice.subtotal = sum(item.line_total for item in invoice.items)
-        invoice.vat_total = sum(item.vat_amount for item in invoice.items)
-        invoice.total_amount = invoice.subtotal + invoice.vat_total
-        
-        db.session.commit()
-        flash(_('Invoice created successfully!'), 'success')
-        return redirect(url_for('view_invoice', invoice_id=invoice.id))
-    
-    today = datetime.now().strftime('%Y-%m-%d')
-    return render_template('admin/new_invoice.html', today=today)
-
-@app.route('/admin/invoices/<int:invoice_id>')
-@login_required
-@role_required('admin')
-def view_invoice(invoice_id):
-    """View a specific invoice."""
-    invoice = Invoice.query.filter_by(id=invoice_id, admin_id=current_user.id).first_or_404()
-    return render_template('admin/view_invoice.html', invoice=invoice)
-
-@app.route('/admin/invoices/<int:invoice_id>/edit', methods=['GET', 'POST'])
-@login_required
-def edit_invoice(invoice_id):
-    """Edit an existing invoice."""
-    invoice = Invoice.query.filter_by(id=invoice_id, admin_id=current_user.id).first_or_404()
-    
-    if request.method == 'POST':
-        # Update invoice details
-        invoice.client_name = request.form.get('client_name')
-        invoice.client_email = request.form.get('client_email')
-        invoice.client_vat_number = request.form.get('client_vat_number')
-        invoice.client_address = request.form.get('client_address')
-        invoice.issue_date = datetime.strptime(request.form.get('issue_date'), '%Y-%m-%d').date()
-        invoice.due_date = datetime.strptime(request.form.get('due_date'), '%Y-%m-%d').date() if request.form.get('due_date') else None
-        invoice.currency = request.form.get('currency', 'EUR')
-        invoice.notes = request.form.get('notes')
-        
-        # Clear existing items
-        for item in invoice.items:
-            db.session.delete(item)
-        
-        # Add new items
-        item_count = int(request.form.get('item_count', 0))
-        for i in range(item_count):
-            description = request.form.get(f'item_description_{i}')
-            quantity = float(request.form.get(f'item_quantity_{i}', 1))
-            unit_price = float(request.form.get(f'item_unit_price_{i}', 0))
-            vat_rate = float(request.form.get(f'item_vat_rate_{i}', 0))
-            
-            if description and unit_price > 0:
-                line_total = quantity * unit_price
-                vat_amount = line_total * (vat_rate / 100)
-                total_with_vat = line_total + vat_amount
-                
-                item = InvoiceItem(
-                    invoice_id=invoice.id,
-                    description=description,
-                    quantity=quantity,
-                    unit_price=unit_price,
-                    vat_rate=vat_rate,
-                    line_total=line_total,
-                    vat_amount=vat_amount,
-                    total_with_vat=total_with_vat
-                )
-                db.session.add(item)
-        
-        # Recalculate totals
-        invoice.subtotal = sum(item.line_total for item in invoice.items)
-        invoice.vat_total = sum(item.vat_amount for item in invoice.items)
-        invoice.total_amount = invoice.subtotal + invoice.vat_total
-        
-        db.session.commit()
-        flash(_('Invoice updated successfully!'), 'success')
-        return redirect(url_for('view_invoice', invoice_id=invoice.id))
-    
-    # Convert invoice items to dictionaries for JSON serialization
-    items_data = []
-    for item in invoice.items:
-        items_data.append({
-            'description': item.description,
-            'quantity': float(item.quantity),
-            'unit_price': float(item.unit_price),
-            'vat_rate': float(item.vat_rate)
-        })
-    
-    return render_template('admin/edit_invoice.html', invoice=invoice, items_data=items_data)
-
-@app.route('/admin/invoices/<int:invoice_id>/delete', methods=['POST'])
-@login_required
-def delete_invoice(invoice_id):
-    """Delete an invoice."""
-    invoice = Invoice.query.filter_by(id=invoice_id, admin_id=current_user.id).first_or_404()
-    db.session.delete(invoice)
-    db.session.commit()
-    flash(_('Invoice deleted successfully!'), 'success')
-    return redirect(url_for('admin_invoices'))
-
-@app.route('/admin/invoices/<int:invoice_id>/change-status', methods=['POST'])
-@login_required
-def change_invoice_status(invoice_id):
-    """Change invoice status."""
-    invoice = Invoice.query.filter_by(id=invoice_id, admin_id=current_user.id).first_or_404()
-    
-    new_status = request.form.get('status')
-    if new_status in ['draft', 'sent', 'paid', 'overdue']:
-        old_status = invoice.status
-        invoice.status = new_status
-        invoice.updated_at = datetime.utcnow()
-        db.session.commit()
-        
-        flash(_('Invoice status changed from %(old_status)s to %(new_status)s successfully!', old_status=old_status.title(), new_status=new_status.title()), 'success')
-    else:
-        flash(_('Invalid status provided.'), 'error')
-    
-    return redirect(url_for('view_invoice', invoice_id=invoice.id))
-
-@app.route('/admin/invoices/<int:invoice_id>/pdf')
-@login_required
-def generate_invoice_pdf(invoice_id):
-    """Generate PDF for an invoice."""
-    invoice = Invoice.query.filter_by(id=invoice_id, admin_id=current_user.id).first_or_404()
-    
-    # Generate HTML content for the invoice
-    html_content = render_template('admin/invoice_pdf.html', invoice=invoice)
-    
-    # Create PDF
-    font_config = FontConfiguration()
-    css = CSS(string='''
-        @page { 
-            size: A4; 
-            margin: 1.5cm;
-        }
-        body { 
-            font-family: Arial, sans-serif; 
-            font-size: 10px;
-            line-height: 1.2;
-        }
-        .header { 
-            text-align: center; 
-            margin-bottom: 20px;
-            border-bottom: 2px solid #333;
-            padding-bottom: 15px;
-        }
-        .invoice-details {
-            margin-top: 10px;
-            font-size: 9px;
-            color: #666;
-        }
-        .invoice-details span {
-            margin: 0 15px;
-        }
-        .row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
-        .company-info {
-            text-align: left;
-            width: 48%;
-        }
-        .client-info {
-            text-align: right;
-            width: 48%;
-        }
-        .invoice-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        .invoice-table th,
-        .invoice-table td {
-            border: 1px solid #ddd;
-            padding: 6px;
-            text-align: left;
-            font-size: 9px;
-        }
-        .invoice-table th {
-            background-color: #f8f9fa;
-            font-weight: bold;
-        }
-        .text-right { text-align: right; }
-        .text-center { text-align: center; }
-        .total-row {
-            font-weight: bold;
-            background-color: #f8f9fa;
-        }
-        .notes {
-            margin-top: 20px;
-            padding: 10px;
-            background-color: #f8f9fa;
-            border-left: 4px solid #007bff;
-            font-size: 9px;
-        }
-    ''', font_config=font_config)
-    
-    # Generate PDF
-    html_doc = HTML(string=html_content)
-    pdf = html_doc.write_pdf(stylesheets=[css], font_config=font_config)
-    
-    # Create temporary file
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp_file:
-        tmp_file.write(pdf)
-        tmp_path = tmp_file.name
-    
-    # Send file and clean up
-    try:
-        return send_file(
-            tmp_path,
-            as_attachment=True,
-            download_name=f'invoice_{invoice.invoice_number}.pdf',
-            mimetype='application/pdf'
-        )
-    finally:
-        # Clean up temporary file after sending
-        try:
-            os.unlink(tmp_path)
-        except:
-            pass
-
-@app.route('/admin/invoices/<int:invoice_id>/send-pdf', methods=['POST'])
-@login_required
-@role_required('admin')
-def send_invoice_pdf(invoice_id):
-    """Send the invoice PDF to the registration/client email."""
-    invoice = Invoice.query.filter_by(id=invoice_id, admin_id=current_user.id).first_or_404()
-    
-    # Determine recipient and language
-    recipient = invoice.client_email or (invoice.registration.email if invoice.registration else None)
-    if not recipient:
-        flash(_('No recipient email found for this invoice.'), 'error')
-        return redirect(url_for('view_invoice', invoice_id=invoice.id))
-    
-    # Set language based on registration
-    if invoice.registration and invoice.registration.language:
-        # Temporarily set the language for this request
-        from flask_babel import get_locale
-        original_locale = get_locale()
-        session['lang'] = invoice.registration.language
-    
-    # Generate HTML content for the invoice
-    html_content = render_template('admin/invoice_pdf.html', invoice=invoice)
-    font_config = FontConfiguration()
-    css = CSS(string='''
-        @page { size: A4; margin: 1.5cm; }
-        body { font-family: Arial, sans-serif; font-size: 10px; line-height: 1.2; }
-        .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 15px; }
-        .invoice-details { margin-top: 10px; font-size: 9px; color: #666; }
-        .invoice-details span { margin: 0 15px; }
-        .row { display: flex; justify-content: space-between; margin-bottom: 20px; }
-        .company-info { text-align: left; width: 48%; }
-        .client-info { text-align: right; width: 48%; }
-        .invoice-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        .invoice-table th, .invoice-table td { border: 1px solid #ddd; padding: 6px; text-align: left; font-size: 9px; }
-        .invoice-table th { background-color: #f8f9fa; font-weight: bold; }
-        .text-right { text-align: right; }
-        .text-center { text-align: center; }
-        .total-row { font-weight: bold; background-color: #f8f9fa; }
-        .notes { margin-top: 20px; padding: 10px; background-color: #f8f9fa; border-left: 4px solid #007bff; font-size: 9px; }
-    ''', font_config=font_config)
-    html_doc = HTML(string=html_content)
-    pdf_bytes = html_doc.write_pdf(stylesheets=[css], font_config=font_config)
-    
-    # Send email with PDF attachment
-    try:
-        msg = Message(
-            subject=_('Your Invoice from %(company)s', company=invoice.admin.company_name or _('Our Company')),
-            sender=app.config['MAIL_USERNAME'],
-            recipients=[recipient]
-        )
-        msg.body = _(
-            """Dear %(client_name)s,
-
-Please find attached your invoice %(invoice_number)s.
-
-Thank you for your business!
-
-Best regards,
-%(company)s""",
-            client_name=invoice.client_name,
-            invoice_number=invoice.invoice_number,
-            company=invoice.admin.company_name or _('Our Company')
-        )
-        msg.attach(
-            filename=f"invoice_{invoice.invoice_number}.pdf",
-            content_type="application/pdf",
-            data=pdf_bytes
-        )
-        mail.send(msg)
-        flash(_('Invoice PDF sent to %(email)s', email=recipient), 'success')
-    except Exception as e:
-        print(f"Error sending invoice PDF: {e}")
-        flash(_('Failed to send invoice PDF: %(error)s', error=str(e)), 'error')
-    finally:
-        # Restore original language if it was changed
-        if invoice.registration and invoice.registration.language:
-            session['lang'] = original_locale.language if original_locale else 'en'
-    
-    return redirect(url_for('view_invoice', invoice_id=invoice.id))
-
-# Data management routes
-@app.route('/admin/data-management')
-@login_required
-def data_management():
-    """Data management page for admins."""
-    # Get database statistics
-    admin_count = User.query.count()
-    trip_count = Trip.query.count()
-    registration_count = Registration.query.count()
-    guest_count = Guest.query.count()
-    
-    pending_count = Registration.query.filter_by(status='pending').count()
-    approved_count = Registration.query.filter_by(status='approved').count()
-    rejected_count = Registration.query.filter_by(status='rejected').count()
-    
-    stats = {
-        'admins': admin_count,
-        'trips': trip_count,
-        'registrations': registration_count,
-        'guests': guest_count,
-        'pending': pending_count,
-        'approved': approved_count,
-        'rejected': rejected_count
-    }
-    
-    # Get configuration info
-    config = {
-        'TABLE_PREFIX': app.config.get('TABLE_PREFIX', 'guest_reg_')
-    }
-    
-    return render_template('admin/data_management.html', stats=stats, config=config)
-
-@app.route('/admin/reset-data', methods=['POST'])
-@login_required
-def reset_data():
-    """Reset all data in the database except admin accounts."""
-    try:
-        # Get table names for logging
-        table_prefix = app.config.get('TABLE_PREFIX', 'guest_reg_')
-        tables_to_reset = [
-            f"{table_prefix}trip", 
-            f"{table_prefix}registration",
-            f"{table_prefix}guest",
-            f"{table_prefix}invoice",
-            f"{table_prefix}invoice_item"
-        ]
-        
-        print(f"Starting database reset for tables: {', '.join(tables_to_reset)}")
-        print(f"Preserving admin table: {table_prefix}user")
-        
-        # Delete data in the correct order to handle foreign key constraints
-        # 1. Delete invoice items first (references invoices)
-        InvoiceItem.query.delete()
-        print("✅ Deleted invoice items")
-        
-        # 2. Delete invoices (references registrations)
-        Invoice.query.delete()
-        print("✅ Deleted invoices")
-        
-        # 3. Delete guests (references registrations)
-        Guest.query.delete()
-        print("✅ Deleted guests")
-        
-        # 4. Delete registrations (references trips)
-        Registration.query.delete()
-        print("✅ Deleted registrations")
-        
-        # 5. Delete trips (no dependencies)
-        Trip.query.delete()
-        print("✅ Deleted trips")
-        
-        # Commit the deletions
-        db.session.commit()
-        
-        print("Data deleted successfully from all tables")
-        print("Admin accounts preserved")
-        
-        flash(_('All data has been reset successfully! Admin accounts have been preserved.'), 'success')
-        
-    except Exception as e:
-        db.session.rollback()
-        print(f"Error during reset: {str(e)}")
-        flash(_('Error resetting data: %(error)s. Please use the command line tool: python quick_reset.py --confirm', error=str(e)), 'error')
-    
-    return redirect(url_for('data_management'))
-
-@app.route('/admin/seed-data', methods=['POST'])
-@login_required
-def seed_data():
-    """Seed the database with sample data. Only real reservations are seeded. 'Not Available' or blocked events are intentionally excluded to match Airbnb sync logic."""
-    try:
-        # Create sample admin if not exists
-        existing_admin = User.query.filter_by(username='admin').first()
-        if not existing_admin:
-            admin = User(
-                username='admin',
-                email='admin@vacationrentals.com',
-                password_hash=generate_password_hash('admin123'),
-                # Company information
-                company_name='Vacation Rentals Plus',
-                company_ico='12345678',
-                company_vat='CZ12345678',
-                contact_name='John Manager',
-                contact_phone='+420 123 456 789',
-                contact_address='Vacation Street 123\nPrague 110 00\nCzech Republic',
-                contact_website='https://vacationrentals.com',
-                contact_description='Professional vacation rental management services',
-                custom_line_1='24/7 Customer Support',
-                custom_line_2='Free WiFi & Parking',
-                custom_line_3='Pet Friendly Options Available'
-            )
-            db.session.add(admin)
-            db.session.flush()
-        else:
-            # Update existing admin with new fields
-            admin = existing_admin
-            if not admin.company_name:
-                admin.company_name = 'Vacation Rentals Plus'
-                admin.company_ico = '12345678'
-                admin.company_vat = 'CZ12345678'
-                admin.contact_name = 'John Manager'
-                admin.contact_phone = '+420 123 456 789'
-                admin.contact_address = 'Vacation Street 123\nPrague 110 00\nCzech Republic'
-                admin.contact_website = 'https://vacationrentals.com'
-                admin.contact_description = 'Professional vacation rental management services'
-                admin.custom_line_1 = '24/7 Customer Support'
-                admin.custom_line_2 = 'Free WiFi & Parking'
-                admin.custom_line_3 = 'Pet Friendly Options Available'
-        
-        # Create sample trips with variety
-        trips_data = [
-            {
-                'title': "Summer Beach Vacation 2024",
-                'start_date': datetime.now().date() + timedelta(days=30),
-                'end_date': datetime.now().date() + timedelta(days=37),
-                'max_guests': 6,
-                'is_airbnb_synced': True,
-                'airbnb_guest_name': 'John Smith',
-                'airbnb_guest_email': 'john.smith@example.com',
-                'airbnb_guest_count': 4,
-                'airbnb_confirm_code': 'SUMMER2024'
-            },
-            {
-                'title': "Mountain Retreat Weekend",
-                'start_date': datetime.now().date() + timedelta(days=14),
-                'end_date': datetime.now().date() + timedelta(days=16),
-                'max_guests': 4,
-                'is_airbnb_synced': False,
-                'airbnb_confirm_code': 'MOUNTAIN24'
-            },
-            {
-                'title': "City Break Adventure",
-                'start_date': datetime.now().date() + timedelta(days=60),
-                'end_date': datetime.now().date() + timedelta(days=65),
-                'max_guests': 8,
-                'is_airbnb_synced': True,
-                'airbnb_guest_name': 'Alice Johnson',
-                'airbnb_guest_email': 'alice.j@example.com',
-                'airbnb_guest_count': 3,
-                'airbnb_confirm_code': 'CITY2024'
-            },
-            {
-                'title': "Winter Ski Trip",
-                'start_date': datetime.now().date() + timedelta(days=90),
-                'end_date': datetime.now().date() + timedelta(days=97),
-                'max_guests': 5,
-                'is_airbnb_synced': False,
-                'airbnb_confirm_code': 'SKI2024'
-            },
-            {
-                'title': "Weekend Getaway",
-                'start_date': datetime.now().date() + timedelta(days=7),
-                'end_date': datetime.now().date() + timedelta(days=9),
-                'max_guests': 3,
-                'is_airbnb_synced': True,
-                'airbnb_guest_name': 'Bob Wilson',
-                'airbnb_guest_email': 'bob.wilson@example.com',
-                'airbnb_guest_count': 2,
-                'airbnb_confirm_code': 'WEEKEND24'
-            }
-        ]
-        
-        created_trips = []
-        for trip_data in trips_data:
-            trip = Trip(
-                title=trip_data['title'],
-                start_date=trip_data['start_date'],
-                end_date=trip_data['end_date'],
-                max_guests=trip_data['max_guests'],
-                admin_id=admin.id,
-                is_airbnb_synced=trip_data.get('is_airbnb_synced', False),
-                airbnb_guest_name=trip_data.get('airbnb_guest_name'),
-                airbnb_guest_email=trip_data.get('airbnb_guest_email'),
-                airbnb_guest_count=trip_data.get('airbnb_guest_count'),
-                airbnb_synced_at=datetime.utcnow() if trip_data.get('is_airbnb_synced') else None,
-                airbnb_confirm_code=trip_data.get('airbnb_confirm_code')
-            )
-            db.session.add(trip)
-            created_trips.append(trip)
-        
-        db.session.flush()  # Get trip IDs
-        
-        # Create sample registrations with different statuses
-        registrations_data = [
-            # Approved registrations
-            {
-                'trip_index': 0,
-                'email': 'john.doe@example.com',
-                'status': 'approved',
-                'created_at': datetime.now() - timedelta(days=5),
-                'guests': [
-                    {'first_name': 'John', 'last_name': 'Doe', 'document_type': 'passport', 'document_number': 'AB1234567', 'image': 'passport_john_doe.jpg'},
-                    {'first_name': 'Jane', 'last_name': 'Doe', 'document_type': 'driving_license', 'document_number': 'DL9876543', 'image': 'license_jane_doe.jpg'},
-                    {'first_name': 'Mike', 'last_name': 'Doe', 'document_type': 'citizen_id', 'document_number': 'CID123456789', 'image': 'citizen_id_mike_doe.jpg'}
-                ]
-            },
-            {
-                'trip_index': 2,
-                'email': 'alice.smith@example.com',
-                'status': 'approved',
-                'created_at': datetime.now() - timedelta(days=3),
-                'guests': [
-                    {'first_name': 'Alice', 'last_name': 'Smith', 'document_type': 'passport', 'document_number': 'CD9876543', 'image': 'passport_alice_smith.jpg'},
-                    {'first_name': 'Bob', 'last_name': 'Smith', 'document_type': 'driving_license', 'document_number': 'DL5556667', 'image': 'license_bob_smith.jpg'}
-                ]
-            },
-            # Pending registrations
-            {
-                'trip_index': 1,
-                'email': 'charlie.brown@example.com',
-                'status': 'pending',
-                'created_at': datetime.now() - timedelta(days=2),
-                'guests': [
-                    {'first_name': 'Charlie', 'last_name': 'Brown', 'document_type': 'passport', 'document_number': 'EF1234567', 'image': 'passport_charlie_brown.jpg'},
-                    {'first_name': 'Lucy', 'last_name': 'Brown', 'document_type': 'citizen_id', 'document_number': 'CID987654321', 'image': 'citizen_id_lucy_brown.jpg'}
-                ]
-            },
-            {
-                'trip_index': 3,
-                'email': 'diana.prince@example.com',
-                'status': 'pending',
-                'created_at': datetime.now() - timedelta(days=1),
-                'guests': [
-                    {'first_name': 'Diana', 'last_name': 'Prince', 'document_type': 'passport', 'document_number': 'GH9876543', 'image': 'passport_diana_prince.jpg'},
-                    {'first_name': 'Bruce', 'last_name': 'Wayne', 'document_type': 'driving_license', 'document_number': 'DL1112223', 'image': 'license_bruce_wayne.jpg'},
-                    {'first_name': 'Clark', 'last_name': 'Kent', 'document_type': 'citizen_id', 'document_number': 'CID555666777', 'image': 'citizen_id_clark_kent.jpg'}
-                ]
-            },
-            {
-                'trip_index': 4,
-                'email': 'peter.parker@example.com',
-                'status': 'pending',
-                'created_at': datetime.now() - timedelta(hours=6),
-                'guests': [
-                    {'first_name': 'Peter', 'last_name': 'Parker', 'document_type': 'passport', 'document_number': 'IJ1234567', 'image': 'passport_peter_parker.jpg'},
-                    {'first_name': 'Mary', 'last_name': 'Jane', 'document_type': 'driving_license', 'document_number': 'DL4445556', 'image': 'license_mary_jane.jpg'}
-                ]
-            },
-            # Pending registration with ONE person
-            {
-                'trip_index': 0,
-                'email': 'solo.traveler@example.com',
-                'status': 'pending',
-                'created_at': datetime.now() - timedelta(hours=2),
-                'guests': [
-                    {'first_name': 'Emma', 'last_name': 'Wilson', 'document_type': 'passport', 'document_number': 'MN1234567', 'image': 'passport_emma_wilson.jpg'}
-                ]
-            },
-            # Rejected registration
-            {
-                'trip_index': 0,
-                'email': 'tony.stark@example.com',
-                'status': 'rejected',
-                'admin_comment': 'Document images were unclear. Please upload clearer photos.',
-                'created_at': datetime.now() - timedelta(days=4),
-                'updated_at': datetime.now() - timedelta(days=3),
-                'guests': [
-                    {'first_name': 'Tony', 'last_name': 'Stark', 'document_type': 'passport', 'document_number': 'KL9876543', 'image': 'passport_tony_stark.jpg'}
-                ]
-            }
-        ]
-        
-        created_registrations = []
-        for reg_data in registrations_data:
-            registration = Registration(
-                trip_id=created_trips[reg_data['trip_index']].id,
-                email=reg_data['email'],
-                status=reg_data['status'],
-                admin_comment=reg_data.get('admin_comment'),
-                created_at=reg_data['created_at'],
-                updated_at=reg_data.get('updated_at', reg_data['created_at'])
-            )
-            db.session.add(registration)
-            db.session.flush()
-            created_registrations.append(registration)
-            
-            # Add guests for this registration
-            for guest_data in reg_data['guests']:
-                # Copy sample image to uploads directory
-                image_filename = None
-                if guest_data.get('image'):
-                    image_filename = copy_sample_image(guest_data['image'])
-                
-                guest = Guest(
-                    registration_id=registration.id,
-                    first_name=guest_data['first_name'],
-                    last_name=guest_data['last_name'],
-                    age_category=guest_data['age_category'],
-                    document_type=guest_data['document_type'],
-                    document_number=guest_data['document_number'],
-                    document_image=image_filename,  # Use copied image filename
-                    gdpr_consent=True
-                )
-                db.session.add(guest)
-        
-        db.session.flush()
-        
-        # Create sample invoices
-        invoices_data = [
-            {
-                'registration_index': 0,  # John Doe's approved registration
-                'invoice_number': 'INV-2024-001',
-                'client_name': 'John Doe',
-                'client_email': 'john.doe@example.com',
-                'client_vat_number': 'CZ12345678',
-                'client_address': '123 Main Street\nPrague 120 00\nCzech Republic',
-                'issue_date': datetime.now().date() - timedelta(days=5),
-                'due_date': datetime.now().date() + timedelta(days=25),
-                'status': 'sent',
-                'currency': 'EUR',
-                'notes': 'Payment due within 30 days. Bank transfer preferred.',
-                'items': [
-                    {'description': 'Beach Villa Rental - 7 nights', 'quantity': 1, 'unit_price': 1200.00, 'vat_rate': 21.0},
-                    {'description': 'Cleaning Service', 'quantity': 1, 'unit_price': 80.00, 'vat_rate': 21.0},
-                    {'description': 'Welcome Package', 'quantity': 1, 'unit_price': 50.00, 'vat_rate': 21.0}
-                ]
-            },
-            {
-                'registration_index': 1,  # Alice Smith's approved registration
-                'invoice_number': 'INV-2024-002',
-                'client_name': 'Alice Smith',
-                'client_email': 'alice.smith@example.com',
-                'client_vat_number': 'CZ87654321',
-                'client_address': '456 Oak Avenue\nBrno 602 00\nCzech Republic',
-                'issue_date': datetime.now().date() - timedelta(days=3),
-                'due_date': datetime.now().date() + timedelta(days=27),
-                'status': 'paid',
-                'currency': 'EUR',
-                'notes': 'Thank you for your business!',
-                'items': [
-                    {'description': 'City Apartment Rental - 5 nights', 'quantity': 1, 'unit_price': 800.00, 'vat_rate': 21.0},
-                    {'description': 'Airport Transfer', 'quantity': 2, 'unit_price': 25.00, 'vat_rate': 21.0},
-                    {'description': 'Late Check-out', 'quantity': 1, 'unit_price': 30.00, 'vat_rate': 21.0}
-                ]
-            },
-            {
-                'registration_index': 2,  # Charlie Brown's pending registration
-                'invoice_number': 'INV-2024-003',
-                'client_name': 'Charlie Brown',
-                'client_email': 'charlie.brown@example.com',
-                'client_vat_number': 'CZ11122233',
-                'client_address': '789 Pine Street\nOstrava 702 00\nCzech Republic',
-                'issue_date': datetime.now().date() - timedelta(days=2),
-                'due_date': datetime.now().date() + timedelta(days=28),
-                'status': 'draft',
-                'currency': 'EUR',
-                'notes': 'Invoice will be sent after registration approval.',
-                'items': [
-                    {'description': 'Mountain Cabin Rental - 2 nights', 'quantity': 1, 'unit_price': 300.00, 'vat_rate': 21.0},
-                    {'description': 'Ski Equipment Rental', 'quantity': 2, 'unit_price': 45.00, 'vat_rate': 21.0}
-                ]
-            }
-        ]
-        
-        for invoice_data in invoices_data:
-            # Calculate totals
-            subtotal = 0
-            vat_total = 0
-            total_amount = 0
-            
-            # Calculate line totals and VAT
-            for item_data in invoice_data['items']:
-                line_total = item_data['quantity'] * item_data['unit_price']
-                vat_amount = line_total * (item_data['vat_rate'] / 100)
-                item_data['line_total'] = line_total
-                item_data['vat_amount'] = vat_amount
-                item_data['total_with_vat'] = line_total + vat_amount
-                
-                subtotal += line_total
-                vat_total += vat_amount
-                total_amount += item_data['total_with_vat']
-            
-            invoice = Invoice(
-                invoice_number=invoice_data['invoice_number'],
-                admin_id=admin.id,
-                registration_id=created_registrations[invoice_data['registration_index']].id,
-                client_name=invoice_data['client_name'],
-                client_email=invoice_data['client_email'],
-                client_vat_number=invoice_data['client_vat_number'],
-                client_address=invoice_data['client_address'],
-                issue_date=invoice_data['issue_date'],
-                due_date=invoice_data['due_date'],
-                subtotal=subtotal,
-                vat_total=vat_total,
-                total_amount=total_amount,
-                currency=invoice_data['currency'],
-                notes=invoice_data['notes'],
-                status=invoice_data['status']
-            )
-            db.session.add(invoice)
-            db.session.flush()
-            
-            # Add invoice items
-            for item_data in invoice_data['items']:
-                invoice_item = InvoiceItem(
-                    invoice_id=invoice.id,
-                    description=item_data['description'],
-                    quantity=item_data['quantity'],
-                    unit_price=item_data['unit_price'],
-                    vat_rate=item_data['vat_rate'],
-                    line_total=item_data['line_total'],
-                    vat_amount=item_data['vat_amount'],
-                    total_with_vat=item_data['total_with_vat']
-                )
-                db.session.add(invoice_item)
-        
-        db.session.commit()
-        
-        flash(_('Sample data has been seeded successfully! Created 5 trips, 7 registrations (including 1 single-person pending), 3 invoices with realistic data, and updated admin contact information.'), 'success')
-    except Exception as e:
-        db.session.rollback()
-        flash(_('Error seeding data: %(error)s', error=str(e)), 'error')
-    
-    return redirect(url_for('data_management'))
-
-@app.route('/admin/seed-reset', methods=['POST'])
-@login_required
-def seed_reset():
-    """Reset all data except admin accounts and then seed with sample data."""
-    try:
-        # Get table names for logging
-        table_prefix = app.config.get('TABLE_PREFIX', 'guest_reg_')
-        tables_to_reset = [
-            f"{table_prefix}trip", 
-            f"{table_prefix}registration",
-            f"{table_prefix}guest"
-        ]
-        
-        print(f"Starting database reset and seed for tables: {', '.join(tables_to_reset)}")
-        print(f"Preserving admin table: {table_prefix}user")
-        
-        # Delete data from specific tables instead of dropping all
-        Guest.query.delete()
-        Registration.query.delete()
-        Trip.query.delete()
-        
-        # Commit the deletions
-        db.session.commit()
-        print("Data deleted successfully from trips, registrations, and guests tables")
-        
-        # Now seed with sample data
-        print("Starting to seed sample data...")
-        
-        # Use existing admin or create one if none exists
-        admin = User.query.first()
-        if not admin:
-            admin = User(
-                username='admin',
-                email='admin@example.com',
-                password_hash=generate_password_hash('admin123')
-            )
-            db.session.add(admin)
-            db.session.flush()
-            print("Created new admin user: admin/admin123")
-        else:
-            print(f"Using existing admin: {admin.username}")
-        
-        # Create sample trips with variety
-        trips_data = [
-            {
-                'title': "Summer Beach Vacation 2024",
-                'start_date': datetime.now().date() + timedelta(days=30),
-                'end_date': datetime.now().date() + timedelta(days=37),
-                'max_guests': 6,
-                'is_airbnb_synced': True,
-                'airbnb_guest_name': 'John Smith',
-                'airbnb_guest_email': 'john.smith@example.com',
-                'airbnb_guest_count': 4,
-                'airbnb_confirm_code': 'SUMMER2024'
-            },
-            {
-                'title': "Mountain Retreat Weekend",
-                'start_date': datetime.now().date() + timedelta(days=14),
-                'end_date': datetime.now().date() + timedelta(days=16),
-                'max_guests': 4,
-                'is_airbnb_synced': False,
-                'airbnb_confirm_code': 'MOUNTAIN24'
-            },
-            {
-                'title': "City Break Adventure",
-                'start_date': datetime.now().date() + timedelta(days=60),
-                'end_date': datetime.now().date() + timedelta(days=65),
-                'max_guests': 8,
-                'is_airbnb_synced': True,
-                'airbnb_guest_name': 'Alice Johnson',
-                'airbnb_guest_email': 'alice.j@example.com',
-                'airbnb_guest_count': 3,
-                'airbnb_confirm_code': 'CITY2024'
-            },
-            {
-                'title': "Winter Ski Trip",
-                'start_date': datetime.now().date() + timedelta(days=90),
-                'end_date': datetime.now().date() + timedelta(days=97),
-                'max_guests': 5,
-                'is_airbnb_synced': False,
-                'airbnb_confirm_code': 'SKI2024'
-            },
-            {
-                'title': "Weekend Getaway",
-                'start_date': datetime.now().date() + timedelta(days=7),
-                'end_date': datetime.now().date() + timedelta(days=9),
-                'max_guests': 3,
-                'is_airbnb_synced': True,
-                'airbnb_guest_name': 'Bob Wilson',
-                'airbnb_guest_email': 'bob.wilson@example.com',
-                'airbnb_guest_count': 2,
-                'airbnb_confirm_code': 'WEEKEND24'
-            }
-        ]
-        
-        created_trips = []
-        for trip_data in trips_data:
-            trip = Trip(
-                title=trip_data['title'],
-                start_date=trip_data['start_date'],
-                end_date=trip_data['end_date'],
-                max_guests=trip_data['max_guests'],
-                admin_id=admin.id,
-                is_airbnb_synced=trip_data.get('is_airbnb_synced', False),
-                airbnb_guest_name=trip_data.get('airbnb_guest_name'),
-                airbnb_guest_email=trip_data.get('airbnb_guest_email'),
-                airbnb_guest_count=trip_data.get('airbnb_guest_count'),
-                airbnb_synced_at=datetime.utcnow() if trip_data.get('is_airbnb_synced') else None,
-                airbnb_confirm_code=trip_data.get('airbnb_confirm_code')
-            )
-            db.session.add(trip)
-            created_trips.append(trip)
-        
-        db.session.flush()
-        
-        # Create sample registrations with different statuses
-        registrations_data = [
-            # Approved registrations
-            {
-                'trip_index': 0,
-                'email': 'john.doe@example.com',
-                'status': 'approved',
-                'created_at': datetime.now() - timedelta(days=5),
-                'guests': [
-                    {'first_name': 'John', 'last_name': 'Doe', 'document_type': 'passport', 'document_number': 'AB1234567', 'image': 'passport_john_doe.jpg'},
-                    {'first_name': 'Jane', 'last_name': 'Doe', 'document_type': 'driving_license', 'document_number': 'DL9876543', 'image': 'license_jane_doe.jpg'},
-                    {'first_name': 'Mike', 'last_name': 'Doe', 'document_type': 'citizen_id', 'document_number': 'CID123456789', 'image': 'citizen_id_mike_doe.jpg'}
-                ]
-            },
-            {
-                'trip_index': 2,
-                'email': 'alice.smith@example.com',
-                'status': 'approved',
-                'created_at': datetime.now() - timedelta(days=3),
-                'guests': [
-                    {'first_name': 'Alice', 'last_name': 'Smith', 'document_type': 'passport', 'document_number': 'CD9876543', 'image': 'passport_alice_smith.jpg'},
-                    {'first_name': 'Bob', 'last_name': 'Smith', 'document_type': 'driving_license', 'document_number': 'DL5556667', 'image': 'license_bob_smith.jpg'}
-                ]
-            },
-            # Pending registrations
-            {
-                'trip_index': 1,
-                'email': 'charlie.brown@example.com',
-                'status': 'pending',
-                'created_at': datetime.now() - timedelta(days=2),
-                'guests': [
-                    {'first_name': 'Charlie', 'last_name': 'Brown', 'document_type': 'passport', 'document_number': 'EF1234567', 'image': 'passport_charlie_brown.jpg'},
-                    {'first_name': 'Lucy', 'last_name': 'Brown', 'document_type': 'citizen_id', 'document_number': 'CID987654321', 'image': 'citizen_id_lucy_brown.jpg'}
-                ]
-            },
-            {
-                'trip_index': 3,
-                'email': 'diana.prince@example.com',
-                'status': 'pending',
-                'created_at': datetime.now() - timedelta(days=1),
-                'guests': [
-                    {'first_name': 'Diana', 'last_name': 'Prince', 'document_type': 'passport', 'document_number': 'GH9876543', 'image': 'passport_diana_prince.jpg'},
-                    {'first_name': 'Bruce', 'last_name': 'Wayne', 'document_type': 'driving_license', 'document_number': 'DL1112223', 'image': 'license_bruce_wayne.jpg'},
-                    {'first_name': 'Clark', 'last_name': 'Kent', 'document_type': 'citizen_id', 'document_number': 'CID555666777', 'image': 'citizen_id_clark_kent.jpg'}
-                ]
-            },
-            {
-                'trip_index': 4,
-                'email': 'peter.parker@example.com',
-                'status': 'pending',
-                'created_at': datetime.now() - timedelta(hours=6),
-                'guests': [
-                    {'first_name': 'Peter', 'last_name': 'Parker', 'document_type': 'passport', 'document_number': 'IJ1234567', 'image': 'passport_peter_parker.jpg'},
-                    {'first_name': 'Mary', 'last_name': 'Jane', 'document_type': 'driving_license', 'document_number': 'DL4445556', 'image': 'license_mary_jane.jpg'}
-                ]
-            },
-            # Rejected registration
-            {
-                'trip_index': 0,
-                'email': 'tony.stark@example.com',
-                'status': 'rejected',
-                'admin_comment': 'Document images were unclear. Please upload clearer photos.',
-                'created_at': datetime.now() - timedelta(days=4),
-                'updated_at': datetime.now() - timedelta(days=3),
-                'guests': [
-                    {'first_name': 'Tony', 'last_name': 'Stark', 'document_type': 'passport', 'document_number': 'KL9876543', 'image': 'passport_tony_stark.jpg'}
-                ]
-            }
-        ]
-        
-        for reg_data in registrations_data:
-            registration = Registration(
-                trip_id=created_trips[reg_data['trip_index']].id,
-                email=reg_data['email'],
-                status=reg_data['status'],
-                admin_comment=reg_data.get('admin_comment'),
-                created_at=reg_data['created_at'],
-                updated_at=reg_data.get('updated_at', reg_data['created_at'])
-            )
-            db.session.add(registration)
-            db.session.flush()
-            
-            # Add guests for this registration
-            for guest_data in reg_data['guests']:
-                # Copy sample image to uploads directory
-                image_filename = None
-                if guest_data.get('image'):
-                    image_filename = copy_sample_image(guest_data['image'])
-                
-                guest = Guest(
-                    registration_id=registration.id,
-                    first_name=guest_data['first_name'],
-                    last_name=guest_data['last_name'],
-                    age_category=guest_data['age_category'],
-                    document_type=guest_data['document_type'],
-                    document_number=guest_data['document_number'],
-                    document_image=image_filename,  # Use copied image filename
-                    gdpr_consent=True
-                )
-                db.session.add(guest)
-        
-        db.session.commit()
-        print("Sample data seeded successfully")
-        
-        flash(_('Database has been reset and seeded with sample data successfully! Admin accounts have been preserved. Created 5 trips and 6 registrations with various statuses. Sample document images have been copied to uploads directory.'), 'success')
-        
-    except Exception as e:
-        db.session.rollback()
-        print(f"Error during reset and seed: {str(e)}")
-        flash(_('Error during reset and seed: %(error)s. Please use the command line tool: python quick_reset.py --reset-seed', error=str(e)), 'error')
-    
-    return redirect(url_for('data_management'))
-
-def send_approval_email(registration):
-    try:
-        # Set language based on registration
-        original_lang = session.get('lang', 'en')
-        if registration.language:
-            session['lang'] = registration.language
-        
-        msg = Message(
-            _('Your registration has been approved!'),
-            sender=app.config['MAIL_USERNAME'],
-            recipients=[registration.email]
-        )
-        msg.body = _("""
-Dear Guest,
-
-Your registration for %(trip_title)s has been approved!
-
-Your personal data has been processed and all uploaded documents have been securely deleted in compliance with GDPR regulations.
-
-Thank you for choosing our service.
-
-Best regards,
-The Admin Team
-""", trip_title=registration.trip.title)
-        mail.send(msg)
-        
-        # Restore original language
-        session['lang'] = original_lang
-    except Exception as e:
-        print(f"Error sending email: {e}")
-
-def send_rejection_email(registration):
-    try:
-        # Set language based on registration
-        original_lang = session.get('lang', 'en')
-        if registration.language:
-            session['lang'] = registration.language
-        
-        update_link = url_for('register', trip_id=registration.trip_id, _external=True).replace('/register/', '/register/id/')
-        msg = Message(
-            _('Registration Update Required'),
-            sender=app.config['MAIL_USERNAME'],
-            recipients=[registration.email]
-        )
-        msg.body = _("""
-Dear Guest,
-
-Your registration for %(trip_title)s requires updates.
-
-Admin Comment: %(admin_comment)s
-
-Please update your information using this link: %(update_link)s
-
-Thank you for your understanding.
-
-Best regards,
-The Admin Team
-""", trip_title=registration.trip.title, admin_comment=registration.admin_comment, update_link=update_link)
-        mail.send(msg)
-        
-        # Restore original language
-        session['lang'] = original_lang
-    except Exception as e:
-        print(f"Error sending email: {e}")
-
-@app.route('/set_language/<lang_code>')
-def set_language(lang_code):
-    # If language picker is disabled, redirect back without changing language
-    if not app.config['LANGUAGE_PICKER_ENABLED']:
-        return redirect(request.referrer or url_for('index'))
-    
-    if lang_code in app.config['BABEL_SUPPORTED_LOCALES']:
-        session['lang'] = lang_code
-    return redirect(request.referrer or url_for('index'))
-
-@app.route('/housekeeper')
-def housekeeper_landing():
-    """Housekeeper landing page."""
-    return render_template('housekeeper/landing.html')
-
-@app.route('/housekeeper/login', methods=['GET', 'POST'])
-def housekeeper_login():
-    """Housekeeper login page."""
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        
-        user = User.query.filter_by(username=username, is_deleted=False).first()
-        if user and user.check_password(password) and user.role == 'housekeeper':
-            login_user(user)
-            return redirect(url_for('housekeeper_dashboard'))
-        else:
-            flash(_('Invalid username or password'), 'error')
-    
-    return render_template('housekeeper/login.html')
-
-@app.route('/housekeeper/dashboard')
-@login_required
-@role_required('housekeeper')
-def housekeeper_dashboard():
-    # Show assigned housekeeping tasks (for now, all tasks)
-    tasks = Housekeeping.query.filter_by(housekeeper_id=current_user.id).all()
-    return render_template('housekeeper/dashboard.html', tasks=tasks)
-
-@app.route('/housekeeper/calendar')
-@login_required
-@role_required('housekeeper')
-def housekeeper_calendar():
-    return render_template('housekeeper/calendar.html')
-
-@app.route('/api/housekeeping_events')
-@login_required
-@role_required('housekeeper')
-def housekeeping_events_api():
-    # Return housekeeping tasks as JSON for the calendar
-    tasks = Housekeeping.query.filter_by(housekeeper_id=current_user.id).all()
-    events = []
-    for task in tasks:
-        # Use the trip's end date for the title if available
-        trip_end_date = task.trip.end_date if task.trip and task.trip.end_date else task.date
-        
-        # Format the date using the user's preferred format
-        try:
-            date_format = current_user.date_format or 'd.m.Y'
-            # Convert PHP/JS style to Python strftime
-            format_map = [
-                ('d', '%d'),
-                ('j', '%-d'),
-                ('m', '%m'),
-                ('n', '%-m'),
-                ('Y', '%Y'),
-                ('y', '%y'),
-            ]
-            py_format = date_format
-            for php, py in format_map:
-                py_format = py_format.replace(php, py)
-            formatted_date = trip_end_date.strftime(py_format)
-        except (ValueError, TypeError):
-            formatted_date = trip_end_date.strftime('%d.%m.%Y')
-        
-        events.append({
-            'id': task.id,
-            'title': f'Housekeeping - {formatted_date}',
-            'start': task.date.isoformat(),
-            'end': task.date.isoformat(),
-            'status': task.status,
-            'pay_amount': float(task.pay_amount),
-            'paid': task.paid,
-        })
-    return jsonify(events)
-
-@app.route('/housekeeper/upload_photo/<int:task_id>', methods=['POST'])
-@login_required
-@role_required('housekeeper')
-def upload_amenity_photo(task_id):
-    """Upload amenity photo for a housekeeping task (multiple supported)."""
-    task = Housekeeping.query.get_or_404(task_id)
-    
-    # Verify the task belongs to the current housekeeper
-    if task.housekeeper_id != current_user.id:
-        abort(403)
-    
-    if 'photo' not in request.files:
-        flash(_('No photo selected'), 'error')
-        return redirect(url_for('housekeeper_task_detail', task_id=task_id))
-    
-    file = request.files['photo']
-    if file.filename == '':
-        flash(_('No photo selected'), 'error')
-        return redirect(url_for('housekeeper_task_detail', task_id=task_id))
-    
-    if file and allowed_file(file.filename):
-        # Generate unique filename
-        filename = secure_filename(f"amenity_{task_id}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}_{file.filename}")
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(file_path)
-        # Add new photo record
-        from app import HousekeepingPhoto
-        photo = HousekeepingPhoto(task_id=task_id, file_path=filename)
-        db.session.add(photo)
-        task.updated_at = datetime.utcnow()
-        db.session.commit()
-        flash(_('Photo uploaded successfully'), 'success')
-    else:
-        flash(_('Invalid file type. Please upload JPG or PNG files only.'), 'error')
-    
-    return redirect(url_for('housekeeper_task_detail', task_id=task_id))
-
-def allowed_file(filename):
-    """Check if the uploaded file is allowed."""
-    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-@app.route('/admin/housekeeping', methods=['GET', 'POST'])
-@login_required
-@role_required('admin')
-def admin_housekeeping():
-    # Filtering
-    housekeeper_id = request.args.get('housekeeper_id', type=int)
-    status = request.args.get('status')
-    amenity_id = request.args.get('amenity_id', type=int)
-    query = Housekeeping.query.join(Trip)
-    
-    if housekeeper_id:
-        query = query.filter_by(housekeeper_id=housekeeper_id)
-    if status:
-        query = query.filter_by(status=status)
-    if amenity_id:
-        query = query.filter(Trip.amenity_id == amenity_id)
-    
-    tasks = query.order_by(Housekeeping.date.desc()).all()
-    housekeepers = User.query.filter_by(role='housekeeper').all()
-    
-    # Get amenities for filtering
-    amenities = Amenity.query.filter_by(admin_id=current_user.id).order_by(Amenity.name).all()
-
-    # Pay summaries
-    pay_summary = {}
-    for hk in housekeepers:
-        hk_tasks = [t for t in tasks if t.housekeeper_id == hk.id]
-        # Only count completed tasks for payment
-        completed_tasks = [t for t in hk_tasks if t.status == 'completed']
-        pay_summary[hk.id] = {
-            'username': hk.username,
-            'total': sum(float(t.pay_amount) for t in completed_tasks),
-            'paid': sum(float(t.pay_amount) for t in completed_tasks if t.paid),
-            'pending': sum(float(t.pay_amount) for t in completed_tasks if not t.paid),
-        }
-    
-    # Grand totals - only count completed tasks
-    completed_tasks = [t for t in tasks if t.status == 'completed']
-    grand_total = sum(float(t.pay_amount) for t in completed_tasks)
-    grand_paid = sum(float(t.pay_amount) for t in completed_tasks if t.paid)
-    grand_pending = sum(float(t.pay_amount) for t in completed_tasks if not t.paid)
-
-    # Handle pay status/amount update
-    if request.method == 'POST':
-        task_id = request.form.get('task_id', type=int)
-        pay_amount = request.form.get('pay_amount', type=float)
-        paid = request.form.get('paid') == 'on'
-        task = Housekeeping.query.get_or_404(task_id)
-        task.pay_amount = pay_amount
-        task.paid = paid
-        if paid:
-            task.paid_date = datetime.utcnow()
-        db.session.commit()
-        flash(_('Housekeeping pay updated.'), 'success')
-        return redirect(url_for('admin_housekeeping', housekeeper_id=housekeeper_id, status=status, amenity_id=amenity_id))
-
-    return render_template('admin/housekeeping.html', tasks=tasks, housekeepers=housekeepers, amenities=amenities, selected_housekeeper=housekeeper_id, selected_status=status, selected_amenity=amenity_id, pay_summary=pay_summary, grand_total=grand_total, grand_paid=grand_paid, grand_pending=grand_pending)
-
-# CSV Export Routes
-@app.route('/admin/export/registrations')
-@login_required
-@role_required('admin')
-def export_registrations_csv():
-    """Export registrations to CSV."""
-    # Get all registrations for the current admin
-    registrations = Registration.query.join(Trip).filter(Trip.admin_id == current_user.id).all()
-    
-    # Create CSV data
-    output = StringIO()
-    writer = csv.writer(output)
-    
-    # Write header
-    writer.writerow([
-        _('Registration ID'),
-        _('Trip Title'),
-        _('Email'),
-        _('Status'),
-        _('Language'),
-        _('Created Date'),
-        _('Updated Date'),
-        _('Guest Count'),
-        _('Admin Comment')
-    ])
-    
-    # Write data
-    for reg in registrations:
-        writer.writerow([
-            reg.id,
-            reg.trip.title,
-            reg.email,
-            reg.status,
-            reg.language,
-            reg.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-            reg.updated_at.strftime('%Y-%m-%d %H:%M:%S'),
-            len(reg.guests),
-            reg.admin_comment or ''
-        ])
-    
-    # Convert to bytes and create BytesIO
-    csv_data = output.getvalue().encode('utf-8')
-    output.close()
-    
-    return send_file(
-        BytesIO(csv_data),
-        mimetype='text/csv',
-        as_attachment=True,
-        download_name=f'registrations_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
-    )
-
-@app.route('/admin/export/guests')
-@login_required
-@role_required('admin')
-def export_guests_csv():
-    """Export guests to CSV."""
-    # Get all guests for registrations belonging to the current admin
-    guests = Guest.query.join(Registration).join(Trip).filter(Trip.admin_id == current_user.id).all()
-    
-    # Create CSV data
-    output = StringIO()
-    writer = csv.writer(output)
-    
-    # Write header
-    writer.writerow([
-        _('Guest ID'),
-        _('Registration ID'),
-        _('Trip Title'),
-        _('First Name'),
-        _('Last Name'),
-        _('Age Category'),
-        _('Document Type'),
-        _('Document Number'),
-        _('GDPR Consent'),
-        _('Created Date')
-    ])
-    
-    # Write data
-    for guest in guests:
-        writer.writerow([
-            guest.id,
-            guest.registration_id,
-            guest.registration.trip.title,
-            guest.first_name,
-            guest.last_name,
-            guest.age_category,
-            guest.document_type,
-            guest.document_number,
-            'Yes' if guest.gdpr_consent else 'No',
-            guest.created_at.strftime('%Y-%m-%d %H:%M:%S')
-        ])
-    
-    # Convert to bytes and create BytesIO
-    csv_data = output.getvalue().encode('utf-8')
-    output.close()
-    
-    return send_file(
-        BytesIO(csv_data),
-        mimetype='text/csv',
-        as_attachment=True,
-        download_name=f'guests_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
-    )
-
-@app.route('/admin/export/trips')
-@login_required
-@role_required('admin')
-def export_trips_csv():
-    """Export trips to CSV."""
-    # Get all trips for the current admin
-    trips = Trip.query.filter_by(admin_id=current_user.id).all()
-    
-    # Create CSV data
-    output = StringIO()
-    writer = csv.writer(output)
-    
-    # Write header
-    writer.writerow([
-        _('Trip ID'),
-        _('Title'),
-        _('Start Date'),
-        _('End Date'),
-        _('Max Guests'),
-        _('Created Date'),
-        _('Amenity'),
-        _('Calendar'),
-        _('Externally Synced'),
-        _('External Guest Name'),
-        _('External Guest Email'),
-        _('External Guest Count'),
-        _('External Confirmation Code'),
-        _('Registration Count'),
-        _('Pending Count'),
-        _('Approved Count'),
-        _('Rejected Count')
-    ])
-    
-    # Write data
-    for trip in trips:
-        registrations = trip.registrations
-        pending_count = len([r for r in registrations if r.status == 'pending'])
-        approved_count = len([r for r in registrations if r.status == 'approved'])
-        rejected_count = len([r for r in registrations if r.status == 'rejected'])
-        
-        writer.writerow([
-            trip.id,
-            trip.title,
-            trip.start_date.strftime('%Y-%m-%d'),
-            trip.end_date.strftime('%Y-%m-%d'),
-            trip.max_guests,
-            trip.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-            trip.amenity.name if trip.amenity else '',
-            trip.calendar.name if trip.calendar else '',
-            'Yes' if trip.is_externally_synced else 'No',
-            trip.external_guest_name or '',
-            trip.external_guest_email or '',
-            trip.external_guest_count or '',
-            trip.external_confirm_code or '',
-            len(registrations),
-            pending_count,
-            approved_count,
-            rejected_count
-        ])
-    
-    # Convert to bytes and create BytesIO
-    csv_data = output.getvalue().encode('utf-8')
-    output.close()
-    
-    return send_file(
-        BytesIO(csv_data),
-        mimetype='text/csv',
-        as_attachment=True,
-        download_name=f'trips_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
-    )
-
-@app.route('/admin/export/invoices')
-@login_required
-@role_required('admin')
-def export_invoices_csv():
-    """Export invoices to CSV."""
-    # Get all invoices for the current admin
-    invoices = Invoice.query.filter_by(admin_id=current_user.id).all()
-    
-    # Create CSV data
-    output = StringIO()
-    writer = csv.writer(output)
-    
-    # Write header
-    writer.writerow([
-        _('Invoice ID'),
-        _('Invoice Number'),
-        _('Client Name'),
-        _('Client Email'),
-        _('Client VAT Number'),
-        _('Issue Date'),
-        _('Due Date'),
-        _('Subtotal'),
-        _('VAT Total'),
-        _('Total Amount'),
-        _('Currency'),
-        _('Status'),
-        _('Created Date'),
-        _('Updated Date'),
-        _('Registration ID'),
-        _('Trip Title')
-    ])
-    
-    # Write data
-    for invoice in invoices:
-        trip_title = invoice.registration.trip.title if invoice.registration else ''
-        writer.writerow([
-            invoice.id,
-            invoice.invoice_number,
-            invoice.client_name,
-            invoice.client_email or '',
-            invoice.client_vat_number or '',
-            invoice.issue_date.strftime('%Y-%m-%d'),
-            invoice.due_date.strftime('%Y-%m-%d') if invoice.due_date else '',
-            float(invoice.subtotal),
-            float(invoice.vat_total),
-            float(invoice.total_amount),
-            invoice.currency,
-            invoice.status,
-            invoice.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-            invoice.updated_at.strftime('%Y-%m-%d %H:%M:%S'),
-            invoice.registration_id or '',
-            trip_title
-        ])
-    
-    output.seek(0)
-    # Convert to bytes and create BytesIO
-    csv_data = output.getvalue().encode('utf-8')
-    output.close()
-    
-    return send_file(
-        BytesIO(csv_data),
-        mimetype='text/csv',
-        as_attachment=True,
-        download_name=f'invoices_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
-    )
-
-# Breakdown/Analytics Routes
-@app.route('/admin/breakdowns')
-@login_required
-@role_required('admin')
-def admin_breakdowns():
-    """Main breakdowns/analytics page."""
-    return render_template('admin/breakdowns.html')
-
-@app.route('/admin/breakdowns/registrations')
-@login_required
-@role_required('admin')
-def registration_breakdown():
-    """Registration statistics and breakdowns."""
-    # Get all registrations for the current admin
-    registrations = Registration.query.join(Trip).filter(Trip.admin_id == current_user.id).all()
-    
-    # Status breakdown
-    status_counts = defaultdict(int)
-    for reg in registrations:
-        status_counts[reg.status] += 1
-    
-    # Monthly breakdown
-    monthly_counts = defaultdict(int)
-    for reg in registrations:
-        month_key = reg.created_at.strftime('%Y-%m')
-        monthly_counts[month_key] += 1
-    
-    # Trip breakdown
-    trip_counts = defaultdict(int)
-    for reg in registrations:
-        trip_counts[reg.trip.title] += 1
-    
-    # Language breakdown
-    language_counts = defaultdict(int)
-    for reg in registrations:
-        language_counts[reg.language] += 1
-    
-    # Guest count distribution
-    guest_count_distribution = defaultdict(int)
-    for reg in registrations:
-        guest_count_distribution[len(reg.guests)] += 1
-    
-    # Recent activity (last 30 days)
-    thirty_days_ago = datetime.now() - timedelta(days=30)
-    recent_registrations = [reg for reg in registrations if reg.created_at >= thirty_days_ago]
-    
-    stats = {
-        'total_registrations': len(registrations),
-        'pending_count': status_counts['pending'],
-        'approved_count': status_counts['approved'],
-        'rejected_count': status_counts['rejected'],
-        'recent_count': len(recent_registrations),
-        'status_breakdown': dict(status_counts),
-        'monthly_breakdown': dict(monthly_counts),
-        'trip_breakdown': dict(trip_counts),
-        'language_breakdown': dict(language_counts),
-        'guest_count_distribution': dict(guest_count_distribution)
-    }
-    
-    return render_template('admin/registration_breakdown.html', stats=stats, registrations=registrations)
-
-@app.route('/admin/breakdowns/guests')
-@login_required
-@role_required('admin')
-def guest_breakdown():
-    """Guest statistics and breakdowns."""
-    # Get all guests for registrations belonging to the current admin
-    guests = Guest.query.join(Registration).join(Trip).filter(Trip.admin_id == current_user.id).all()
-    
-    # Age category breakdown
-    age_category_counts = defaultdict(int)
-    for guest in guests:
-        age_category_counts[guest.age_category] += 1
-    
-    # Document type breakdown
-    document_type_counts = defaultdict(int)
-    for guest in guests:
-        document_type_counts[guest.document_type] += 1
-    
-    # GDPR consent breakdown
-    gdpr_consent_count = sum(1 for guest in guests if guest.gdpr_consent)
-    gdpr_no_consent_count = len(guests) - gdpr_consent_count
-    
-    # Monthly guest registration
-    monthly_guest_counts = defaultdict(int)
-    for guest in guests:
-        month_key = guest.created_at.strftime('%Y-%m')
-        monthly_guest_counts[month_key] += 1
-    
-    # Trip breakdown for guests
-    trip_guest_counts = defaultdict(int)
-    for guest in guests:
-        trip_guest_counts[guest.registration.trip.title] += 1
-    
-    stats = {
-        'total_guests': len(guests),
-        'adult_count': age_category_counts['adult'],
-        'child_count': age_category_counts['child'],
-        'gdpr_consent_count': gdpr_consent_count,
-        'gdpr_no_consent_count': gdpr_no_consent_count,
-        'age_category_breakdown': dict(age_category_counts),
-        'document_type_breakdown': dict(document_type_counts),
-        'monthly_guest_counts': dict(monthly_guest_counts),
-        'trip_guest_counts': dict(trip_guest_counts)
-    }
-    
-    return render_template('admin/guest_breakdown.html', stats=stats, guests=guests)
-
-@app.route('/admin/breakdowns/trips')
-@login_required
-@role_required('admin')
-def trip_breakdown():
-    """Trip statistics and breakdowns."""
-    # Get all trips for the current admin
-    trips = Trip.query.filter_by(admin_id=current_user.id).all()
-    
-    # Registration count per trip
-    trip_registration_counts = {}
-    trip_guest_counts = {}
-    trip_status_breakdowns = {}
-    
-    for trip in trips:
-        registrations = trip.registrations
-        trip_registration_counts[trip.title] = len(registrations)
-        
-        # Count guests per trip
-        guest_count = sum(len(reg.guests) for reg in registrations)
-        trip_guest_counts[trip.title] = guest_count
-        
-        # Status breakdown per trip
-        status_counts = defaultdict(int)
-        for reg in registrations:
-            status_counts[reg.status] += 1
-        trip_status_breakdowns[trip.title] = dict(status_counts)
-    
-    # Monthly trip creation
-    monthly_trip_counts = defaultdict(int)
-    for trip in trips:
-        month_key = trip.created_at.strftime('%Y-%m')
-        monthly_trip_counts[month_key] += 1
-    
-    # External sync statistics
-    externally_synced_count = sum(1 for trip in trips if trip.is_externally_synced)
-    externally_not_synced_count = len(trips) - externally_synced_count
-    
-    # Duration statistics
-    trip_durations = []
-    for trip in trips:
-        duration = (trip.end_date - trip.start_date).days
-        trip_durations.append(duration)
-    
-    avg_duration = sum(trip_durations) / len(trip_durations) if trip_durations else 0
-    
-    stats = {
-        'total_trips': len(trips),
-        'externally_synced_count': externally_synced_count,
-        'externally_not_synced_count': externally_not_synced_count,
-        'avg_duration_days': round(avg_duration, 1),
-        'trip_registration_counts': trip_registration_counts,
-        'trip_guest_counts': trip_guest_counts,
-        'trip_status_breakdowns': trip_status_breakdowns,
-        'monthly_trip_counts': dict(monthly_trip_counts)
-    }
-    
-    return render_template('admin/trip_breakdown.html', stats=stats, trips=trips)
-
-@app.route('/admin/breakdowns/invoices')
-@login_required
-@role_required('admin')
-def invoice_breakdown():
-    """Invoice statistics and breakdowns."""
-    # Get all invoices for the current admin
-    invoices = Invoice.query.filter_by(admin_id=current_user.id).all()
-    
-    # Status breakdown
-    status_counts = defaultdict(int)
-    for invoice in invoices:
-        status_counts[invoice.status] += 1
-    
-    # Monthly invoice creation
-    monthly_invoice_counts = defaultdict(int)
-    for invoice in invoices:
-        month_key = invoice.created_at.strftime('%Y-%m')
-        monthly_invoice_counts[month_key] += 1
-    
-    # Amount statistics
-    total_amount = sum(float(invoice.total_amount) for invoice in invoices)
-    avg_amount = total_amount / len(invoices) if invoices else 0
-    
-    # Status-based amounts
-    status_amounts = defaultdict(float)
-    for invoice in invoices:
-        status_amounts[invoice.status] += float(invoice.total_amount)
-    
-    # Currency breakdown
-    currency_counts = defaultdict(int)
-    for invoice in invoices:
-        currency_counts[invoice.currency] += 1
-    
-    # Monthly revenue
-    monthly_revenue = defaultdict(float)
-    for invoice in invoices:
-        month_key = invoice.created_at.strftime('%Y-%m')
-        monthly_revenue[month_key] += float(invoice.total_amount)
-    
-    stats = {
-        'total_invoices': len(invoices),
-        'total_amount': total_amount,
-        'avg_amount': round(avg_amount, 2),
-        'status_counts': dict(status_counts),
-        'status_amounts': dict(status_amounts),
-        'currency_counts': dict(currency_counts),
-        'monthly_invoice_counts': dict(monthly_invoice_counts),
-        'monthly_revenue': dict(monthly_revenue)
-    }
-    
-    return render_template('admin/invoice_breakdown.html', stats=stats, invoices=invoices)
-
-# User Management Routes
-@app.route('/admin/users')
-@login_required
-@role_required('admin')
-def admin_users():
-    """Admin users list page."""
-    users = User.query.filter_by(is_deleted=False).order_by(User.created_at.desc()).all()
-    return render_template('admin/users.html', users=users)
-
-@app.route('/admin/users/new', methods=['GET', 'POST'])
-@login_required
-@role_required('admin')
-def new_user():
-    """Create a new user."""
-    if request.method == 'POST':
-        username = request.form.get('username')
-        email = request.form.get('email')
-        password = request.form.get('password')
-        role = request.form.get('role', 'admin')
-        
-        # Check if username or email already exists (not deleted)
-        if User.query.filter_by(username=username, is_deleted=False).first():
-            flash(_('Username already exists'), 'error')
-            return render_template('admin/new_user.html')
-        
-        if User.query.filter_by(email=email, is_deleted=False).first():
-            flash(_('Email already exists'), 'error')
-            return render_template('admin/new_user.html')
-        
-        # Create new user
-        user = User(
-            username=username,
-            email=email,
-            role=role
-        )
-        user.set_password(password)
-        
-        db.session.add(user)
-        db.session.commit()
-        
-        flash(_('User created successfully!'), 'success')
-        return redirect(url_for('admin_users'))
-    
-    # Get role from query parameter for pre-filling
-    default_role = request.args.get('role', 'admin')
-    return render_template('admin/new_user.html', default_role=default_role)
-
-@app.route('/admin/users/<int:user_id>')
-@login_required
-@role_required('admin')
-def view_user(user_id):
-    """View a specific user."""
-    user = User.query.filter_by(id=user_id, is_deleted=False).first_or_404()
-    return render_template('admin/view_user.html', user=user)
-
-@app.route('/admin/users/<int:user_id>/edit', methods=['GET', 'POST'])
-@login_required
-@role_required('admin')
-def edit_user(user_id):
-    """Edit an existing user."""
-    user = User.query.filter_by(id=user_id, is_deleted=False).first_or_404()
-    
-    if request.method == 'POST':
-        username = request.form.get('username')
-        email = request.form.get('email')
-        role = request.form.get('role', 'admin')
-        new_password = request.form.get('new_password')
-        
-        # Check if username or email already exists (excluding current user, not deleted)
-        existing_user = User.query.filter_by(username=username, is_deleted=False).first()
-        if existing_user and existing_user.id != user.id:
-            flash(_('Username already exists'), 'error')
-            return render_template('admin/edit_user.html', user=user)
-        
-        existing_user = User.query.filter_by(email=email, is_deleted=False).first()
-        if existing_user and existing_user.id != user.id:
-            flash(_('Email already exists'), 'error')
-            return render_template('admin/edit_user.html', user=user)
-        
-        # Update user
-        user.username = username
-        user.email = email
-        user.role = role
-        
-        # Update password if provided
-        if new_password:
-            user.set_password(new_password)
-        
-        db.session.commit()
-        
-        flash(_('User updated successfully!'), 'success')
-        return redirect(url_for('view_user', user_id=user.id))
-    
-    return render_template('admin/edit_user.html', user=user)
-
-@app.route('/admin/users/<int:user_id>/delete', methods=['POST'])
-@login_required
-@role_required('admin')
-def delete_user(user_id):
-    """Soft delete a user."""
-    user = User.query.get_or_404(user_id)
-    
-    # Prevent deleting the current user
-    if user.id == current_user.id:
-        flash(_('You cannot delete your own account'), 'error')
-        return redirect(url_for('admin_users'))
-    
-    # Check if user is already deleted
-    if user.is_deleted:
-        flash(_('User is already deleted.'), 'info')
-        return redirect(url_for('admin_users'))
-    try:
-        user.is_deleted = True
-        db.session.commit()
-        flash(_('User deleted successfully!'), 'success')
-    except Exception as e:
-        db.session.rollback()
-        print(f"[ERROR] Failed to soft delete user {user_id}: {e}")
-        flash(_('Error deleting user: %(error)s', error=str(e)), 'error')
-    return redirect(url_for('admin_users'))
-
-@app.route('/api/backup/guests', methods=['GET'])
-@login_required
-@role_required('admin')
-def api_backup_guests():
-    """Export all registered guests for a given month (no photos, admin only)."""
-    year = request.args.get('year', type=int)
-    month = request.args.get('month', type=int)
-    fmt = request.args.get('format', 'csv')
-    if not year or not month:
-        return jsonify({'error': 'Missing year or month parameter'}), 400
-
-    # Get guests for the given month
-    start_date = datetime(year, month, 1)
-    if month == 12:
-        end_date = datetime(year + 1, 1, 1)
-    else:
-        end_date = datetime(year, month + 1, 1)
-    guests = Guest.query.join(Registration).filter(
-        Registration.created_at >= start_date,
-        Registration.created_at < end_date
-    ).all()
-
-    # Prepare data (no photos)
-    guest_data = []
-    for g in guests:
-        guest_data.append({
-            'id': g.id,
-            'registration_id': g.registration_id,
-            'first_name': g.first_name,
-            'last_name': g.last_name,
-            'age_category': g.age_category,
-            'document_type': g.document_type,
-            'document_number': g.document_number,
-            'gdpr_consent': g.gdpr_consent,
-            'created_at': g.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-            'trip_title': g.registration.trip.title if g.registration and g.registration.trip else '',
-            'registration_email': g.registration.email if g.registration else '',
-            'registration_language': g.registration.language if g.registration else '',
-        })
-
-    if fmt == 'json':
-        return jsonify(guest_data)
-    else:
-        # CSV
-        output = StringIO()
-        writer = csv.DictWriter(output, fieldnames=guest_data[0].keys() if guest_data else [
-            'id','registration_id','first_name','last_name','age_category','document_type','document_number','gdpr_consent','created_at','trip_title','registration_email','registration_language'])
-        writer.writeheader()
-        for row in guest_data:
-            writer.writerow(row)
-        csv_data = output.getvalue().encode('utf-8')
-        output.close()
-        return send_file(
-            BytesIO(csv_data),
-            mimetype='text/csv',
-            as_attachment=True,
-            download_name=f'guests_{year}_{month:02d}.csv'
-        )
-
-@app.route('/admin/backup', methods=['GET'])
-@login_required
-@role_required('admin')
-def admin_system_backup():
-    """Create a system backup (DB dump + uploads, no guest photos) as a ZIP download."""
-    import subprocess, tempfile, zipfile, shutil
-    from flask import current_app
-
-    # Prepare temp directory
-    tmpdir = tempfile.mkdtemp()
-    db_dump_path = os.path.join(tmpdir, 'db_backup.sql')
-    uploads_dir = app.config['UPLOAD_FOLDER']
-    backup_zip_path = os.path.join(tmpdir, f'system_backup_{datetime.now().strftime("%Y%m%d_%H%M%S")}.zip')
-
-    # Parse DB URL
-    import re
-    db_url = app.config['SQLALCHEMY_DATABASE_URI']
-    m = re.match(r'postgresql://([^:]+):([^@]+)@([^:/]+)(?::(\d+))?/([^?]+)', db_url)
-    if not m:
-        shutil.rmtree(tmpdir)
-        return 'Invalid database URL', 500
-    db_user, db_pass, db_host, db_port, db_name = m.groups()
-    db_port = db_port or '5432'
-
-    # Run pg_dump
-    env = os.environ.copy()
-    env['PGPASSWORD'] = db_pass
-    try:
-        subprocess.check_call([
-            'pg_dump',
-            '-h', db_host,
-            '-p', db_port,
-            '-U', db_user,
-            '-F', 'plain',
-            '-f', db_dump_path,
-            db_name
-        ], env=env)
-    except Exception as e:
-        shutil.rmtree(tmpdir)
-        return f'Error running pg_dump: {e}', 500
-
-    # Prepare uploads (excluding guest document photos)
-    uploads_tmp = os.path.join(tmpdir, 'uploads')
-    os.makedirs(uploads_tmp, exist_ok=True)
-    for fname in os.listdir(uploads_dir):
-        # Exclude files that look like guest document images (by convention: uuid_*.jpg/png)
-        if re.match(r'[0-9a-fA-F\-]{36}_', fname):
-            continue
-        src = os.path.join(uploads_dir, fname)
-        dst = os.path.join(uploads_tmp, fname)
-        if os.path.isfile(src):
-            shutil.copy2(src, dst)
-        elif os.path.isdir(src):
-            shutil.copytree(src, dst)
-
-    # Create ZIP
-    with zipfile.ZipFile(backup_zip_path, 'w', zipfile.ZIP_DEFLATED) as zf:
-        zf.write(db_dump_path, arcname='db_backup.sql')
-        for root, dirs, files in os.walk(uploads_tmp):
-            for file in files:
-                full_path = os.path.join(root, file)
-                rel_path = os.path.relpath(full_path, uploads_tmp)
-                zf.write(full_path, arcname=os.path.join('uploads', rel_path))
-
-    # Serve ZIP
-    with open(backup_zip_path, 'rb') as f:
-        data = f.read()
-    shutil.rmtree(tmpdir)
-    return send_file(
-        BytesIO(data),
-        mimetype='application/zip',
-        as_attachment=True,
-        download_name=os.path.basename(backup_zip_path)
-    )
-
-@app.route('/api/version')
-def api_version():
-    """Get application version information"""
-    return jsonify(version_manager.get_version_info())
-
-@app.route('/api/version/compatibility')
-def api_version_compatibility():
-    """Check version compatibility"""
-    current_db_version = migration_manager.get_current_version()
-    app_version = version_manager.get_current_version()
-    
-    compatibility = check_version_compatibility(app_version, current_db_version)
-    
-    return jsonify({
-        'app_version': app_version,
-        'database_version': current_db_version,
-        'compatible': compatibility['compatible'],
-        'recommendation': compatibility['recommendation']
-    })
-
-@app.route('/api/version/changelog/<version>')
-def api_version_changelog(version):
-    """Get changelog for a specific version"""
-    changelog = get_version_changelog(version)
-    return jsonify(changelog)
-
-@app.route('/admin/migrations')
-@login_required
-@role_required('admin')
-def admin_migrations():
-    """Migration management page"""
-    current_version = migration_manager.get_current_version()
-    app_version = version_manager.get_current_version()
-    applied_migrations = migration_manager.get_applied_migrations()
-    pending_migrations = migration_manager.get_pending_migrations()
-    
-    # Check compatibility
-    compatibility = check_version_compatibility(app_version, current_version)
-    
-    return render_template('admin/migrations.html',
-                         current_version=current_version,
-                         app_version=app_version,
-                         applied_migrations=applied_migrations,
-                         pending_migrations=pending_migrations,
-                         compatibility=compatibility)
-
-@app.route('/admin/migrations/run', methods=['POST'])
-@login_required
-@role_required('admin')
-def run_migrations():
-    """Run pending migrations"""
-    try:
-        # Create backup before migration
-        backup_file = migration_manager.create_backup_before_migration()
-        
-        # Run migrations
-        success = migration_manager.migrate()
-        
-        if success:
-            flash('Migrations applied successfully!', 'success')
-        else:
-            flash('Some migrations failed to apply.', 'error')
-            
-    except Exception as e:
-        flash(f'Migration error: {str(e)}', 'error')
-    
-    return redirect(url_for('admin_migrations'))
-
-@app.route('/admin/migrations/rollback/<version>', methods=['POST'])
-@login_required
-@role_required('admin')
-def rollback_migration(version):
-    """Rollback specific migration"""
-    try:
-        success = migration_manager.rollback_migration(version)
-        
-        if success:
-            flash(_('Migration %(version)s rolled back successfully!', version=version), 'success')
-        else:
-            flash(_('Failed to rollback migration %(version)s', version=version), 'error')
-        
-        return redirect(url_for('admin_migrations'))
-        
-    except Exception as e:
-        flash(_('Rollback error: %(error)s', error=str(e)), 'error')
-        return redirect(url_for('admin_migrations'))
-
-def create_missing_housekeeping_tasks_for_calendar(calendar_id):
-    """Create housekeeping tasks for all trips in a calendar that don't already have one."""
-    calendar = Calendar.query.get(calendar_id)
-    if not calendar:
-        return 0
-    
-    # Find default housekeeper for the amenity
-    default_assignment = AmenityHousekeeper.query.filter_by(
-        amenity_id=calendar.amenity_id, is_default=True).first()
-    
-    if not default_assignment and calendar.amenity.default_housekeeper_id:
-        # Fallback to legacy default housekeeper
-        housekeeper_id = calendar.amenity.default_housekeeper_id
-    elif default_assignment:
-        housekeeper_id = default_assignment.housekeeper_id
-    else:
-        housekeeper_id = None
-    
-    if not housekeeper_id:
-        return 0  # No default housekeeper assigned
-    
-    trips = Trip.query.filter_by(calendar_id=calendar_id).all()
-    created = 0
-    
-    for trip in trips:
-        # Check if a housekeeping task already exists for this trip
-        existing_task = Housekeeping.query.filter_by(trip_id=trip.id).first()
-        if not existing_task:
-            # Get the housekeeper's default pay
-            housekeeper = User.query.get(housekeeper_id)
-            pay = float(housekeeper.default_housekeeper_pay) if housekeeper and housekeeper.default_housekeeper_pay else 20
-            task = Housekeeping(
-                trip_id=trip.id,
-                housekeeper_id=housekeeper_id,
-                date=trip.end_date + timedelta(days=1),
-                status='pending',
-                pay_amount=pay,
-                paid=False
-            )
-            db.session.add(task)
-            created += 1
-    
-    if created > 0:
-        db.session.commit()
-    
-    return created
-
-def sync_calendar_reservations(calendar_id):
-    """Sync reservations for a specific calendar, ensuring unique confirmation codes."""
-    calendar = Calendar.query.get(calendar_id)
-    if not calendar or not calendar.calendar_url or not calendar.sync_enabled:
-        return {'success': False, 'message': 'Calendar sync not configured or disabled'}
-    
-    try:
-        print(f"🔍 Starting sync for calendar: {calendar.name}")
-        reservations = fetch_calendar_data(calendar.calendar_url, calendar.calendar_type)
-        print(f"📅 Found {len(reservations)} reservations to process")
-        
-        synced_count = 0
-        updated_count = 0
-        housekeeping_tasks_created = 0
-        
-        for reservation in reservations:
-            print(f"🔄 Processing reservation: {reservation['title']}")
-            print(f"   Guest count from calendar: {reservation.get('guest_count', 'NOT FOUND')}")
-            print(f"   Guest name: {reservation.get('guest_name', 'NOT FOUND')}")
-            
-            # Check if trip already exists by external reservation ID
-            existing_trip = Trip.query.filter_by(
-                external_reservation_id=reservation['id'],
-                calendar_id=calendar_id
-            ).first()
-            
-            # Also check if trip exists by confirmation code
-            confirm_code = reservation['confirm_code']
-            existing_code_trip = None
-            if confirm_code:
-                existing_code_trip = Trip.query.filter_by(
-                    external_confirm_code=confirm_code
-                ).first()
-            
-            # Use amenity's max_guests if guest count not parsed from calendar
-            guest_count = reservation['guest_count'] if reservation['guest_count'] > 0 else calendar.amenity.max_guests
-            print(f"   Final guest count to use: {guest_count}")
-            print(f"   Source: {'calendar data' if reservation['guest_count'] > 0 else 'amenity default'}")
-            
-            if existing_trip:
-                print(f"   📝 Updating existing trip (ID: {existing_trip.id})")
-                print(f"   Old max_guests: {existing_trip.max_guests} -> New max_guests: {guest_count}")
-                # Update existing trip by reservation ID
-                existing_trip.title = reservation['title']
-                existing_trip.start_date = reservation['start_date']
-                existing_trip.end_date = reservation['end_date']
-                existing_trip.max_guests = guest_count
-                existing_trip.external_guest_name = reservation['guest_name']
-                existing_trip.external_guest_email = reservation['guest_email']
-                existing_trip.external_confirm_code = reservation['confirm_code']
-                existing_trip.external_synced_at = datetime.utcnow()
-                updated_count += 1
-            elif existing_code_trip:
-                print(f"   📝 Updating existing trip by confirmation code (ID: {existing_code_trip.id})")
-                print(f"   Old max_guests: {existing_code_trip.max_guests} -> New max_guests: {guest_count}")
-                # Update existing trip by confirmation code (dates may have changed)
-                existing_code_trip.title = reservation['title']
-                existing_code_trip.start_date = reservation['start_date']
-                existing_code_trip.end_date = reservation['end_date']
-                existing_code_trip.max_guests = guest_count
-                existing_code_trip.external_guest_name = reservation['guest_name']
-                existing_code_trip.external_guest_email = reservation['guest_email']
-                existing_code_trip.external_reservation_id = reservation['id']
-                existing_code_trip.calendar_id = calendar_id
-                existing_code_trip.external_synced_at = datetime.utcnow()
-                updated_count += 1
-            else:
-                print(f"   ➕ Creating new trip with max_guests: {guest_count}")
-                # Create new trip
-                trip = Trip(
-                    title=reservation['title'],
-                    start_date=reservation['start_date'],
-                    end_date=reservation['end_date'],
-                    max_guests=guest_count,
-                    admin_id=calendar.amenity.admin_id,
-                    amenity_id=calendar.amenity_id,
-                    calendar_id=calendar_id,
-                    external_reservation_id=reservation['id'],
-                    external_guest_name=reservation['guest_name'],
-                    external_guest_email=reservation['guest_email'],
-                    external_confirm_code=reservation['confirm_code'],
-                    external_synced_at=datetime.utcnow(),
-                    is_externally_synced=True
-                )
-                db.session.add(trip)
-                db.session.flush()  # Get the trip ID
-                
-                # Create housekeeping task for the new trip
-                # First try to get the default housekeeper from the new system
-                default_housekeeper_assignment = AmenityHousekeeper.query.filter_by(
-                    amenity_id=calendar.amenity_id,
-                    is_default=True
-                ).first()
-                
-                # Fallback to the old system if no default housekeeper is set
-                if not default_housekeeper_assignment and calendar.amenity.default_housekeeper_id:
-                    default_housekeeper_id = calendar.amenity.default_housekeeper_id
-                elif default_housekeeper_assignment:
-                    default_housekeeper_id = default_housekeeper_assignment.housekeeper_id
-                else:
-                    default_housekeeper_id = None
-                
-                if default_housekeeper_id:
-                    # Get the housekeeper's default pay
-                    housekeeper = User.query.get(default_housekeeper_id)
-                    pay = float(housekeeper.default_housekeeper_pay) if housekeeper and housekeeper.default_housekeeper_pay else 20
-                    housekeeping_task = Housekeeping(
-                        trip_id=trip.id,
-                        housekeeper_id=default_housekeeper_id,
-                        date=reservation['end_date'] + timedelta(days=1),
-                        status='pending',
-                        pay_amount=pay,  # Default pay amount
-                        paid=False
-                    )
-                    db.session.add(housekeeping_task)
-                    housekeeping_tasks_created += 1
-                
-                synced_count += 1
-        
-        # Create housekeeping tasks for any existing trips that don't have them
-        missing_tasks_created = create_missing_housekeeping_tasks_for_calendar(calendar_id)
-        total_housekeeping_tasks = housekeeping_tasks_created + missing_tasks_created
-        
-        # Update calendar last sync time
-        calendar.last_sync = datetime.utcnow()
-        db.session.commit()
-        
-        print(f"✅ Sync completed: {synced_count} new, {updated_count} updated")
-        
-        message = f"Synced {synced_count} new reservations, updated {updated_count} existing reservations"
-        if total_housekeeping_tasks > 0:
-            message += f", created {total_housekeeping_tasks} housekeeping tasks"
-        
-        return {'success': True, 'message': message, 'synced': synced_count, 'updated': updated_count, 'housekeeping_tasks': total_housekeeping_tasks}
-        
-    except Exception as e:
-        db.session.rollback()
-        print(f"❌ Sync failed: {str(e)}")
-        return {'success': False, 'message': f'Sync failed: {str(e)}'}
-
-def sync_all_calendars_for_admin(admin_id):
-    """Sync all calendars for a specific admin."""
-    try:
-        # Get all active calendars for the admin
-        calendars = Calendar.query.join(Amenity).filter(
-            Amenity.admin_id == admin_id,
-            Calendar.sync_enabled == True,
-            Calendar.is_active == True
-        ).all()
-        
-        total_synced = 0
-        total_updated = 0
-        failed_calendars = []
-        
-        for calendar in calendars:
-            result = sync_calendar_reservations(calendar.id)
-            if result['success']:
-                total_synced += result.get('synced', 0)
-                total_updated += result.get('updated', 0)
-            else:
-                failed_calendars.append(f"{calendar.name}: {result['message']}")
-        
-        if failed_calendars:
-            message = f"Synced {total_synced} new, updated {total_updated} existing reservations. Failed: {'; '.join(failed_calendars)}"
-        else:
-            message = f"Successfully synced {total_synced} new reservations and updated {total_updated} existing reservations"
-        
-        return {'success': True, 'message': message, 'synced': total_synced, 'updated': total_updated}
-        
-    except Exception as e:
-        return {'success': False, 'message': f'Sync failed: {str(e)}'}
-
-def fetch_calendar_data(calendar_url, calendar_type='airbnb'):
-    """Fetch and parse calendar data based on type."""
-    if calendar_type == 'airbnb':
-        return fetch_airbnb_calendar(calendar_url)
-    else:
-        # For other calendar types, use the same parsing logic for now
-        return fetch_airbnb_calendar(calendar_url)
-
-# Calendar Management Routes
-@app.route('/admin/calendars')
-@login_required
-@role_required('admin')
-def admin_calendars():
-    """Manage calendars."""
-    # Get all amenities owned by this admin
-    amenities = Amenity.query.filter_by(admin_id=current_user.id).all()
-    calendars_by_amenity = {}
-    
-    for amenity in amenities:
-        calendars_by_amenity[amenity] = amenity.calendars
-    
-    return render_template('admin/calendars.html', calendars_by_amenity=calendars_by_amenity)
-
-@app.route('/admin/calendars/new', methods=['GET', 'POST'])
-@login_required
-@role_required('admin')
-def new_calendar():
-    """Create a new calendar."""
-    if request.method == 'POST':
-        amenity_id = request.form.get('amenity_id')
-        amenity = Amenity.query.get(amenity_id)
-        
-        if not amenity or amenity.admin_id != current_user.id:
-            flash(_('Invalid amenity selected'), 'error')
-            return redirect(url_for('new_calendar'))
-        
-        calendar = Calendar(
-            name=request.form.get('name'),
-            description=request.form.get('description'),
-            calendar_url=request.form.get('calendar_url'),
-            calendar_type=request.form.get('calendar_type', 'airbnb'),
-            sync_enabled=request.form.get('sync_enabled') == 'on',
-            sync_frequency=request.form.get('sync_frequency', 'daily'),
-            is_active=request.form.get('is_active') == 'on',
-            amenity_id=amenity_id
-        )
-        db.session.add(calendar)
-        db.session.commit()
-        flash(_('Calendar created successfully!'), 'success')
-        return redirect(url_for('admin_calendars'))
-    
-    amenities = Amenity.query.filter_by(admin_id=current_user.id, is_active=True).order_by(Amenity.name).all()
-    return render_template('admin/new_calendar.html', amenities=amenities)
-
-@app.route('/admin/calendars/<int:calendar_id>/edit', methods=['GET', 'POST'])
-@login_required
-@role_required('admin')
-def edit_calendar(calendar_id):
-    """Edit a calendar."""
-    calendar = Calendar.query.get_or_404(calendar_id)
-    if calendar.amenity.admin_id != current_user.id:
-        flash(_('Access denied'), 'error')
-        return redirect(url_for('admin_calendars'))
-    
-    if request.method == 'POST':
-        amenity_id = request.form.get('amenity_id')
-        amenity = Amenity.query.get(amenity_id)
-        
-        if not amenity or amenity.admin_id != current_user.id:
-            flash(_('Invalid amenity selected'), 'error')
-            return redirect(url_for('edit_calendar', calendar_id=calendar_id))
-        
-        calendar.name = request.form.get('name')
-        calendar.description = request.form.get('description')
-        calendar.calendar_url = request.form.get('calendar_url')
-        calendar.calendar_type = request.form.get('calendar_type', 'airbnb')
-        calendar.sync_enabled = request.form.get('sync_enabled') == 'on'
-        calendar.sync_frequency = request.form.get('sync_frequency', 'daily')
-        calendar.is_active = request.form.get('is_active') == 'on'
-        calendar.amenity_id = amenity_id
-        
-        db.session.commit()
-        flash(_('Calendar updated successfully!'), 'success')
-        return redirect(url_for('admin_calendars'))
-    
-    amenities = Amenity.query.filter_by(admin_id=current_user.id, is_active=True).order_by(Amenity.name).all()
-    return render_template('admin/edit_calendar.html', calendar=calendar, amenities=amenities)
-
-@app.route('/admin/calendars/<int:calendar_id>/delete', methods=['POST'])
-@login_required
-@role_required('admin')
-def delete_calendar(calendar_id):
-    """Delete a calendar."""
-    calendar = Calendar.query.get_or_404(calendar_id)
-    if calendar.amenity.admin_id != current_user.id:
-        flash(_('Access denied'), 'error')
-        return redirect(url_for('admin_calendars'))
-    
-    # Check if calendar has trips
-    if calendar.trips:
-        flash(_('Cannot delete calendar with existing trips'), 'error')
-        return redirect(url_for('admin_calendars'))
-    
-    db.session.delete(calendar)
-    db.session.commit()
-    flash(_('Calendar deleted successfully!'), 'success')
-    return redirect(url_for('admin_calendars'))
-
-@app.route('/admin/amenities/<int:amenity_id>/housekeepers')
-@login_required
-@role_required('admin')
-def amenity_housekeepers(amenity_id):
-    """Manage housekeepers for a specific amenity."""
-    amenity = Amenity.query.get_or_404(amenity_id)
-    if amenity.admin_id != current_user.id:
-        flash(_('Access denied'), 'error')
-        return redirect(url_for('admin_amenities'))
-    
-    # Get all housekeepers
-    housekeepers = User.query.filter_by(role='housekeeper').all()
-    
-    # Get current assignments
-    assignments = AmenityHousekeeper.query.filter_by(amenity_id=amenity_id).all()
-    assigned_housekeeper_ids = [a.housekeeper_id for a in assignments]
-    
-    # Get default housekeeper
-    default_assignment = next((a for a in assignments if a.is_default), None)
-    
-    return render_template('admin/amenity_housekeepers.html', 
-                         amenity=amenity, 
-                         housekeepers=housekeepers,
-                         assignments=assignments,
-                         assigned_housekeeper_ids=assigned_housekeeper_ids,
-                         default_assignment=default_assignment)
-
-@app.route('/admin/amenities/<int:amenity_id>/housekeepers/assign', methods=['POST'])
-@login_required
-@role_required('admin')
-def assign_housekeeper_to_amenity(amenity_id):
-    """Assign a housekeeper to an amenity."""
-    amenity = Amenity.query.get_or_404(amenity_id)
-    if amenity.admin_id != current_user.id:
-        flash(_('Access denied'), 'error')
-        return redirect(url_for('admin_amenities'))
-    
-    housekeeper_id = request.form.get('housekeeper_id', type=int)
-    is_default = request.form.get('is_default') == 'on'
-    
-    if not housekeeper_id:
-        flash(_('Please select a housekeeper'), 'error')
-        return redirect(url_for('amenity_housekeepers', amenity_id=amenity_id))
-    
-    # Check if housekeeper exists and is actually a housekeeper
-    housekeeper = User.query.filter_by(id=housekeeper_id, role='housekeeper').first()
-    if not housekeeper:
-        flash(_('Invalid housekeeper selected'), 'error')
-        return redirect(url_for('amenity_housekeepers', amenity_id=amenity_id))
-    
-    # Check if assignment already exists
-    existing_assignment = AmenityHousekeeper.query.filter_by(
-        amenity_id=amenity_id, 
-        housekeeper_id=housekeeper_id
-    ).first()
-    
-    if existing_assignment:
-        flash(_('Housekeeper is already assigned to this amenity'), 'error')
-        return redirect(url_for('amenity_housekeepers', amenity_id=amenity_id))
-    
-    # Create new assignment
-    assignment = AmenityHousekeeper(
-        amenity_id=amenity_id,
-        housekeeper_id=housekeeper_id,
-        is_default=is_default
-    )
-    
-    # If this is set as default, unset other defaults for this amenity
-    if is_default:
-        AmenityHousekeeper.query.filter_by(
-            amenity_id=amenity_id, 
-            is_default=True
-        ).update({'is_default': False})
-    
-    db.session.add(assignment)
-    db.session.commit()
-    
-    flash(_('Housekeeper assigned successfully'), 'success')
-    return redirect(url_for('amenity_housekeepers', amenity_id=amenity_id))
-
-@app.route('/admin/amenities/<int:amenity_id>/housekeepers/<int:assignment_id>/set-default', methods=['POST'])
-@login_required
-@role_required('admin')
-def set_default_housekeeper(amenity_id, assignment_id):
-    """Set a housekeeper as default for an amenity."""
-    amenity = Amenity.query.get_or_404(amenity_id)
-    if amenity.admin_id != current_user.id:
-        flash(_('Access denied'), 'error')
-        return redirect(url_for('admin_amenities'))
-    
-    assignment = AmenityHousekeeper.query.get_or_404(assignment_id)
-    if assignment.amenity_id != amenity_id:
-        flash(_('Invalid assignment'), 'error')
-        return redirect(url_for('amenity_housekeepers', amenity_id=amenity_id))
-    
-    # Unset all other defaults for this amenity
-    AmenityHousekeeper.query.filter_by(
-        amenity_id=amenity_id, 
-        is_default=True
-    ).update({'is_default': False})
-    
-    # Set this assignment as default
-    assignment.is_default = True
-    db.session.commit()
-    
-    flash(_('Default housekeeper updated successfully'), 'success')
-    return redirect(url_for('amenity_housekeepers', amenity_id=amenity_id))
-
-@app.route('/admin/amenities/<int:amenity_id>/housekeepers/<int:assignment_id>/remove', methods=['POST'])
-@login_required
-@role_required('admin')
-def remove_housekeeper_from_amenity(amenity_id, assignment_id):
-    """Remove a housekeeper from an amenity."""
-    amenity = Amenity.query.get_or_404(amenity_id)
-    if amenity.admin_id != current_user.id:
-        flash(_('Access denied'), 'error')
-        return redirect(url_for('admin_amenities'))
-    
-    assignment = AmenityHousekeeper.query.get_or_404(assignment_id)
-    if assignment.amenity_id != amenity_id:
-        flash(_('Invalid assignment'), 'error')
-        return redirect(url_for('amenity_housekeepers', amenity_id=amenity_id))
-    
-    db.session.delete(assignment)
-    db.session.commit()
-    
-    flash(_('Housekeeper removed from amenity successfully'), 'success')
-    return redirect(url_for('amenity_housekeepers', amenity_id=amenity_id))
-
-@app.route('/admin/housekeeping/<int:task_id>/reassign', methods=['POST'])
-@login_required
-@role_required('admin')
-def reassign_housekeeping_task(task_id):
-    """Reassign a housekeeping task to a different housekeeper."""
-    task = Housekeeping.query.get_or_404(task_id)
-    
-    # Check if admin has access to this task (through amenity ownership)
-    if task.trip.amenity.admin_id != current_user.id:
-        flash(_('Access denied'), 'error')
-        return redirect(url_for('admin_housekeeping'))
-    
-    new_housekeeper_id = request.form.get('housekeeper_id', type=int)
-    
-    if not new_housekeeper_id:
-        flash(_('Please select a housekeeper'), 'error')
-        return redirect(url_for('admin_housekeeping'))
-    
-    # Check if housekeeper exists and is actually a housekeeper
-    housekeeper = User.query.filter_by(id=new_housekeeper_id, role='housekeeper').first()
-    if not housekeeper:
-        flash(_('Invalid housekeeper selected'), 'error')
-        return redirect(url_for('admin_housekeeping'))
-    
-    # Update the task
-    task.housekeeper_id = new_housekeeper_id
-    task.updated_at = datetime.utcnow()
-    db.session.commit()
-    
-    flash(_('Housekeeping task reassigned successfully'), 'success')
-    return redirect(url_for('admin_housekeeping'))
-
-@app.route('/admin/housekeeping/<int:task_id>/delete', methods=['POST'])
-@login_required
-@role_required('admin')
-def delete_housekeeping_task(task_id):
-    """Delete a housekeeping task."""
-    task = Housekeeping.query.get_or_404(task_id)
-    # Check if admin has access to this task (through amenity ownership)
-    if task.trip.amenity.admin_id != current_user.id:
-        flash(_('Access denied'), 'error')
-        return redirect(url_for('admin_housekeeping'))
-    try:
-        db.session.delete(task)
-        db.session.commit()
-        flash(_('Housekeeping task deleted successfully!'), 'success')
-    except Exception as e:
-        db.session.rollback()
-        flash(_('Error deleting housekeeping task: %(error)s', error=str(e)), 'error')
-    return redirect(url_for('admin_housekeeping'))
-
-@app.route('/admin/calendars/<int:calendar_id>/create-housekeeping-tasks', methods=['POST'])
-@login_required
-@role_required('admin')
-def create_housekeeping_tasks_from_calendar(calendar_id):
-    """Create housekeeping tasks for all trips in a calendar that don't already have one."""
-    calendar = Calendar.query.get_or_404(calendar_id)
-    if calendar.amenity.admin_id != current_user.id:
-        flash(_('Access denied'), 'error')
-        return redirect(url_for('admin_calendars'))
-    
-    # Check if there's a default housekeeper assigned
-    default_assignment = AmenityHousekeeper.query.filter_by(
-        amenity_id=calendar.amenity_id, is_default=True).first()
-    
-    if not default_assignment and not calendar.amenity.default_housekeeper_id:
-        flash(_('No default housekeeper assigned to this amenity. Please assign a default housekeeper first.'), 'error')
-        return redirect(url_for('admin_calendars'))
-    
-    # Use the helper function to create missing tasks
-    created = create_missing_housekeeping_tasks_for_calendar(calendar_id)
-    
-    if created > 0:
-        flash(_('%(num)d housekeeping tasks created from calendar.', num=created), 'success')
-    else:
-        flash(_('No new housekeeping tasks created. All trips already have housekeeping tasks.'), 'info')
-    
-    return redirect(url_for('admin_calendars'))
-
-@app.route('/housekeeper/task/<int:task_id>')
-@login_required
-def housekeeper_task_detail(task_id):
-    """Display detailed view of a housekeeping task."""
-    task = Housekeeping.query.get_or_404(task_id)
-    
-    # Check access: either the housekeeper assigned to the task or admin who owns the amenity
-    if current_user.role == 'housekeeper':
-        if task.housekeeper_id != current_user.id:
-            flash(_('Access denied'), 'error')
-            return redirect(url_for('housekeeper_dashboard'))
-    elif current_user.role == 'admin':
-        if task.trip.amenity.admin_id != current_user.id:
-            flash(_('Access denied'), 'error')
-            return redirect(url_for('admin_housekeeping'))
-    else:
-        flash(_('Access denied'), 'error')
-        return redirect(url_for('admin_dashboard'))
-    
-    return render_template('housekeeper/task_detail.html', task=task, today=datetime.utcnow().date())
-
-@app.route('/housekeeper/task/<int:task_id>/update-status', methods=['POST'])
-@login_required
-def update_task_status(task_id):
-    """Update the status of a housekeeping task."""
-    task = Housekeeping.query.get_or_404(task_id)
-    
-    # Check access: either the housekeeper assigned to the task or admin who owns the amenity
-    if current_user.role == 'housekeeper':
-        if task.housekeeper_id != current_user.id:
-            flash(_('Access denied'), 'error')
-            return redirect(url_for('housekeeper_dashboard'))
-    elif current_user.role == 'admin':
-        if task.trip.amenity.admin_id != current_user.id:
-            flash(_('Access denied'), 'error')
-            return redirect(url_for('admin_housekeeping'))
-    else:
-        flash(_('Access denied'), 'error')
-        return redirect(url_for('admin_dashboard'))
-    
-    new_status = request.form.get('status')
-    if new_status in ['pending', 'in_progress', 'completed']:
-        # Check if trying to mark as completed - only apply date restriction to housekeepers
-        if new_status == 'completed' and current_user.role == 'housekeeper':
-            today = datetime.utcnow().date()
-            if task.date != today:
-                # Convert PHP/JS style to Python strftime format
-                format_map = [
-                    ('d', '%d'),
-                    ('j', '%-d'),
-                    ('m', '%m'),
-                    ('n', '%-m'),
-                    ('Y', '%Y'),
-                    ('y', '%y'),
-                ]
-                
-                date_format = current_user.date_format or 'd.m.Y'
-                py_format = date_format
-                for php, py in format_map:
-                    py_format = py_format.replace(php, py)
-                
-                flash(_('Tasks can only be marked as completed on the task date (%(task_date)s). Today is %(today)s.', 
-                       task_date=task.date.strftime(py_format),
-                       today=today.strftime(py_format)), 'error')
-                return redirect(url_for('housekeeper_task_detail', task_id=task_id))
-        
-        task.status = new_status
-        task.updated_at = datetime.utcnow()
-        db.session.commit()
-        flash(_('Task status updated successfully'), 'success')
-    else:
-        flash(_('Invalid status'), 'error')
-    
-    # Redirect based on user role
-    if current_user.role == 'admin':
-        return redirect(url_for('admin_housekeeping_task_detail', task_id=task_id))
-    else:
-        return redirect(url_for('housekeeper_task_detail', task_id=task_id))
-
-@app.route('/admin/housekeeping/bulk-update-status', methods=['POST'])
-@login_required
-@role_required('admin')
-def bulk_update_housekeeping_status():
-    """Bulk update status for multiple housekeeping tasks."""
-    task_ids = request.form.getlist('task_ids')
-    new_status = request.form.get('status')
-    
-    if not task_ids:
-        flash(_('No tasks selected'), 'error')
-        return redirect(url_for('admin_housekeeping'))
-    
-    if new_status not in ['pending', 'in_progress', 'completed']:
-        flash(_('Invalid status'), 'error')
-        return redirect(url_for('admin_housekeeping'))
-    
-    updated_count = 0
-    for task_id in task_ids:
-        task = Housekeeping.query.get(task_id)
-        if task and task.trip.amenity.admin_id == current_user.id:
-            task.status = new_status
-            task.updated_at = datetime.utcnow()
-            updated_count += 1
-    
-    if updated_count > 0:
-        db.session.commit()
-        flash(_('%(count)d tasks updated successfully', count=updated_count), 'success')
-    else:
-        flash(_('No tasks were updated'), 'error')
-    
-    return redirect(url_for('admin_housekeeping'))
-
-@app.route('/housekeeper/task/<int:task_id>/add-notes', methods=['POST'])
-@login_required
-@role_required('housekeeper')
-def add_task_notes(task_id):
-    """Add or update notes for a housekeeping task."""
-    task = Housekeeping.query.get_or_404(task_id)
-    
-    # Check if the current housekeeper has access to this task
-    if task.housekeeper_id != current_user.id:
-        flash(_('Access denied'), 'error')
-        return redirect(url_for('housekeeper_dashboard'))
-    
-    notes = request.form.get('notes', '').strip()
-    task.notes = notes
-    task.updated_at = datetime.utcnow()
-    db.session.commit()
-    flash(_('Task notes updated successfully'), 'success')
-    
-    return redirect(url_for('housekeeper_task_detail', task_id=task_id))
-
-@app.route('/housekeeper/photo/<int:photo_id>/delete', methods=['POST'])
-@login_required
-@role_required('housekeeper')
-def delete_housekeeping_photo(photo_id):
-    photo = HousekeepingPhoto.query.get_or_404(photo_id)
-    task = photo.task
-    # Check if the current housekeeper has access to this task
-    if task.housekeeper_id != current_user.id:
-        flash(_('Access denied'), 'error')
-        return redirect(url_for('housekeeper_dashboard'))
-    # Delete the file from disk
-    file_path = os.path.join(app.config['UPLOAD_FOLDER'], photo.file_path)
-    if os.path.exists(file_path):
-        os.remove(file_path)
-    db.session.delete(photo)
-    db.session.commit()
-    flash(_('Photo deleted successfully'), 'success')
-    return redirect(url_for('housekeeper_task_detail', task_id=task.id))
-
-@app.route('/admin/housekeeping/task/<int:task_id>')
-@login_required
-@role_required('admin')
-def admin_housekeeping_task_detail(task_id):
-    """Admin view of housekeeping task details."""
-    task = Housekeeping.query.get_or_404(task_id)
-    
-    # Check if admin has access to this task (through amenity ownership)
-    if task.trip.amenity.admin_id != current_user.id:
-        flash(_('Access denied'), 'error')
-        return redirect(url_for('admin_housekeeping'))
-    
-    # Get all users for the reassignment dropdown
-    users = User.query.filter_by(is_deleted=False).all()
-    
-    return render_template('admin/housekeeping_task_detail.html', task=task, today=datetime.utcnow().date(), users=users)
-
-@app.route('/health')
-def health_check():
-    """Basic health check endpoint for Docker and load balancers."""
-    try:
-        # Test database connection
-        db.session.execute(text('SELECT 1'))
-        return jsonify({
-            'status': 'healthy',
-            'timestamp': datetime.utcnow().isoformat(),
-            'version': version_manager.get_current_version(),
-            'database': 'connected'
-        }), 200
-    except Exception as e:
-        return jsonify({
-            'status': 'unhealthy',
-            'timestamp': datetime.utcnow().isoformat(),
-            'version': version_manager.get_current_version(),
-            'database': 'disconnected',
-            'error': str(e)
-        }), 503
-
-@app.route('/health/detailed')
-def detailed_health_check():
-    """Detailed health check with comprehensive system status."""
-    health_status = {
-        'status': 'healthy',
-        'timestamp': datetime.utcnow().isoformat(),
-        'version': version_manager.get_current_version(),
-        'checks': {},
-        'overall_status': 'healthy'
-    }
-    
-    # Database health check
-    try:
-        db.session.execute(text('SELECT 1'))
-        db_result = db.session.execute(text('SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = \'public\''))
-        table_count = db_result.scalar()
-        
-        health_status['checks']['database'] = {
-            'status': 'healthy',
-            'connected': True,
-            'table_count': table_count,
-            'response_time_ms': 0  # Could be enhanced with timing
-        }
-    except Exception as e:
-        health_status['checks']['database'] = {
-            'status': 'unhealthy',
-            'connected': False,
-            'error': str(e)
-        }
-        health_status['overall_status'] = 'unhealthy'
-    
-    # File system health check
-    try:
-        upload_folder = app.config.get('UPLOAD_FOLDER', 'uploads')
-        if os.path.exists(upload_folder):
-            free_space = shutil.disk_usage(upload_folder).free
-            free_space_mb = free_space / (1024 * 1024)
-            
-            health_status['checks']['filesystem'] = {
-                'status': 'healthy',
-                'upload_folder': upload_folder,
-                'exists': True,
-                'writable': os.access(upload_folder, os.W_OK),
-                'free_space_mb': round(free_space_mb, 2)
-            }
-        else:
-            health_status['checks']['filesystem'] = {
-                'status': 'unhealthy',
-                'upload_folder': upload_folder,
-                'exists': False,
-                'error': 'Upload folder does not exist'
-            }
-            health_status['overall_status'] = 'unhealthy'
-    except Exception as e:
-        health_status['checks']['filesystem'] = {
-            'status': 'unhealthy',
-            'error': str(e)
-        }
-        health_status['overall_status'] = 'unhealthy'
-    
-    # Application health check
-    try:
-        # Check if critical modules are available
-        import PIL
-        import cffi
-        import weasyprint
-        
-        health_status['checks']['application'] = {
-            'status': 'healthy',
-            'flask_version': Flask.__version__,
-            'python_version': sys.version.split()[0],
-            'critical_modules': {
-                'PIL': PIL.__version__,
-                'cffi': cffi.__version__,
-                'weasyprint': weasyprint.__version__
-            }
-        }
-    except Exception as e:
-        health_status['checks']['application'] = {
-            'status': 'unhealthy',
-            'error': str(e)
-        }
-        health_status['overall_status'] = 'unhealthy'
-    
-    # Migration status check
-    try:
-        current_version = migration_manager.get_current_version()
-        applied_migrations = migration_manager.get_applied_migrations()
-        pending_migrations = migration_manager.get_pending_migrations()
-        
-        health_status['checks']['migrations'] = {
-            'status': 'healthy' if not pending_migrations else 'warning',
-            'current_version': current_version,
-            'applied_count': len(applied_migrations),
-            'pending_count': len(pending_migrations),
-            'up_to_date': len(pending_migrations) == 0
-        }
-        
-        if pending_migrations:
-            health_status['overall_status'] = 'warning'
-    except Exception as e:
-        health_status['checks']['migrations'] = {
-            'status': 'unhealthy',
-            'error': str(e)
-        }
-        health_status['overall_status'] = 'unhealthy'
-    
-    # Memory usage check
-    try:
-        import psutil
-        process = psutil.Process()
-        memory_info = process.memory_info()
-        memory_mb = memory_info.rss / (1024 * 1024)
-        
-        health_status['checks']['memory'] = {
-            'status': 'healthy',
-            'memory_usage_mb': round(memory_mb, 2),
-            'memory_percent': round(process.memory_percent(), 2)
-        }
-    except ImportError:
-        health_status['checks']['memory'] = {
-            'status': 'not_available',
-            'message': 'psutil not installed'
-        }
-    except Exception as e:
-        health_status['checks']['memory'] = {
-            'status': 'unhealthy',
-            'error': str(e)
-        }
-    
-    # Determine HTTP status code
-    if health_status['overall_status'] == 'healthy':
-        status_code = 200
-    elif health_status['overall_status'] == 'warning':
-        status_code = 200  # Still return 200 for warnings
-    else:
-        status_code = 503
-    
-    return jsonify(health_status), status_code
-
-@app.route('/health/readiness')
-def readiness_check():
-    """Readiness check for Kubernetes and orchestration systems."""
-    try:
-        # Check if application is ready to serve requests
-        upload_folder = app.config.get('UPLOAD_FOLDER', 'uploads')
-        if not os.path.exists(upload_folder):
-            os.makedirs(upload_folder, exist_ok=True)
-        
-        # Basic application readiness (no database dependency)
-        return jsonify({
-            'status': 'ready',
-            'timestamp': datetime.utcnow().isoformat(),
-            'version': version_manager.get_current_version()
-        }), 200
-    except Exception as e:
-        return jsonify({
-            'status': 'not_ready',
-            'timestamp': datetime.utcnow().isoformat(),
-            'version': version_manager.get_current_version(),
-            'error': str(e)
-        }), 503
-
-@app.route('/health/liveness')
-def liveness_check():
-    """Liveness check for Kubernetes and orchestration systems."""
-    try:
-        # Simple check to ensure the application is alive
-        return jsonify({
-            'status': 'alive',
-            'timestamp': datetime.utcnow().isoformat(),
-            'version': version_manager.get_current_version()
-        }), 200
-    except Exception as e:
-        return jsonify({
-            'status': 'dead',
-            'timestamp': datetime.utcnow().isoformat(),
-            'version': version_manager.get_current_version(),
-            'error': str(e)
-        }), 503
-
-@app.route('/health/metrics')
-def health_metrics():
-    """Health metrics endpoint for monitoring."""
-    try:
-        # Basic metrics
-        metrics = {
-            'timestamp': datetime.utcnow().isoformat(),
-            'status': 'healthy',
-            'version': app.config.get('VERSION', 'unknown'),
-            'database': {
-                'connected': True,
-                'tables': {
-                    'users': User.query.count(),
-                    'amenities': Amenity.query.count(),
-                    'trips': Trip.query.count(),
-                    'registrations': Registration.query.count(),
-                    'guests': Guest.query.count(),
-                    'invoices': Invoice.query.count(),
-                    'housekeeping': Housekeeping.query.count(),
-                }
-            },
-            'system': {
-                'uptime': 'unknown',  # Could be enhanced with process start time
-                'memory_usage': 'unknown',  # Could be enhanced with psutil
-                'cpu_usage': 'unknown',  # Could be enhanced with psutil
-            }
-        }
-        
-        return jsonify(metrics), 200
-    except Exception as e:
-        return jsonify({
-            'error': str(e),
-            'timestamp': datetime.utcnow().isoformat()
-        }), 500
-
-@app.route('/admin/amenities/<int:amenity_id>/sync', methods=['POST'])
-@login_required
-@role_required('admin')
-def sync_amenity_calendars(amenity_id):
-    """Sync all calendars for a specific amenity."""
-    amenity = Amenity.query.get_or_404(amenity_id)
-    if amenity.admin_id != current_user.id:
-        flash(_('Access denied'), 'error')
-        return redirect(url_for('admin_amenities'))
-    calendars = amenity.calendars
-    total_synced = 0
-    total_updated = 0
-    failed = []
-    for calendar in calendars:
-        if calendar.sync_enabled and calendar.is_active:
-            result = sync_calendar_reservations(calendar.id)
-            if result['success']:
-                total_synced += result.get('synced', 0)
-                total_updated += result.get('updated', 0)
-            else:
-                failed.append(f"{calendar.name}: {result['message']}")
-    if failed:
-        message = f"Synced {total_synced} new, updated {total_updated} existing. Failed: {'; '.join(failed)}"
-        flash(_('Calendar sync completed with some errors: %(message)s', message=message), 'warning')
-    else:
-        message = f"Successfully synced {total_synced} new and updated {total_updated} existing reservations."
-        flash(_('Calendar sync successful: %(message)s', message=message), 'success')
-    return redirect(url_for('admin_amenities'))
+    """Get a display name for a registration."""
+    if reg.guests:
+        first_guest = reg.guests[0]
+        return f"{first_guest.first_name} {first_guest.last_name}"
+    return reg.email
+
+# Main routes (not moved to blueprints)
+# All main routes are now handled by the main blueprint
+
+# Register blueprints
+from blueprints.main import main
+from blueprints.auth import auth
+from blueprints.registration import registration
+from blueprints.admin import admin
+from blueprints.amenities import amenities
+from blueprints.trips import trips
+from blueprints.registrations import registrations
+from blueprints.invoices import invoices
+from blueprints.housekeeping import housekeeping
+from blueprints.calendars import calendars
+from blueprints.users import users
+from blueprints.export import export
+from blueprints.breakdowns import breakdowns
+from blueprints.api import api
+from blueprints.health import health
+
+app.register_blueprint(main)
+app.register_blueprint(auth)
+app.register_blueprint(registration)
+app.register_blueprint(admin)
+app.register_blueprint(amenities)
+app.register_blueprint(trips)
+app.register_blueprint(registrations)
+app.register_blueprint(invoices)
+app.register_blueprint(housekeeping)
+app.register_blueprint(calendars)
+app.register_blueprint(users)
+app.register_blueprint(export)
+app.register_blueprint(breakdowns)
+app.register_blueprint(api)
+app.register_blueprint(health)
 
 if __name__ == '__main__':
-    # Parse command line arguments
-    parser = argparse.ArgumentParser(description='Guest Registration System')
-    parser.add_argument('--host', default='127.0.0.1', help='Host to bind to (default: 127.0.0.1)')
-    parser.add_argument('--port', type=int, default=5000, help='Port to bind to (default: 5000)')
-    parser.add_argument('--debug', action='store_true', help='Enable debug mode')
-    parser.add_argument('--no-debug', action='store_true', help='Disable debug mode')
-    parser.add_argument('--reload', action='store_true', help='Enable auto-reload on code changes')
-    parser.add_argument('--threaded', action='store_true', help='Enable threading')
-    parser.add_argument('--ssl-context', help='SSL context for HTTPS (e.g., "adhoc" for self-signed)')
-    
-    args = parser.parse_args()
-    
-    # Determine debug mode
-    debug_mode = True  # Default to True for development
-    if args.no_debug:
-        debug_mode = False
-    elif args.debug:
-        debug_mode = True
-    
-    # SSL context
-    ssl_context = None
-    if args.ssl_context:
-        if args.ssl_context == 'adhoc':
-            try:
-                import ssl
-                ssl_context = 'adhoc'
-            except ImportError:
-                print("Warning: 'adhoc' SSL context requires 'pyOpenSSL' package. Install with: pip install pyOpenSSL")
-                ssl_context = None
-        else:
-            ssl_context = args.ssl_context
-    
-    print(f"Starting Guest Registration System...")
-    print(f"  Host: {args.host}")
-    print(f"  Port: {args.port}")
-    print(f"  Debug: {debug_mode}")
-    print(f"  Auto-reload: {args.reload}")
-    print(f"  Threaded: {args.threaded}")
-    if ssl_context:
-        print(f"  SSL: {ssl_context}")
-    print(f"  URL: http{'s' if ssl_context else ''}://{args.host}:{args.port}")
-    print()
-    
-    # Run the application
-    app.run(
-        host=args.host,
-        port=args.port,
-        debug=debug_mode,
-        use_reloader=args.reload,
-        threaded=args.threaded,
-        ssl_context=ssl_context
-    ) 
+    app.run(debug=True) 
