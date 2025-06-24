@@ -30,6 +30,38 @@ python manage.py setup
 python app.py
 ```
 
+### Production Deployment
+
+For production deployment, the system automatically uses **Gunicorn** as the WSGI server instead of Flask's development server:
+
+```bash
+# Production environment variables
+export FLASK_ENV=production
+export GUNICORN_WORKERS=4
+export GUNICORN_TIMEOUT=120
+
+# Start with production server
+python app.py  # Automatically uses Gunicorn in production
+```
+
+**Docker Production:**
+```bash
+# Uses Gunicorn automatically in containers
+docker-compose up -d
+```
+
+**Easy Startup Script:**
+```bash
+# Development mode (Flask with auto-reload)
+python start.py --mode dev --port 5001
+
+# Production mode (Gunicorn)
+python start.py --mode prod --port 80 --workers 4
+
+# Auto-detect mode (based on FLASK_ENV)
+python start.py --mode auto
+```
+
 ### Flask App Parameters
 
 The application supports various command-line parameters for flexible deployment:

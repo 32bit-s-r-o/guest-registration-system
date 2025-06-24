@@ -60,11 +60,55 @@ fi
 
 success "Database setup completed"
 
-# Start the Flask application
-log "Starting Flask application..."
-if [ -f "app.py" ]; then
-    exec python app.py
+# Determine server configuration
+FLASK_ENV=${FLASK_ENV:-production}
+GUNICORN_WORKERS=${GUNICORN_WORKERS:-4}
+GUNICORN_WORKER_CLASS=${GUNICORN_WORKER_CLASS:-sync}
+GUNICORN_TIMEOUT=${GUNICORN_TIMEOUT:-120}
+GUNICORN_KEEP_ALIVE=${GUNICORN_KEEP_ALIVE:-2}
+GUNICORN_MAX_REQUESTS=${GUNICORN_MAX_REQUESTS:-1000}
+GUNICORN_MAX_REQUESTS_JITTER=${GUNICORN_MAX_REQUESTS_JITTER:-100}
+APP_PORT=${APP_PORT:-5000}
+
+# Start the application with appropriate server
+if [ "$FLASK_ENV" = "production" ]; then
+    log "Starting production server with Gunicorn..."
+    
+    # Check if Gunicorn is available
+    if command -v gunicorn >/dev/null 2>&1; then
+        log "Gunicorn configuration:"
+        log "  Workers: $GUNICORN_WORKERS"
+        log "  Worker Class: $GUNICORN_WORKER_CLASS"
+        log "  Timeout: $GUNICORN_TIMEOUT"
+        log "  Max Requests: $GUNICORN_MAX_REQUESTS"
+        log "  Port: $APP_PORT"
+        
+        # Use configuration file if available, otherwise use command line arguments
+        if [ -f "gunicorn.conf.py" ]; then
+            log "Using gunicorn.conf.py configuration file"
+            exec gunicorn -c gunicorn.conf.py app:app
+        else
+            log "Using command line configuration"
+            exec gunicorn \
+                --bind "0.0.0.0:$APP_PORT" \
+                --workers "$GUNICORN_WORKERS" \
+                --worker-class "$GUNICORN_WORKER_CLASS" \
+                --timeout "$GUNICORN_TIMEOUT" \
+                --keep-alive "$GUNICORN_KEEP_ALIVE" \
+                --max-requests "$GUNICORN_MAX_REQUESTS" \
+                --max-requests-jitter "$GUNICORN_MAX_REQUESTS_JITTER" \
+                --access-logfile - \
+                --error-logfile - \
+                --log-level info \
+                --preload \
+                app:app
+        fi
+    else
+        warning "Gunicorn not found, falling back to Flask development server"
+        log "Starting Flask development server..."
+        exec python app.py --host 0.0.0.0 --port "$APP_PORT" --no-debug --threaded
+    fi
 else
-    error "app.py not found!"
-    exit 1
+    log "Starting development server with Flask..."
+    exec python app.py --host 0.0.0.0 --port "$APP_PORT" --debug --reload
 fi

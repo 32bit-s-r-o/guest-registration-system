@@ -60,6 +60,14 @@ services:
       - UPLOAD_FOLDER=/app/static/uploads
       - MAX_CONTENT_LENGTH=${MAX_CONTENT_LENGTH:-16777216}
       - LANGUAGE_PICKER_ENABLED=${LANGUAGE_PICKER_ENABLED:-true}
+      # Gunicorn Configuration
+      - GUNICORN_WORKERS=${GUNICORN_WORKERS:-4}
+      - GUNICORN_WORKER_CLASS=${GUNICORN_WORKER_CLASS:-sync}
+      - GUNICORN_TIMEOUT=${GUNICORN_TIMEOUT:-120}
+      - GUNICORN_KEEP_ALIVE=${GUNICORN_KEEP_ALIVE:-2}
+      - GUNICORN_MAX_REQUESTS=${GUNICORN_MAX_REQUESTS:-1000}
+      - GUNICORN_MAX_REQUESTS_JITTER=${GUNICORN_MAX_REQUESTS_JITTER:-100}
+      - APP_PORT=${APP_PORT:-5000}
     volumes:
       - app_uploads:/app/static/uploads
       - app_logs:/app/logs
@@ -70,7 +78,7 @@ services:
       postgres:
         condition: service_healthy
     # Run migrations on startup then start the app
-    command: ["/bin/sh", "-c", "/app/scripts/check_and_run_migrations.sh --migrate-only && flask run --host=0.0.0.0 --port=5000"]
+    command: ["/bin/sh", "-c", "/app/scripts/check_and_run_migrations.sh --migrate-only && /app/entrypoint.sh"]
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
       interval: 30s
