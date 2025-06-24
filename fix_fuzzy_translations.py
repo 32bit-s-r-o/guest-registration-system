@@ -5,6 +5,7 @@ Removes fuzzy markers and fixes common translation issues.
 """
 
 import re
+from config import Config
 
 def fix_fuzzy_translations():
     """Remove fuzzy markers and fix translations in the Czech PO file."""

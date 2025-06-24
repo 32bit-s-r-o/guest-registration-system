@@ -1,12 +1,14 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app
 from flask_babel import gettext as _
+from werkzeug.utils import secure_filename
 import os
 import uuid
 from datetime import datetime
 
 registration = Blueprint('registration', __name__)
 
-from app import app, User, Trip, Registration, Guest, Invoice, InvoiceItem, db
+# Import database models from database.py
+from database import db, User, Trip, Registration, Guest, Invoice, InvoiceItem
 
 @registration.route('/register')
 def register_landing():
@@ -55,7 +57,7 @@ def submit_registration(trip_id):
     
     # Get form data
     email = request.form.get('email')
-    language = session.get('lang', 'en')  # Get current language from session
+    language = session.get('language', 'en')  # Get current language from session
     guests_data = []
     
     # Collect guest data
@@ -102,7 +104,9 @@ def submit_registration(trip_id):
         document_image = request.files.get(f'document_image_{i+1}')
         if document_image and document_image.filename:
             filename = secure_filename(f"{uuid.uuid4()}_{document_image.filename}")
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+            # Create upload directory if it doesn't exist
+            os.makedirs(current_app.config['UPLOAD_FOLDER'], exist_ok=True)
             document_image.save(file_path)
             uploaded_files.append(filename)
         else:
@@ -116,7 +120,9 @@ def submit_registration(trip_id):
         invoice_data = {
             'client_name': request.form.get('invoice_name'),
             'vat_number': request.form.get('invoice_vat'),
-            'address': request.form.get('invoice_address')
+            'address': request.form.get('invoice_address'),
+            'currency': request.form.get('invoice_currency', 'EUR'),
+            'notes': request.form.get('invoice_notes', '')
         }
     
     # Store in session for confirmation
@@ -198,30 +204,24 @@ def submit_for_approval():
         db.session.add(invoice)
         
         # Add a placeholder item for the admin to complete
-        placeholder_item = InvoiceItem(
-            invoice_id=invoice.id,
-            description=f"Registration for {trip.title} - {len(data['guests'])} guest(s)",
+        item = InvoiceItem(
+            invoice=invoice,
+            description=f"Accommodation: {trip.title}",
             quantity=1,
-            unit_price=0,
-            vat_rate=0,
-            line_total=0,
-            vat_amount=0,
-            total_with_vat=0
+            unit_price=0,  # Admin will set the price
+            vat_rate=0
         )
-        db.session.add(placeholder_item)
+        db.session.add(item)
     
-    db.session.commit()
-    
-    # Clear session
-    session.pop('registration_data', None)
-    # Store last confirmation code registration link for sharing
-    if trip.airbnb_confirm_code:
-        session['last_confirm_code_url'] = url_for('register_by_code', confirm_code=trip.airbnb_confirm_code, _external=True)
-    else:
-        session['last_confirm_code_url'] = ''
-    
-    flash(_('Registration submitted successfully! You will receive an email once it is reviewed.'), 'success')
-    return redirect(url_for('registration.registration_success'))
+    try:
+        db.session.commit()
+        # Clear session data
+        session.pop('registration_data', None)
+        return redirect(url_for('registration.registration_success'))
+    except Exception as e:
+        db.session.rollback()
+        flash(_('Error submitting registration: %(error)s', error=str(e)), 'error')
+        return redirect(url_for('registration.confirm_registration'))
 
 @registration.route('/success')
 def registration_success():

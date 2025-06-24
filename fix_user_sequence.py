@@ -7,6 +7,7 @@ import os
 import sys
 from dotenv import load_dotenv
 from sqlalchemy import text
+from config import Config
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from app import app, db
@@ -15,7 +16,7 @@ load_dotenv()
 
 def fix_user_sequence():
     with app.app_context():
-        table_prefix = app.config['TABLE_PREFIX']
+        table_prefix = Config.TABLE_PREFIX
         user_table = f"{table_prefix}user"
         print(f"🔄 Fixing sequence for table: {user_table}")
         try:

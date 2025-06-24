@@ -9,10 +9,10 @@
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1><i class="fas fa-building"></i> {{ _('Manage Amenities') }}</h1>
                 <div>
-                    <a href="{{ url_for('admin_calendars') }}" class="btn btn-info me-2">
+                    <a href="{{ url_for('calendars.admin_calendars') }}" class="btn btn-info me-2">
                         <i class="fas fa-calendar-alt"></i> {{ _('Manage Calendars') }}
                     </a>
-                    <a href="{{ url_for('new_amenity') }}" class="btn btn-primary">
+                    <a href="{{ url_for('amenities.new_amenity') }}" class="btn btn-primary">
                         <i class="fas fa-plus"></i> {{ _('Add Amenity') }}
                     </a>
                 </div>
@@ -35,22 +35,23 @@
                             </button>
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item"
-                                        href="{{ url_for('edit_amenity', amenity_id=amenity.id) }}">
+                                        href="{{ url_for('amenities.edit_amenity', amenity_id=amenity.id) }}">
                                         <i class="fas fa-edit"></i> {{ _('Edit') }}
                                     </a></li>
                                 <li><a class="dropdown-item"
-                                        href="{{ url_for('admin_calendars') }}?amenity={{ amenity.id }}">
+                                        href="{{ url_for('calendars.admin_calendars') }}?amenity={{ amenity.id }}">
                                         <i class="fas fa-calendar-alt"></i> {{ _('Manage Calendars') }}
                                     </a></li>
                                 <li><a class="dropdown-item"
-                                        href="{{ url_for('amenity_housekeepers', amenity_id=amenity.id) }}">
+                                        href="{{ url_for('amenities.amenity_housekeepers', amenity_id=amenity.id) }}">
                                         <i class="fas fa-users"></i> {{ _('Manage Housekeepers') }}
                                     </a></li>
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>
                                 <li>
-                                    <form method="POST" action="{{ url_for('delete_amenity', amenity_id=amenity.id) }}"
+                                    <form method="POST"
+                                        action="{{ url_for('amenities.delete_amenity', amenity_id=amenity.id) }}"
                                         style="display: inline;"
                                         onsubmit="return confirm('{{ _('Are you sure you want to delete this amenity?') }}')">
                                         <button type="submit" class="dropdown-item text-danger">
@@ -100,25 +101,26 @@
                 <div class="card-footer bg-light">
                     <div class="row">
                         <div class="col-3">
-                            <a href="{{ url_for('admin_calendars') }}?amenity={{ amenity.id }}"
+                            <a href="{{ url_for('calendars.admin_calendars') }}?amenity={{ amenity.id }}"
                                 class="btn btn-sm btn-outline-info w-100">
                                 <i class="fas fa-calendar-alt"></i> {{ _('Calendars') }}
                             </a>
                         </div>
                         <div class="col-3">
-                            <a href="{{ url_for('admin_trips') }}?amenity={{ amenity.id }}"
+                            <a href="{{ url_for('trips.admin_trips') }}?amenity={{ amenity.id }}"
                                 class="btn btn-sm btn-outline-primary w-100">
                                 <i class="fas fa-plane"></i> {{ _('Trips') }}
                             </a>
                         </div>
                         <div class="col-3">
-                            <a href="{{ url_for('amenity_housekeepers', amenity_id=amenity.id) }}"
+                            <a href="{{ url_for('amenities.amenity_housekeepers', amenity_id=amenity.id) }}"
                                 class="btn btn-sm btn-outline-success w-100">
                                 <i class="fas fa-users"></i> {{ _('Housekeepers') }}
                             </a>
                         </div>
                         <div class="col-3">
-                            <form method="POST" action="{{ url_for('sync_amenity_calendars', amenity_id=amenity.id) }}"
+                            <form method="POST"
+                                action="{{ url_for('amenities.sync_amenity_calendars', amenity_id=amenity.id) }}"
                                 style="display:inline;">
                                 <button type="submit" class="btn btn-sm btn-outline-warning w-100"
                                     title="{{ _('Sync all calendars for this amenity') }}">
@@ -140,7 +142,7 @@
                     <i class="fas fa-building fa-3x text-muted mb-3"></i>
                     <h4 class="text-muted">{{ _('No Amenities Found') }}</h4>
                     <p class="text-muted">{{ _('Get started by creating your first amenity.') }}</p>
-                    <a href="{{ url_for('new_amenity') }}" class="btn btn-primary">
+                    <a href="{{ url_for('amenities.new_amenity') }}" class="btn btn-primary">
                         <i class="fas fa-plus"></i> {{ _('Create First Amenity') }}
                     </a>
                 </div>

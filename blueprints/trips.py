@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
 from flask_babel import gettext as _
 from functools import wraps
@@ -6,15 +6,22 @@ from datetime import datetime
 
 trips = Blueprint('trips', __name__)
 
-from app import app, db, User, Trip, Amenity
+# Import database models from database.py
+from database import db, User, Trip, Amenity
 
 def role_required(role):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
             if not current_user.is_authenticated:
-                from app import login_manager
-                return login_manager.unauthorized()
+                from flask_login import LoginManager
+                # Get the login manager from current app
+                login_manager = current_app.extensions.get('login_manager')
+                if login_manager:
+                    return login_manager.unauthorized()
+                else:
+                    from flask import abort
+                    abort(401)
             if current_user.role != role:
                 from flask import abort
                 abort(403)

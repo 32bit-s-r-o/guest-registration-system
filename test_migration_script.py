@@ -9,6 +9,7 @@ import subprocess
 import tempfile
 import shutil
 from pathlib import Path
+from config import Config
 
 def test_migration_script():
     """Test the migration script functionality"""

@@ -7,13 +7,14 @@ Run this script to update your existing database with the new confirmation code 
 import sys
 from app import app, db
 from sqlalchemy import text
+from config import Config
 
 def migrate_confirm_code():
     """Add airbnb_confirm_code column to the trip table if it does not exist."""
     print("🔄 Migrating database to add confirmation code support...")
     try:
         with app.app_context():
-            prefix = app.config.get('TABLE_PREFIX', 'guest_reg_')
+            prefix = Config.TABLE_PREFIX or 'guest_reg_'
             table_name = f"{prefix}trip"
             # Check if column already exists
             result = db.session.execute(text(f"""

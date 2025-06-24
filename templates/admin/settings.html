@@ -7,7 +7,7 @@
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1><i class="fas fa-cog"></i> {{ _('Admin Settings') }}</h1>
-            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+            <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> {{ _('Back to Dashboard') }}
             </a>
         </div>
@@ -16,7 +16,7 @@
 
 <div class="row">
     <div class="col-lg-8 mx-auto">
-        <form method="POST" action="{{ url_for('admin_settings') }}">
+        <form method="POST" action="{{ url_for('admin.admin_settings') }}">
             <!-- Profile Settings -->
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-primary text-white">
@@ -84,7 +84,7 @@
                         <div class="col-12">
                             <div class="d-flex justify-content-between align-items-center">
                                 <h5>{{ _('Calendar Management') }}</h5>
-                                <a href="{{ url_for('admin_calendars') }}" class="btn btn-primary btn-sm">
+                                <a href="{{ url_for('calendars.admin_calendars') }}" class="btn btn-primary btn-sm">
                                     <i class="fas fa-cog"></i> {{ _('Manage Calendars') }}
                                 </a>
                             </div>
@@ -131,7 +131,7 @@
                                     </td>
                                     <td>
                                         <div class="btn-group btn-group-sm" role="group">
-                                            <a href="{{ url_for('edit_calendar', calendar_id=calendar.id) }}"
+                                            <a href="{{ url_for('calendars.edit_calendar', calendar_id=calendar.id) }}"
                                                 class="btn btn-outline-primary" title="{{ _('Edit') }}">
                                                 <i class="fas fa-edit"></i>
                                             </a>
@@ -156,7 +156,7 @@
 
                     <div class="row mt-3">
                         <div class="col-12">
-                            <a href="{{ url_for('new_calendar') }}" class="btn btn-success">
+                            <a href="{{ url_for('calendars.new_calendar') }}" class="btn btn-success">
                                 <i class="fas fa-plus"></i> {{ _('Add New Calendar') }}
                             </a>
                         </div>

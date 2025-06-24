@@ -12,6 +12,7 @@ from datetime import datetime
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from app import app, db, Calendar, Trip, Amenity, User
+from config import Config
 
 def debug_calendar_sync(calendar_id):
     """Debug a specific calendar sync."""

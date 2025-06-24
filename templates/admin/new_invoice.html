@@ -7,14 +7,15 @@
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1><i class="fas fa-plus"></i> {{ _('New Invoice') }}</h1>
-            <a href="{{ url_for('admin_invoices') }}" class="btn btn-secondary">
+            <a href="{{ url_for('invoices.admin_invoices') }}" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> {{ _('Back to Invoices') }}
             </a>
         </div>
     </div>
 </div>
 
-<form method="POST" id="invoiceForm" data-vat-label="{{ _('VAT Rate') }}">
+<form method="POST" id="invoiceForm" data-vat-label="{{ _('VAT Rate') }}"
+    action="{{ url_for('invoices.new_invoice') }}">
     <!-- Hidden element to store translations for JavaScript -->
     <div data-vat-label="{{ _('VAT Rate') }}" style="display: none;"></div>
 
@@ -142,7 +143,7 @@
                 <button type="submit" class="btn btn-primary btn-lg">
                     <i class="fas fa-save"></i> {{ _('Create Invoice') }}
                 </button>
-                <a href="{{ url_for('admin_invoices') }}" class="btn btn-outline-secondary">
+                <a href="{{ url_for('invoices.admin_invoices') }}" class="btn btn-outline-secondary">
                     <i class="fas fa-times"></i> {{ _('Cancel') }}
                 </a>
             </div>

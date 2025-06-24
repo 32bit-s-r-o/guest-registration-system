@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app
 from flask_login import login_required, current_user
 from flask_babel import gettext as _
 from functools import wraps
@@ -12,7 +12,9 @@ import zipfile
 
 health = Blueprint('health', __name__)
 
-from app import app, db, User, Trip, Registration, Guest, Invoice, Housekeeping, version_manager, migration_manager
+from database import db, User, Trip, Registration, Guest, Invoice, Housekeeping
+from version import version_manager
+from migrations import MigrationManager
 from sqlalchemy import text
 
 def role_required(role):
@@ -20,7 +22,7 @@ def role_required(role):
         @wraps(f)
         def decorated_function(*args, **kwargs):
             if not current_user.is_authenticated:
-                from app import login_manager
+                login_manager = current_app.extensions.get('login_manager')
                 return login_manager.unauthorized()
             if current_user.role != role:
                 from flask import abort
@@ -83,7 +85,7 @@ def detailed_health_check():
     
     # File system health check
     try:
-        upload_folder = app.config.get('UPLOAD_FOLDER', 'uploads')
+        upload_folder = current_app.config.get('UPLOAD_FOLDER', 'uploads')
         if os.path.exists(upload_folder):
             free_space = shutil.disk_usage(upload_folder).free
             free_space_mb = free_space / (1024 * 1024)
@@ -136,6 +138,7 @@ def detailed_health_check():
     
     # Migration status check
     try:
+        migration_manager = MigrationManager()
         current_version = migration_manager.get_current_version()
         applied_migrations = migration_manager.get_applied_migrations()
         pending_migrations = migration_manager.get_pending_migrations()
@@ -195,7 +198,7 @@ def readiness_check():
     """Readiness check for Kubernetes and orchestration systems."""
     try:
         # Check if application is ready to serve requests
-        upload_folder = app.config.get('UPLOAD_FOLDER', 'uploads')
+        upload_folder = current_app.config.get('UPLOAD_FOLDER', 'uploads')
         if not os.path.exists(upload_folder):
             os.makedirs(upload_folder, exist_ok=True)
         
@@ -239,7 +242,7 @@ def health_metrics():
         metrics = {
             'timestamp': datetime.utcnow().isoformat(),
             'status': 'healthy',
-            'version': app.config.get('VERSION', 'unknown'),
+            'version': current_app.config.get('VERSION', 'unknown'),
             'database': {
                 'connected': True,
                 'tables': {

@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app
 from flask_login import login_required, current_user, login_user
 from flask_babel import gettext as _
 from functools import wraps
@@ -8,14 +8,14 @@ import os
 
 housekeeping = Blueprint('housekeeping', __name__)
 
-from app import app, db, User, Housekeeping, HousekeepingPhoto, Trip, Amenity, AmenityHousekeeper, Calendar
+from database import db, User, Housekeeping, HousekeepingPhoto, Trip, Amenity, AmenityHousekeeper, Calendar, create_missing_housekeeping_tasks_for_calendar
 
 def role_required(role):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
             if not current_user.is_authenticated:
-                from app import login_manager
+                login_manager = current_app.extensions.get('login_manager')
                 return login_manager.unauthorized()
             if current_user.role != role:
                 from flask import abort
@@ -130,7 +130,7 @@ def upload_amenity_photo(task_id):
     if file and allowed_file(file.filename):
         # Generate unique filename
         filename = secure_filename(f"amenity_{task_id}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}_{file.filename}")
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
         file.save(file_path)
         # Add new photo record
         photo = HousekeepingPhoto(task_id=task_id, file_path=filename)
@@ -343,7 +343,7 @@ def delete_housekeeping_photo(photo_id):
         flash(_('Access denied'), 'error')
         return redirect(url_for('housekeeping.housekeeper_dashboard'))
     # Delete the file from disk
-    file_path = os.path.join(app.config['UPLOAD_FOLDER'], photo.file_path)
+    file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], photo.file_path)
     if os.path.exists(file_path):
         os.remove(file_path)
     db.session.delete(photo)

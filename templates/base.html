@@ -43,7 +43,7 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('index') }}">
+            <a class="navbar-brand" href="{{ url_for('main.index') }}">
                 <i class="fas fa-home"></i> Guest Registration
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -59,11 +59,11 @@
                             else %}🇬🇧 English{% endif %}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="langDropdown">
-                            <li><a class="dropdown-item" href="{{ url_for('set_language', lang_code='en') }}">🇬🇧
+                            <li><a class="dropdown-item" href="{{ url_for('main.set_language', lang_code='en') }}">🇬🇧
                                     English</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('set_language', lang_code='cs') }}">🇨🇿
+                            <li><a class="dropdown-item" href="{{ url_for('main.set_language', lang_code='cs') }}">🇨🇿
                                     Čeština</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('set_language', lang_code='sk') }}">🇸🇰
+                            <li><a class="dropdown-item" href="{{ url_for('main.set_language', lang_code='sk') }}">🇸🇰
                                     Slovenčina</a></li>
                         </ul>
                     </li>
@@ -71,16 +71,16 @@
                 </ul>
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('index') }}">{{ _('Home') }}</a>
+                        <a class="nav-link" href="{{ url_for('main.index') }}">{{ _('Home') }}</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('about') }}">{{ _('About') }}</a>
+                        <a class="nav-link" href="{{ url_for('main.about') }}">{{ _('About') }}</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('contact') }}">{{ _('Contact') }}</a>
+                        <a class="nav-link" href="{{ url_for('main.contact') }}">{{ _('Contact') }}</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('gdpr') }}">{{ _('GDPR') }}</a>
+                        <a class="nav-link" href="{{ url_for('main.gdpr') }}">{{ _('GDPR') }}</a>
                     </li>
                 </ul>
                 <ul class="navbar-nav">
@@ -93,46 +93,54 @@
                                 {{ _('Admin') }}
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminDropdown">
-                                <li><a class="dropdown-item" href="{{ url_for('admin_dashboard') }}">{{ _('Dashboard')
+                                <li><a class="dropdown-item" href="{{ url_for('admin.admin_dashboard') }}">{{
+                                        _('Dashboard')
                                         }}</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('admin_amenities') }}">{{ _('Amenities')
+                                <li><a class="dropdown-item" href="{{ url_for('amenities.admin_amenities') }}">{{
+                                        _('Amenities')
                                         }}</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('admin_trips') }}">{{ _('Trips') }}</a>
+                                <li><a class="dropdown-item" href="{{ url_for('trips.admin_trips') }}">{{ _('Trips')
+                                        }}</a>
                                 </li>
-                                <li><a class="dropdown-item" href="{{ url_for('admin_calendars') }}">{{ _('Calendars')
+                                <li><a class="dropdown-item" href="{{ url_for('calendars.admin_calendars') }}">{{
+                                        _('Calendars')
                                         }}</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('admin_registrations') }}">{{
+                                <li><a class="dropdown-item"
+                                        href="{{ url_for('registrations.admin_registrations') }}">{{
                                         _('Registrations') }}</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('admin_invoices') }}">{{ _('Invoices')
+                                <li><a class="dropdown-item" href="{{ url_for('invoices.admin_invoices') }}">{{
+                                        _('Invoices')
                                         }}</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('admin_housekeeping') }}">{{
+                                <li><a class="dropdown-item" href="{{ url_for('housekeeping.admin_housekeeping') }}">{{
                                         _('Housekeeping') }}</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('admin_users') }}">{{ _('Users') }}</a>
+                                <li><a class="dropdown-item" href="{{ url_for('users.admin_users') }}">{{ _('Users')
+                                        }}</a>
                                 </li>
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>
-                                <li><a class="dropdown-item" href="{{ url_for('admin_settings') }}">{{ _('Settings')
+                                <li><a class="dropdown-item" href="{{ url_for('admin.admin_settings') }}">{{
+                                        _('Settings')
                                         }}</a></li>
                             </ul>
                         </div>
                         {% elif current_user.role == 'housekeeper' %}
-                        <a class="nav-link" href="{{ url_for('housekeeper_dashboard') }}">{{ _('Housekeeper Dashboard')
-                            }}</a>
+                        <a class="nav-link" href="{{ url_for('housekeeping.housekeeper_dashboard') }}">{{ _('Housekeeper
+                            Dashboard') }}</a>
                         {% else %}
-                        <a class="nav-link" href="{{ url_for('admin_dashboard') }}">{{ _('Dashboard') }}</a>
+                        <a class="nav-link" href="{{ url_for('admin.admin_dashboard') }}">{{ _('Dashboard') }}</a>
                         {% endif %}
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin_logout') }}">{{ _('Logout') }}</a>
+                        <a class="nav-link" href="{{ url_for('auth.admin_logout') }}">{{ _('Logout') }}</a>
                     </li>
                     {% else %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin_login') }}">{{ _('Login') }}</a>
+                        <a class="nav-link" href="{{ url_for('auth.admin_login') }}">{{ _('Login') }}</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('housekeeper_landing') }}">{{ _('Housekeeper Portal')
-                            }}</a>
+                        <a class="nav-link" href="{{ url_for('housekeeping.housekeeper_landing') }}">{{ _('Housekeeper
+                            Portal') }}</a>
                     </li>
                     {% endif %}
                 </ul>
@@ -165,7 +173,7 @@
                 </div>
                 <div class="col-md-6 text-md-end">
                     <p>&copy; 2024 Guest Registration System. All rights reserved.</p>
-                    <a href="{{ url_for('gdpr') }}" class="text-decoration-none">Privacy Policy</a>
+                    <a href="{{ url_for('main.gdpr') }}" class="text-decoration-none">Privacy Policy</a>
                 </div>
             </div>
         </div>

@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, send_file, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, send_file, jsonify, current_app
 from flask_login import login_required, current_user
 from flask_babel import gettext as _
 from functools import wraps
@@ -8,14 +8,14 @@ import csv
 
 export = Blueprint('export', __name__)
 
-from app import app, db, User, Registration, Guest, Trip, Invoice
+from database import db, User, Registration, Guest, Trip, Invoice
 
 def role_required(role):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
             if not current_user.is_authenticated:
-                from app import login_manager
+                login_manager = current_app.extensions.get('login_manager')
                 return login_manager.unauthorized()
             if current_user.role != role:
                 from flask import abort

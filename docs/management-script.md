@@ -209,7 +209,7 @@ The Flask application (`app.py`) supports various command-line parameters for fl
 **Common Usage Examples:**
 ```bash
 # Development with auto-reload
-python app.py --debug --reload --port 5001
+python app.py --debug --reload --port 5000
 
 # Production server (accessible from network)
 python app.py --host 0.0.0.0 --port 80 --no-debug --threaded

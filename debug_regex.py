@@ -4,6 +4,7 @@ Debug regex pattern for Airbnb confirmation codes
 """
 
 import re
+from config import Config
 
 def test_regex_patterns():
     """Test different regex patterns with the actual data format."""

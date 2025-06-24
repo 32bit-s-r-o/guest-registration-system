@@ -8,7 +8,7 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1><i class="fas fa-eye"></i> Registration Details</h1>
             <div>
-                <a href="{{ url_for('admin_registrations') }}" class="btn btn-secondary">
+                <a href="{{ url_for('registrations.admin_registrations') }}" class="btn btn-secondary">
                     <i class="fas fa-arrow-left"></i> Back to Registrations
                 </a>
             </div>
@@ -191,11 +191,11 @@
                     {% endif %}
 
                     <div class="mt-3">
-                        <a href="{{ url_for('view_invoice', invoice_id=invoice.id) }}"
+                        <a href="{{ url_for('invoices.view_invoice', invoice_id=invoice.id) }}"
                             class="btn btn-outline-primary btn-sm">
                             <i class="fas fa-eye"></i> View Invoice
                         </a>
-                        <a href="{{ url_for('edit_invoice', invoice_id=invoice.id) }}"
+                        <a href="{{ url_for('invoices.edit_invoice', invoice_id=invoice.id) }}"
                             class="btn btn-outline-warning btn-sm">
                             <i class="fas fa-edit"></i> Edit Invoice
                         </a>
@@ -262,7 +262,8 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form method="POST" action="{{ url_for('approve_registration', registration_id=registration.id) }}"
+                <form method="POST"
+                    action="{{ url_for('registrations.approve_registration', registration_id=registration.id) }}"
                     style="display: inline;">
                     <button type="submit" class="btn btn-success">
                         <i class="fas fa-check"></i> Approve Registration
@@ -285,7 +286,8 @@
             </div>
             <div class="modal-body">
                 <p>Please provide a reason for rejection. This will be sent to the user via email.</p>
-                <form method="POST" action="{{ url_for('reject_registration', registration_id=registration.id) }}">
+                <form method="POST"
+                    action="{{ url_for('registrations.reject_registration', registration_id=registration.id) }}">
                     <div class="mb-3">
                         <label for="comment" class="form-label">Rejection Reason *</label>
                         <textarea class="form-control" id="comment" name="comment" rows="4" required

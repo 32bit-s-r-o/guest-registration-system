@@ -7,6 +7,7 @@ import requests
 import json
 import sys
 from datetime import datetime
+from config import Config
 
 def test_health_endpoints():
     """Test all health check endpoints"""

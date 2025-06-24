@@ -7,6 +7,7 @@ import requests
 import sys
 import os
 from datetime import datetime
+from config import Config
 
 # Configuration
 BASE_URL = "http://127.0.0.1:5000"

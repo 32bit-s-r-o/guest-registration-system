@@ -6,6 +6,7 @@ This script shows how to enable/disable the language picker.
 
 import os
 import sys
+from config import Config
 
 def test_language_picker_config():
     """Test the language picker configuration."""

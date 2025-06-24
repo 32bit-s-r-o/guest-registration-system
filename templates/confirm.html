@@ -110,7 +110,7 @@
                     {% endif %}
 
                     <!-- Submit Form -->
-                    <form method="POST" action="{{ url_for('submit_for_approval') }}">
+                    <form method="POST" action="{{ url_for('registration.submit_for_approval') }}">
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                             <a href="{{ url_for('register', trip_id=trip.id) }}" class="btn btn-secondary btn-lg">
                                 <i class="fas fa-arrow-left"></i> {{ _('Go Back') }}

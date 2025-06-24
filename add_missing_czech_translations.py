@@ -3,6 +3,8 @@
 Script to add missing Czech translations for important strings.
 """
 
+from config import Config
+
 def add_missing_translations():
     """Add Czech translations for missing strings."""
     

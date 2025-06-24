@@ -13,6 +13,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from app import app, db, User, Amenity, AmenityHousekeeper, Trip, Housekeeping
 from werkzeug.security import generate_password_hash
+from config import Config
 
 load_dotenv()
 

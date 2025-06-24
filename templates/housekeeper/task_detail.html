@@ -8,9 +8,11 @@
         <div class="col-12">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('housekeeper_dashboard') }}">{{ _('Dashboard')
+                    <li class="breadcrumb-item"><a href="{{ url_for('housekeeping.housekeeper_dashboard') }}">{{
+                            _('Dashboard')
                             }}</a></li>
-                    <li class="breadcrumb-item"><a href="{{ url_for('housekeeper_calendar') }}">{{ _('Calendar') }}</a>
+                    <li class="breadcrumb-item"><a href="{{ url_for('housekeeping.housekeeper_calendar') }}">{{
+                            _('Calendar') }}</a>
                     </li>
                     <li class="breadcrumb-item active" aria-current="page">{{ _('Task Detail') }}</li>
                 </ol>
@@ -24,10 +26,10 @@
                 <h1><i class="fas fa-broom"></i> {{ _('Housekeeping') }} - {{ task.date.strftime('%Y-%m-%d') }} (#{{
                     task.id }})</h1>
                 <div>
-                    <a href="{{ url_for('housekeeper_dashboard') }}" class="btn btn-secondary me-2">
+                    <a href="{{ url_for('housekeeping.housekeeper_dashboard') }}" class="btn btn-secondary me-2">
                         <i class="fas fa-arrow-left"></i> {{ _('Back to Dashboard') }}
                     </a>
-                    <a href="{{ url_for('housekeeper_calendar') }}" class="btn btn-info">
+                    <a href="{{ url_for('housekeeping.housekeeper_calendar') }}" class="btn btn-info">
                         <i class="fas fa-calendar"></i> {{ _('View Calendar') }}
                     </a>
                 </div>
@@ -95,7 +97,7 @@
                     </div>
                     {% endif %}
 
-                    <form method="POST" action="{{ url_for('update_task_status', task_id=task.id) }}">
+                    <form method="POST" action="{{ url_for('housekeeping.update_task_status', task_id=task.id) }}">
                         <div class="mb-3">
                             <label for="status" class="form-label">{{ _('Status') }}</label>
                             <select class="form-select" id="status" name="status" required>
@@ -124,7 +126,7 @@
                     <h5 class="mb-0"><i class="fas fa-sticky-note"></i> {{ _('Task Notes') }}</h5>
                 </div>
                 <div class="card-body">
-                    <form method="POST" action="{{ url_for('add_task_notes', task_id=task.id) }}">
+                    <form method="POST" action="{{ url_for('housekeeping.add_task_notes', task_id=task.id) }}">
                         <div class="mb-3">
                             <label for="notes" class="form-label">{{ _('Notes') }}</label>
                             <textarea class="form-control" id="notes" name="notes" rows="4"
@@ -191,10 +193,10 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
-                        <a href="{{ url_for('housekeeper_dashboard') }}" class="btn btn-outline-primary">
+                        <a href="{{ url_for('housekeeping.housekeeper_dashboard') }}" class="btn btn-outline-primary">
                             <i class="fas fa-home"></i> {{ _('Back to Dashboard') }}
                         </a>
-                        <a href="{{ url_for('housekeeper_calendar') }}" class="btn btn-outline-info">
+                        <a href="{{ url_for('housekeeping.housekeeper_calendar') }}" class="btn btn-outline-info">
                             <i class="fas fa-calendar"></i> {{ _('View Calendar') }}
                         </a>
                     </div>
@@ -212,7 +214,7 @@
                 <h5 class="modal-title" id="uploadModalLabel">{{ _('Upload Amenity Photo') }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="{{ url_for('upload_amenity_photo', task_id=task.id) }}" method="POST"
+            <form action="{{ url_for('housekeeping.upload_amenity_photo', task_id=task.id) }}" method="POST"
                 enctype="multipart/form-data">
                 <div class="modal-body">
                     <p>{{ _('Upload a photo of the amenity for Trip #%(trip_id)s on %(date)s', trip_id=task.trip_id,

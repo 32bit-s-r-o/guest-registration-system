@@ -13,6 +13,7 @@ import tempfile
 import shutil
 from sqlalchemy import create_engine, text, inspect
 from dotenv import load_dotenv
+from config import Config
 
 # Load environment variables
 load_dotenv()

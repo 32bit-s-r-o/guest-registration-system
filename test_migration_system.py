@@ -6,6 +6,7 @@ Simple test script for migration system
 import os
 import sys
 from datetime import datetime
+from config import Config
 
 def test_migration_files():
     """Test that migration files exist and are properly formatted"""

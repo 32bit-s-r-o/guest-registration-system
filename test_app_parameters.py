@@ -7,6 +7,7 @@ import subprocess
 import time
 import requests
 import sys
+from config import Config
 
 def test_app_parameters():
     """Test different parameter combinations for the Flask app"""
@@ -104,7 +105,7 @@ def test_app_parameters():
     print("  --ssl-context SSL     SSL context for HTTPS (e.g., 'adhoc')")
     print("\nExample usage:")
     print("  python app.py --port 8080 --host 0.0.0.0 --threaded")
-    print("  python app.py --debug --reload --port 5001")
+    print("  python app.py --debug --reload --port 5000")
     print("  python app.py --no-debug --port 80 --ssl-context adhoc")
 
 if __name__ == '__main__':

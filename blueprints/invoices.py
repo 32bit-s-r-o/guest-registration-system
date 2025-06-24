@@ -1,6 +1,7 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, send_file, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, send_file, jsonify, current_app
 from flask_login import login_required, current_user
 from flask_babel import gettext as _
+from flask_mail import Mail, Message
 from functools import wraps
 from datetime import datetime
 from decimal import Decimal
@@ -10,7 +11,7 @@ import os
 
 invoices = Blueprint('invoices', __name__)
 
-from app import app, db, User, Invoice, InvoiceItem, Registration, Trip, mail, Message
+from database import db, User, Invoice, InvoiceItem, Registration, Trip
 from weasyprint import HTML, CSS
 from weasyprint.text.fonts import FontConfiguration
 
@@ -19,7 +20,7 @@ def role_required(role):
         @wraps(f)
         def decorated_function(*args, **kwargs):
             if not current_user.is_authenticated:
-                from app import login_manager
+                login_manager = current_app.extensions.get('login_manager')
                 return login_manager.unauthorized()
             if current_user.role != role:
                 from flask import abort
@@ -355,7 +356,7 @@ def send_invoice_pdf(invoice_id):
     try:
         msg = Message(
             subject=_('Your Invoice from %(company)s', company=invoice.admin.company_name or _('Our Company')),
-            sender=app.config['MAIL_USERNAME'],
+            sender=current_app.config['MAIL_USERNAME'],
             recipients=[recipient]
         )
         msg.body = _(
@@ -376,6 +377,7 @@ Best regards,
             content_type="application/pdf",
             data=pdf_bytes
         )
+        mail = Mail(current_app)
         mail.send(msg)
         flash(_('Invoice PDF sent to %(email)s', email=recipient), 'success')
     except Exception as e:

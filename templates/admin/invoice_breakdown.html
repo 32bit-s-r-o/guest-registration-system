@@ -9,10 +9,10 @@
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1><i class="fas fa-file-invoice"></i> {{ _('Invoice Analytics') }}</h1>
                 <div>
-                    <a href="{{ url_for('export_invoices_csv') }}" class="btn btn-outline-primary me-2">
+                    <a href="{{ url_for('export.export_invoices_csv') }}" class="btn btn-outline-primary me-2">
                         <i class="fas fa-download"></i> {{ _('Export CSV') }}
                     </a>
-                    <a href="{{ url_for('admin_breakdowns') }}" class="btn btn-outline-secondary">
+                    <a href="{{ url_for('breakdowns.admin_breakdowns') }}" class="btn btn-outline-secondary">
                         <i class="fas fa-arrow-left"></i> {{ _('Back to Analytics') }}
                     </a>
                 </div>
@@ -198,6 +198,7 @@
                                     <th>{{ _('Status') }}</th>
                                     <th>{{ _('Currency') }}</th>
                                     <th>{{ _('Issue Date') }}</th>
+                                    <th>{{ _('Actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -219,6 +220,12 @@
                                     </td>
                                     <td>{{ invoice.currency }}</td>
                                     <td>{{ invoice.issue_date.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        <a href="{{ url_for('invoices.view_invoice', invoice_id=invoice.id) }}"
+                                            class="btn btn-info">
+                                            <i class="fas fa-eye"></i> {{ _('View') }}
+                                        </a>
+                                    </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -243,8 +250,8 @@
         datasets: [{
             data: [{% for status, count in stats.status_counts.items() %}{{ count }}{% if not loop.last %}, {% endif %} {% endfor %}],
     backgroundColor: ['#28a745', '#ffc107', '#6c757d', '#dc3545']
-        }]
-    },
+            }]
+        },
     options: {
         responsive: true,
             plugins: {
@@ -253,7 +260,7 @@
             }
         }
     }
-});
+    });
 
     // Monthly Revenue Chart
     const revenueCtx = document.getElementById('revenueChart').getContext('2d');
@@ -267,8 +274,8 @@
     borderColor: '#ffc107',
         backgroundColor: 'rgba(255, 193, 7, 0.1)',
             tension: 0.1
-        }]
-    },
+            }]
+        },
     options: {
         responsive: true,
             scales: {
@@ -277,7 +284,7 @@
             }
         }
     }
-});
+    });
 
     // Monthly Invoice Creation Chart
     const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
@@ -289,8 +296,8 @@
             label: '{{ _("Invoices Created") }}',
             data: [{% for month, count in stats.monthly_invoice_counts.items() %}{{ count }}{% if not loop.last %}, {% endif %} {% endfor %}],
     backgroundColor: '#17a2b8'
-        }]
-    },
+            }]
+        },
     options: {
         responsive: true,
             scales: {
@@ -299,7 +306,7 @@
             }
         }
     }
-});
+    });
 
     // Currency Distribution Chart
     const currencyCtx = document.getElementById('currencyChart').getContext('2d');
@@ -310,8 +317,8 @@
         datasets: [{
             data: [{% for currency, count in stats.currency_counts.items() %}{{ count }}{% if not loop.last %}, {% endif %} {% endfor %}],
     backgroundColor: ['#28a745', '#007bff', '#ffc107', '#dc3545']
-        }]
-    },
+            }]
+        },
     options: {
         responsive: true,
             plugins: {
@@ -320,7 +327,7 @@
             }
         }
     }
-});
+    });
 
     // Revenue by Status Chart
     const revenueByStatusCtx = document.getElementById('revenueByStatusChart').getContext('2d');
@@ -332,8 +339,8 @@
             label: '{{ _("Revenue") }} (€)',
             data: [{% for status, amount in stats.status_amounts.items() %}{{ amount }}{% if not loop.last %}, {% endif %} {% endfor %}],
     backgroundColor: '#6f42c1'
-        }]
-    },
+            }]
+        },
     options: {
         responsive: true,
             scales: {
@@ -342,6 +349,6 @@
             }
         }
     }
-});
+    });
 </script>
 {% endblock %}

@@ -14,6 +14,7 @@ import psycopg2
 from psycopg2 import sql
 import requests
 import json
+from config import Config
 
 # Configuration
 BASE_URL = "http://127.0.0.1:5000"

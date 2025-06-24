@@ -5,6 +5,7 @@ Test script to verify Airbnb confirmation code parsing
 
 import re
 import json
+from config import Config
 
 def parse_airbnb_guest_info(summary, description):
     """Parse guest information from Airbnb calendar event."""

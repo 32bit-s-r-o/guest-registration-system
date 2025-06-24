@@ -32,7 +32,7 @@
                     {% endif %}
                     {% endwith %}
 
-                    <form method="POST" action="{{ url_for('submit_confirm_code') }}">
+                    <form method="POST" action="{{ url_for('registration.submit_confirm_code') }}">
                         <div class="mb-4">
                             <label for="confirm_code" class="form-label">
                                 <strong>{{ _('Airbnb Confirmation Code') }}</strong>
@@ -61,10 +61,12 @@
                             {{ _('If you can\'t find your confirmation code, please check your Airbnb reservation email
                             or contact your host for assistance.') }}
                         </p>
-                        <a href="{{ url_for('about') }}" class="btn btn-outline-secondary btn-sm">
+                        <a href="{{ url_for('registration.register_landing') }}" class="btn btn-primary btn-lg">
                             <i class="fas fa-question-circle"></i> {{ _('About This Service') }}
                         </a>
                     </div>
+
+                    <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">{{ _('Back to Home') }}</a>
                 </div>
             </div>
         </div>

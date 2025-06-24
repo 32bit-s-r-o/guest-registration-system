@@ -11,6 +11,7 @@ import time
 import argparse
 from datetime import datetime
 from urllib.parse import urljoin
+from config import Config
 
 class HealthChecker:
     def __init__(self, base_url="http://localhost:5000"):

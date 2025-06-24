@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
 from flask_babel import gettext as _
 from functools import wraps
@@ -6,14 +6,14 @@ from datetime import datetime
 
 calendars = Blueprint('calendars', __name__)
 
-from app import app, db, User, Calendar, Amenity, Trip
+from database import db, User, Calendar, Amenity, Trip, sync_all_calendars_for_admin, sync_calendar_reservations
 
 def role_required(role):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
             if not current_user.is_authenticated:
-                from app import login_manager
+                login_manager = current_app.extensions.get('login_manager')
                 return login_manager.unauthorized()
             if current_user.role != role:
                 from flask import abort
@@ -125,7 +125,6 @@ def delete_calendar(calendar_id):
 @login_required
 def sync_airbnb():
     """Sync with all calendars for the current admin."""
-    from app import sync_all_calendars_for_admin
     result = sync_all_calendars_for_admin(current_user.id)
     
     if result['success']:
@@ -144,7 +143,6 @@ def sync_calendar(calendar_id):
         flash(_('Access denied'), 'error')
         return redirect(url_for('amenities.admin_amenities'))
     
-    from app import sync_calendar_reservations
     result = sync_calendar_reservations(calendar_id)
     
     if result['success']:
@@ -171,7 +169,6 @@ def sync_amenity_calendars(amenity_id):
     failed = []
     for calendar in calendars:
         if calendar.sync_enabled and calendar.is_active:
-            from app import sync_calendar_reservations
             result = sync_calendar_reservations(calendar.id)
             if result['success']:
                 total_synced += result.get('synced', 0)

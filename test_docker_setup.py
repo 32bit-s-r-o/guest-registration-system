@@ -8,6 +8,7 @@ import os
 import sys
 import subprocess
 from pathlib import Path
+from config import Config
 
 def test_docker_files():
     """Test that all required Docker files exist"""

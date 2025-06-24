@@ -4,6 +4,7 @@ Debug script to examine Airbnb description format
 """
 
 import json
+from config import Config
 
 def debug_airbnb_format():
     """Debug the Airbnb data format to understand parsing issues."""

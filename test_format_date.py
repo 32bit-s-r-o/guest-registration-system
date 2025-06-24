@@ -6,6 +6,7 @@ Test script to verify the format_date filter works correctly.
 from app import app, db, User
 from datetime import date
 from flask import render_template_string
+from config import Config
 
 def test_format_date_in_template():
     """Test the format_date filter in a template context."""

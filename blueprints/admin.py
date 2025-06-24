@@ -13,15 +13,31 @@ from io import BytesIO
 
 admin = Blueprint('admin', __name__)
 
-from app import app, db, User, Trip, Registration, Invoice, Amenity, Calendar, migration_manager, version_manager, check_version_compatibility, get_version_changelog
+# Import database models and utilities
+from database import (
+    db, User, Trip, Registration, Guest, Invoice, InvoiceItem, Amenity, Calendar,
+    sync_calendar_reservations, sync_all_calendars_for_admin
+)
+from version import version_manager, check_version_compatibility, get_version_changelog
+from migrations import MigrationManager
+
+# Get migration manager instance
+migration_manager = MigrationManager()
 
 def role_required(role):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
             if not current_user.is_authenticated:
-                from app import login_manager
-                return login_manager.unauthorized()
+                from flask import current_app
+                from flask_login import LoginManager
+                # Get the login manager from current app
+                login_manager = current_app.extensions.get('login_manager')
+                if login_manager:
+                    return login_manager.unauthorized()
+                else:
+                    from flask import abort
+                    abort(401)
             if current_user.role != role:
                 from flask import abort
                 abort(403)
@@ -75,10 +91,13 @@ def admin_settings():
         current_user.custom_line_2 = request.form.get('custom_line_2')
         current_user.custom_line_3 = request.form.get('custom_line_3')
         
-        # Update Airbnb settings
-        current_user.airbnb_listing_id = request.form.get('airbnb_listing_id')
-        current_user.airbnb_calendar_url = request.form.get('airbnb_calendar_url')
-        current_user.airbnb_sync_enabled = request.form.get('airbnb_sync_enabled') == 'on'
+        # Update Airbnb settings (if these fields exist)
+        if hasattr(current_user, 'airbnb_listing_id'):
+            current_user.airbnb_listing_id = request.form.get('airbnb_listing_id')
+        if hasattr(current_user, 'airbnb_calendar_url'):
+            current_user.airbnb_calendar_url = request.form.get('airbnb_calendar_url')
+        if hasattr(current_user, 'airbnb_sync_enabled'):
+            current_user.airbnb_sync_enabled = request.form.get('airbnb_sync_enabled') == 'on'
         
         # Update photo upload settings
         current_user.photo_required_adults = request.form.get('photo_required_adults') == 'on'
@@ -113,7 +132,6 @@ def admin_settings():
 @login_required
 def sync_airbnb():
     """Sync with all calendars for the current admin."""
-    from app import sync_all_calendars_for_admin
     result = sync_all_calendars_for_admin(current_user.id)
     
     if result['success']:
@@ -121,7 +139,7 @@ def sync_airbnb():
     else:
         flash(_('Calendar sync failed: %(message)s', message=result['message']), 'error')
     
-    return redirect(url_for('trips.admin_trips'))
+    return redirect(url_for('admin.admin_dashboard'))
 
 @admin.route('/admin/sync-calendar/<int:calendar_id>', methods=['POST'])
 @login_required
@@ -130,9 +148,8 @@ def sync_calendar(calendar_id):
     calendar = Calendar.query.get_or_404(calendar_id)
     if calendar.amenity.admin_id != current_user.id:
         flash(_('Access denied'), 'error')
-        return redirect(url_for('amenities.admin_amenities'))
+        return redirect(url_for('admin.admin_dashboard'))
     
-    from app import sync_calendar_reservations
     result = sync_calendar_reservations(calendar_id)
     
     if result['success']:
@@ -142,17 +159,17 @@ def sync_calendar(calendar_id):
         flash(_('Calendar sync failed for %(calendar)s: %(message)s', 
                 calendar=calendar.name, message=result['message']), 'error')
     
-    return redirect(url_for('amenities.admin_amenities'))
+    return redirect(url_for('admin.admin_dashboard'))
 
 @admin.route('/admin/data-management')
 @login_required
 def data_management():
     """Data management page for admins."""
+    from flask import current_app
     # Get database statistics
     admin_count = User.query.count()
     trip_count = Trip.query.count()
     registration_count = Registration.query.count()
-    from app import Guest
     guest_count = Guest.query.count()
     
     pending_count = Registration.query.filter_by(status='pending').count()
@@ -171,7 +188,7 @@ def data_management():
     
     # Get configuration info
     config = {
-        'TABLE_PREFIX': app.config.get('TABLE_PREFIX', 'guest_reg_')
+        'TABLE_PREFIX': current_app.config.get('TABLE_PREFIX', '')
     }
     
     return render_template('admin/data_management.html', stats=stats, config=config)
@@ -180,9 +197,10 @@ def data_management():
 @login_required
 def reset_data():
     """Reset all data in the database except admin accounts."""
+    from flask import current_app
     try:
         # Get table names for logging
-        table_prefix = app.config.get('TABLE_PREFIX', 'guest_reg_')
+        table_prefix = current_app.config.get('TABLE_PREFIX', '')
         tables_to_reset = [
             f"{table_prefix}trip", 
             f"{table_prefix}registration",
@@ -196,39 +214,29 @@ def reset_data():
         
         # Delete data in the correct order to handle foreign key constraints
         # 1. Delete invoice items first (references invoices)
-        from app import InvoiceItem
         InvoiceItem.query.delete()
-        print("✅ Deleted invoice items")
         
-        # 2. Delete invoices (references registrations)
+        # 2. Delete invoices
         Invoice.query.delete()
-        print("✅ Deleted invoices")
         
         # 3. Delete guests (references registrations)
-        from app import Guest
         Guest.query.delete()
-        print("✅ Deleted guests")
         
         # 4. Delete registrations (references trips)
         Registration.query.delete()
-        print("✅ Deleted registrations")
         
-        # 5. Delete trips (no dependencies)
+        # 5. Delete trips last
         Trip.query.delete()
-        print("✅ Deleted trips")
         
-        # Commit the deletions
         db.session.commit()
         
-        print("Data deleted successfully from all tables")
-        print("Admin accounts preserved")
-        
-        flash(_('All data has been reset successfully! Admin accounts have been preserved.'), 'success')
+        flash(_('All guest registration data has been reset successfully.'), 'success')
+        print("Database reset completed successfully")
         
     except Exception as e:
         db.session.rollback()
-        print(f"Error during reset: {str(e)}")
-        flash(_('Error resetting data: %(error)s. Please use the command line tool: python quick_reset.py --confirm', error=str(e)), 'error')
+        flash(_('Error resetting data: %(error)s', error=str(e)), 'error')
+        print(f"Error during database reset: {str(e)}")
     
     return redirect(url_for('admin.data_management'))
 
@@ -882,14 +890,16 @@ def rollback_migration(version):
 @role_required('admin')
 def admin_system_backup():
     """Create a system backup (DB dump + uploads, no guest photos) as a ZIP download."""
+    from flask import current_app
+    
     # Prepare temp directory
     tmpdir = tempfile.mkdtemp()
     db_dump_path = os.path.join(tmpdir, 'db_backup.sql')
-    uploads_dir = app.config['UPLOAD_FOLDER']
+    uploads_dir = current_app.config['UPLOAD_FOLDER']
     backup_zip_path = os.path.join(tmpdir, f'system_backup_{datetime.now().strftime("%Y%m%d_%H%M%S")}.zip')
 
     # Parse DB URL
-    db_url = app.config['SQLALCHEMY_DATABASE_URI']
+    db_url = current_app.config['SQLALCHEMY_DATABASE_URI']
     m = re.match(r'postgresql://([^:]+):([^@]+)@([^:/]+)(?::(\d+))?/([^?]+)', db_url)
     if not m:
         shutil.rmtree(tmpdir)

@@ -9,6 +9,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from app import app, db, Trip, Registration, Guest, User
 from datetime import datetime, timedelta
+from config import Config
 
 def create_test_registration():
     """Create a test registration for system testing"""

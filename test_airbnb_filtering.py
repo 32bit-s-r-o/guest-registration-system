@@ -8,6 +8,7 @@ import os
 import sys
 from datetime import datetime, timedelta
 from app import app, fetch_airbnb_calendar
+from config import Config
 
 def create_test_ical_with_mixed_events():
     """Create a test iCal file with both reserved and not available events."""

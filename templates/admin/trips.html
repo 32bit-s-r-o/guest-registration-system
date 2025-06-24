@@ -6,7 +6,7 @@
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1><i class="fas fa-building"></i> {{ _('Manage Accommodations') }}</h1>
-        <a href="{{ url_for('new_trip') }}" class="btn btn-primary">
+        <a href="{{ url_for('trips.new_trip') }}" class="btn btn-primary">
             <i class="fas fa-plus"></i> {{ _('Create New Accommodation') }}
         </a>
     </div>
@@ -45,7 +45,7 @@
                     <button type="submit" class="btn btn-primary me-2">
                         <i class="fas fa-search"></i> {{ _('Filter') }}
                     </button>
-                    <a href="{{ url_for('admin_trips') }}" class="btn btn-outline-secondary">
+                    <a href="{{ url_for('trips.admin_trips') }}" class="btn btn-outline-secondary">
                         <i class="fas fa-times"></i> {{ _('Clear') }}
                     </a>
                 </div>
@@ -131,7 +131,8 @@
                         <strong>{{ _('Registration Link') }}:</strong><br>
                         <div class="input-group">
                             <input type="text" class="form-control form-control-sm"
-                                value="{{ url_for('register', trip_id=trip.id, _external=True) }}" readonly>
+                                value="{{ url_for('registration.register', trip_id=trip.id, _external=True) }}"
+                                readonly>
                             <button class="btn btn-outline-secondary btn-sm" type="button"
                                 onclick="copyToClipboard(this)">
                                 <i class="fas fa-copy"></i>
@@ -144,7 +145,7 @@
                         <strong>{{ _('Direct Link') }}:</strong><br>
                         <div class="input-group">
                             <input type="text" class="form-control form-control-sm"
-                                value="{{ url_for('register_by_code', confirm_code=trip.external_confirm_code, _external=True) }}"
+                                value="{{ url_for('registration.register_by_code', confirm_code=trip.external_confirm_code, _external=True) }}"
                                 readonly>
                             <button class="btn btn-outline-secondary btn-sm" type="button"
                                 onclick="copyToClipboard(this)">
@@ -161,12 +162,12 @@
                 </div>
                 <div class="card-footer bg-light">
                     <div class="d-flex justify-content-between">
-                        <a href="{{ url_for('register', trip_id=trip.id) }}" class="btn btn-sm btn-outline-primary"
-                            target="_blank">
+                        <a href="{{ url_for('registration.register', trip_id=trip.id) }}"
+                            class="btn btn-sm btn-outline-primary" target="_blank">
                             <i class="fas fa-external-link-alt"></i> {{ _('Test Registration') }}
                         </a>
                         <div class="btn-group">
-                            <a href="{{ url_for('edit_trip', trip_id=trip.id) }}"
+                            <a href="{{ url_for('trips.edit_trip', trip_id=trip.id) }}"
                                 class="btn btn-sm btn-outline-secondary">
                                 <i class="fas fa-edit"></i> {{ _('Edit') }}
                             </a>
@@ -189,7 +190,7 @@
             {{ _("You haven't created any accommodations yet. Create your first accommodation to start collecting guest
             registrations.") }}
         </p>
-        <a href="{{ url_for('new_trip') }}" class="btn btn-primary">
+        <a href="{{ url_for('trips.new_trip') }}" class="btn btn-primary">
             <i class="fas fa-plus"></i> {{ _('Create Your First Accommodation') }}
         </a>
     </div>

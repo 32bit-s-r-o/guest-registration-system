@@ -8,6 +8,7 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+from config import Config
 
 def run_command(command, description):
     """Run a command and handle errors."""

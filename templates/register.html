@@ -39,7 +39,8 @@
     {% endif %}
     {% endwith %}
 
-    <form method="POST" action="{{ url_for('submit_registration', trip_id=trip.id) }}" enctype="multipart/form-data">
+    <form method="POST" action="{{ url_for('registration.submit_registration', trip_id=trip.id) }}"
+        enctype="multipart/form-data">
         <!-- Email Section -->
         <div class="guest-form">
             <h4><i class="fas fa-envelope"></i> {{ _('Contact Information') }}</h4>

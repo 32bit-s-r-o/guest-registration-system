@@ -57,7 +57,7 @@
                 </div>
                 <div class="card-body">
                     {% if pending_migrations %}
-                    <form method="POST" action="{{ url_for('run_migrations') }}" class="d-inline">
+                    <form method="POST" action="{{ url_for('admin.run_migrations') }}" class="d-inline">
                         <button type="submit" class="btn btn-success btn-sm">
                             <i class="fas fa-play"></i> {{ _('Run Pending Migrations') }} ({{ pending_migrations|length
                             }})
@@ -71,13 +71,16 @@
 
                     <hr>
 
-                    <a href="{{ url_for('admin_backup') }}" class="btn btn-info btn-sm">
+                    <a href="{{ url_for('admin.admin_backup') }}" class="btn btn-info btn-sm">
                         <i class="fas fa-download"></i> {{ _('Create Backup') }}
                     </a>
 
-                    <a href="{{ url_for('admin_data_management') }}" class="btn btn-warning btn-sm">
+                    <a href="{{ url_for('admin.admin_data_management') }}" class="btn btn-warning btn-sm">
                         <i class="fas fa-cog"></i> {{ _('Data Management') }}
                     </a>
+
+                    <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-secondary">{{ _('Back to Dashboard')
+                        }}</a>
                 </div>
             </div>
         </div>
@@ -115,7 +118,7 @@
                                     <td>{{ migration.applied_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
                                     <td>
                                         <form method="POST"
-                                            action="{{ url_for('rollback_migration', version=migration.version) }}"
+                                            action="{{ url_for('admin.rollback_migration', migration_id=migration.id) }}"
                                             class="d-inline"
                                             onsubmit="return confirm('{{ _('Are you sure you want to rollback this migration? This action cannot be undone.') }}')">
                                             <button type="submit" class="btn btn-danger btn-sm">

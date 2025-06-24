@@ -1,18 +1,18 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
 from flask_babel import gettext as _
 from functools import wraps
 
 amenities = Blueprint('amenities', __name__)
 
-from app import app, db, User, Amenity, AmenityHousekeeper
+from database import db, User, Amenity, AmenityHousekeeper, sync_all_amenities_for_admin
 
 def role_required(role):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
             if not current_user.is_authenticated:
-                from app import login_manager
+                login_manager = current_app.extensions.get('login_manager')
                 return login_manager.unauthorized()
             if current_user.role != role:
                 from flask import abort

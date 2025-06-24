@@ -10,10 +10,11 @@ import shutil
 from datetime import datetime, timedelta, date
 from werkzeug.security import generate_password_hash
 from app import app, db, User, Trip, Registration, Guest
+from config import Config
 
 def get_table_names():
     """Get the actual table names with prefix."""
-    prefix = app.config.get('TABLE_PREFIX', 'guest_reg_')
+    prefix = Config.TABLE_PREFIX or 'guest_reg_'
     return {
         'admin': f"{prefix}admin",
         'trip': f"{prefix}trip", 
@@ -288,7 +289,7 @@ def show_database_stats():
         with app.app_context():
             # Get table names for display
             tables = get_table_names()
-            prefix = app.config.get('TABLE_PREFIX', 'guest_reg_')
+            prefix = Config.TABLE_PREFIX or 'guest_reg_'
             
             admin_count = User.query.count()
             trip_count = Trip.query.count()
@@ -315,9 +316,9 @@ def show_database_stats():
                 trips = Trip.query.all()
                 for trip in trips:
                     print(f"   - {trip.title}:")
-                    print(f"     Trip ID: http://localhost:5001/register/id/{trip.id}")
+                    print(f"     Trip ID: http://localhost:5000/register/id/{trip.id}")
                     if trip.airbnb_confirm_code:
-                        print(f"     Confirmation Code: http://localhost:5001/register/{trip.airbnb_confirm_code}")
+                        print(f"     Confirmation Code: http://localhost:5000/register/{trip.airbnb_confirm_code}")
                         print(f"     Code: {trip.airbnb_confirm_code}")
                     print()
             
@@ -334,7 +335,7 @@ def show_table_info():
     try:
         with app.app_context():
             tables = get_table_names()
-            prefix = app.config.get('TABLE_PREFIX', 'guest_reg_')
+            prefix = Config.TABLE_PREFIX or 'guest_reg_'
             
             print(f"📋 Database Tables (Prefix: '{prefix}'):")
             for table_type, table_name in tables.items():

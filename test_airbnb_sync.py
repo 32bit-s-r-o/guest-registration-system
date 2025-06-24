@@ -9,6 +9,7 @@ import sys
 from datetime import datetime, timedelta
 from app import app, db, Admin, Trip
 from app import fetch_airbnb_calendar, parse_airbnb_guest_info, sync_airbnb_reservations
+from config import Config
 
 def create_sample_ical():
     """Create a sample iCal file for testing."""

@@ -7,6 +7,7 @@ import os
 import sys
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
+from config import Config
 
 # Add the current directory to Python path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))

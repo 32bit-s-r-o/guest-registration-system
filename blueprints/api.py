@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, send_file, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, send_file, jsonify, current_app
 from flask_login import login_required, current_user
 from flask_babel import gettext as _
 from functools import wraps
@@ -8,14 +8,16 @@ import csv
 
 api = Blueprint('api', __name__)
 
-from app import app, db, User, Guest, Registration, Trip, Invoice, version_manager, migration_manager, check_version_compatibility, get_version_changelog
+from database import db, User, Guest, Registration, Trip, Invoice
+from version import version_manager, check_version_compatibility, get_version_changelog
+from migrations import MigrationManager
 
 def role_required(role):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
             if not current_user.is_authenticated:
-                from app import login_manager
+                login_manager = current_app.extensions.get('login_manager')
                 return login_manager.unauthorized()
             if current_user.role != role:
                 from flask import abort
@@ -91,6 +93,7 @@ def api_version():
 @api.route('/api/version/compatibility')
 def api_version_compatibility():
     """Check version compatibility"""
+    migration_manager = MigrationManager()
     current_db_version = migration_manager.get_current_version()
     app_version = version_manager.get_current_version()
     

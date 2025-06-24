@@ -5,6 +5,7 @@ Test database connection script
 
 import os
 from dotenv import load_dotenv
+from config import Config
 
 # Load environment variables
 load_dotenv()

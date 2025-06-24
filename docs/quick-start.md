@@ -75,7 +75,7 @@ python app.py
 
 # Or customize the startup parameters:
 python app.py --port 8080 --host 0.0.0.0 --threaded
-python app.py --debug --reload --port 5001
+python app.py --debug --reload --port 5000
 python app.py --no-debug --port 80
 ```
 
@@ -102,7 +102,7 @@ The Flask application supports various command-line parameters for flexible depl
 
 ```bash
 # Development with auto-reload
-python app.py --debug --reload --port 5001
+python app.py --debug --reload --port 5000
 
 # Production server (accessible from network)
 python app.py --host 0.0.0.0 --port 80 --no-debug --threaded
@@ -250,7 +250,7 @@ createdb airbnb_guests
 lsof -i :5000
 
 # Kill the process or use different port
-python app.py --port 5001
+python app.py --port 5000
 ```
 
 ### Issue: Permission Denied

@@ -53,7 +53,7 @@ docker-compose up -d
 **Easy Startup Script:**
 ```bash
 # Development mode (Flask with auto-reload)
-python start.py --mode dev --port 5001
+python start.py --mode dev --port 5000
 
 # Production mode (Gunicorn)
 python start.py --mode prod --port 80 --workers 4
@@ -143,7 +143,7 @@ The application supports various command-line parameters for flexible deployment
 **Common Usage Examples:**
 ```bash
 # Development with auto-reload
-python app.py --debug --reload --port 5001
+python app.py --debug --reload --port 5000
 
 # Production server (accessible from network)
 python app.py --host 0.0.0.0 --port 80 --no-debug --threaded

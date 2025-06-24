@@ -11,6 +11,7 @@ import shutil
 import subprocess
 from datetime import datetime
 import json
+from config import Config
 
 # Import migration system
 from migrations import MigrationManager, app, db
