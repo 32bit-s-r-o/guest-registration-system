@@ -357,7 +357,7 @@ class SystemManager:
         if not args:
             print("Available Docker operations:")
             print("  build [platform] [tag] [registry]           - Build Docker image")
-            print("  up [service]                                - Start Docker Compose services") 
+            print("  up [service]                                - Start Docker Compose services")
             print("  down                                        - Stop Docker Compose services")
             print("  logs [service]                              - Show Docker logs")
             print("  status                                      - Show Docker service status")
@@ -368,12 +368,17 @@ class SystemManager:
             print("  buildx-setup                                - Setup Docker buildx for multiplatform builds")
             print("  build-individual [platform] [tag] [registry] - Build Docker image for a single platform")
             print("  diagnose                                    - Diagnose Docker build issues")
+            print("  registry-up [service]                       - Start services using registry images")
+            print("  registry-down                               - Stop registry-based services")
+            print("  registry-logs [service]                       - Show Docker registry logs")
+            print("  registry-status                             - Show Docker registry status")
             print("")
             print("Examples:")
             print("  python manage.py docker build")
             print("  python manage.py docker build linux/amd64 myapp:v1.0")
             print("  python manage.py docker multi-build \"linux/amd64,linux/arm64\" myapp:v1.0 docker.io/myuser")
             print("  python manage.py docker all-platforms myapp:v1.0 ghcr.io/myuser true")
+            print("  python manage.py docker registry-up         # Deploy using registry images")
             return True
         
         operation = args[0]
@@ -402,6 +407,14 @@ class SystemManager:
             return self._docker_build_individual(args[1:] if len(args) > 1 else [])
         elif operation == 'diagnose':
             return self._docker_diagnose()
+        elif operation == 'registry-up':
+            return self._docker_registry_up(args[1:] if len(args) > 0 else [])
+        elif operation == 'registry-down':
+            return self._docker_registry_down()
+        elif operation == 'registry-logs':
+            return self._docker_registry_logs(args[1:] if len(args) > 1 else [])
+        elif operation == 'registry-status':
+            return self._docker_registry_status()
         else:
             print(f"❌ Unknown Docker operation: {operation}")
             return False
@@ -1034,6 +1047,95 @@ class SystemManager:
             self.log_action("ERROR", f"Docker diagnose failed: {e}")
             return False
 
+    def _docker_registry_up(self, args):
+        """Start services using registry images"""
+        service = args[0] if args else None
+        
+        print("🚀 Starting Docker Compose services using registry images")
+        
+        try:
+            cmd = ['docker-compose', '-f', 'docker-compose.registry.yml', 'up', '-d']
+            if service:
+                cmd.append(service)
+            
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            
+            if result.returncode == 0:
+                self.log_action("SUCCESS", "Docker Compose services started using registry images")
+                print(result.stdout)
+                return True
+            else:
+                self.log_action("FAILED", "Failed to start Docker Compose services using registry images")
+                print("STDERR:", result.stderr)
+                return False
+                
+        except Exception as e:
+            self.log_action("ERROR", f"Failed to start Docker services using registry images: {e}")
+            return False
+
+    def _docker_registry_down(self):
+        """Stop registry-based services"""
+        print("🛑 Stopping Docker Compose services using registry images")
+        
+        try:
+            result = subprocess.run(['docker-compose', '-f', 'docker-compose.registry.yml', 'down'], capture_output=True, text=True)
+            
+            if result.returncode == 0:
+                self.log_action("SUCCESS", "Docker Compose services stopped using registry images")
+                print(result.stdout)
+                return True
+            else:
+                self.log_action("FAILED", "Failed to stop Docker Compose services using registry images")
+                print("STDERR:", result.stderr)
+                return False
+                
+        except Exception as e:
+            self.log_action("ERROR", f"Failed to stop Docker services using registry images: {e}")
+            return False
+
+    def _docker_registry_logs(self, args):
+        """Show Docker registry logs"""
+        service = args[0] if args else None
+        
+        print("📋 Showing Docker registry logs")
+        
+        try:
+            cmd = ['docker-compose', '-f', 'docker-compose.registry.yml', 'logs', '-f']
+            if service:
+                cmd.append(service)
+            
+            # Run without capture to show real-time logs
+            result = subprocess.run(cmd)
+            
+            if result.returncode == 0:
+                return True
+            else:
+                self.log_action("FAILED", "Failed to show Docker registry logs")
+                return False
+                
+        except Exception as e:
+            self.log_action("ERROR", f"Failed to show Docker registry logs: {e}")
+            return False
+
+    def _docker_registry_status(self):
+        """Show Docker registry status"""
+        print("📊 Docker registry status")
+        
+        try:
+            result = subprocess.run(['docker-compose', '-f', 'docker-compose.registry.yml', 'ps'], capture_output=True, text=True)
+            
+            if result.returncode == 0:
+                print(result.stdout)
+                return True
+            else:
+                self.log_action("FAILED", "Failed to get Docker registry status")
+                print("STDERR:", result.stderr)
+                return False
+                
+        except Exception as e:
+            self.log_action("ERROR", f"Failed to get Docker registry status: {e}")
+            return False
+
 def main():
     """Main function with argument parsing"""
     parser = argparse.ArgumentParser(
@@ -1083,6 +1185,12 @@ Examples:
   python manage.py docker down             # Stop Docker Compose services
   python manage.py docker status           # Show Docker service status
   python manage.py docker logs app         # Show application logs
+  
+  # Registry-based deployment
+  python manage.py docker registry-up      # Deploy using registry images
+  python manage.py docker registry-down    # Stop registry-based services
+  python manage.py docker registry-status  # Show registry service status
+  python manage.py docker registry-logs    # Show registry service logs
         """
     )
     
