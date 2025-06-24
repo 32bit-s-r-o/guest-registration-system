@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Edit Accommodation') }} - {{ trip.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-edit"></i> {{ _('Edit Accommodation') }}: {{ trip.title }}</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="title" class="form-label">{{ _('Accommodation Title') }} *</label>
+                                <input type="text" class="form-control" id="title" name="title" value="{{ trip.title }}"
+                                    required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="amenity_id" class="form-label">{{ _('Amenity') }} *</label>
+                                <select class="form-select" id="amenity_id" name="amenity_id" required>
+                                    <option value="">{{ _('Select Amenity') }}</option>
+                                    {% for amenity in amenities %}
+                                    <option value="{{ amenity.id }}" {% if amenity.id==trip.amenity_id %}selected{%
+                                        endif %}>
+                                        {{ amenity.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="start_date" class="form-label">{{ _('Start Date') }} *</label>
+                                <input type="date" class="form-control" id="start_date" name="start_date"
+                                    value="{{ trip.start_date.strftime('%Y-%m-%d') }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="end_date" class="form-label">{{ _('End Date') }} *</label>
+                                <input type="date" class="form-control" id="end_date" name="end_date"
+                                    value="{{ trip.end_date.strftime('%Y-%m-%d') }}" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="max_guests" class="form-label">{{ _('Maximum Guests') }} *</label>
+                                <input type="number" class="form-control" id="max_guests" name="max_guests" min="1"
+                                    value="{{ trip.max_guests }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="external_confirm_code" class="form-label">{{ _('External Confirmation Code')
+                                    }}</label>
+                                <input type="text" class="form-control" id="external_confirm_code"
+                                    name="external_confirm_code" value="{{ trip.external_confirm_code or '' }}"
+                                    placeholder="{{ _('Optional - for direct registration links') }}">
+                                <small class="form-text text-muted">{{ _('Leave empty to auto-generate') }}</small>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="external_guest_name" class="form-label">{{ _('External Guest Name')
+                                    }}</label>
+                                <input type="text" class="form-control" id="external_guest_name"
+                                    name="external_guest_name" value="{{ trip.external_guest_name or '' }}"
+                                    placeholder="{{ _('Optional - for external bookings') }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="external_guest_email" class="form-label">{{ _('External Guest Email')
+                                    }}</label>
+                                <input type="email" class="form-control" id="external_guest_email"
+                                    name="external_guest_email" value="{{ trip.external_guest_email or '' }}"
+                                    placeholder="{{ _('Optional - for external bookings') }}">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="external_guest_count" class="form-label">{{ _('External Guest Count')
+                                    }}</label>
+                                <input type="number" class="form-control" id="external_guest_count"
+                                    name="external_guest_count" min="1" value="{{ trip.external_guest_count or '' }}"
+                                    placeholder="{{ _('Optional - for external bookings') }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="external_reservation_id" class="form-label">{{ _('External Reservation ID')
+                                    }}</label>
+                                <input type="text" class="form-control" id="external_reservation_id"
+                                    name="external_reservation_id" value="{{ trip.external_reservation_id or '' }}"
+                                    placeholder="{{ _('Optional - for external bookings') }}">
+                            </div>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="is_externally_synced"
+                                name="is_externally_synced" {% if trip.is_externally_synced %}checked{% endif %}>
+                            <label class="form-check-label" for="is_externally_synced">
+                                {{ _('Mark as externally synced') }}
+                            </label>
+                            <small class="form-text text-muted">{{ _('Check if this accommodation was imported from an
+                                external system') }}</small>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('admin_trips') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> {{ _('Back to Accommodations') }}
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> {{ _('Update Accommodation') }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Trip Information Card -->
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> {{ _('Accommodation Information') }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <h4 class="text-primary">{{ trip.registrations|length }}</h4>
+                            <p class="text-muted">{{ _('Registrations') }}</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="text-success">{{ trip.registrations|selectattr('status', 'equalto',
+                                'approved')|list|length }}</h4>
+                            <p class="text-muted">{{ _('Approved') }}</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="text-warning">{{ trip.registrations|selectattr('status', 'equalto',
+                                'pending')|list|length }}</h4>
+                            <p class="text-muted">{{ _('Pending') }}</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="text-danger">{{ trip.registrations|selectattr('status', 'equalto',
+                                'rejected')|list|length }}</h4>
+                            <p class="text-muted">{{ _('Rejected') }}</p>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>{{ _('Registration Link') }}:</strong><br>
+                            <div class="input-group">
+                                <input type="text" class="form-control form-control-sm"
+                                    value="{{ url_for('register', trip_id=trip.id, _external=True) }}" readonly>
+                                <button class="btn btn-outline-secondary btn-sm" type="button"
+                                    onclick="copyToClipboard(this)">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>{{ _('Created') }}:</strong><br>
+                            <span class="text-muted">{{ trip.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                        </div>
+                    </div>
+
+                    {% if trip.external_confirm_code %}
+                    <div class="mt-3">
+                        <strong>{{ _('Direct Link') }}:</strong><br>
+                        <div class="input-group">
+                            <input type="text" class="form-control form-control-sm"
+                                value="{{ url_for('register_by_code', confirm_code=trip.external_confirm_code, _external=True) }}"
+                                readonly>
+                            <button class="btn btn-outline-secondary btn-sm" type="button"
+                                onclick="copyToClipboard(this)">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                        <small class="text-muted">{{ _('Code') }}: <code>{{ trip.external_confirm_code }}</code></small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if trip.registrations %}
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-exclamation-triangle"></i> {{ _('Warning') }}</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-2">{{ _('This accommodation has') }} <strong>{{ trip.registrations|length
+                            }}</strong> {{ _('registration(s).') }}</p>
+                    <p class="text-muted small">{{ _('Changing dates or maximum guests may affect existing
+                        registrations.') }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Set minimum end date to start date
+        const startDateInput = document.getElementById('start_date');
+        const endDateInput = document.getElementById('end_date');
+
+        startDateInput.addEventListener('change', function () {
+            endDateInput.min = this.value;
+            if (endDateInput.value && endDateInput.value < this.value) {
+                endDateInput.value = this.value;
+            }
+        });
+
+        // Set today as minimum start date
+        const today = new Date().toISOString().split('T')[0];
+        startDateInput.min = today;
+    });
+
+    function copyToClipboard(button) {
+        const input = button.parentElement.querySelector('input');
+        input.select();
+        document.execCommand('copy');
+
+        // Show feedback
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-check"></i>';
+        button.classList.remove('btn-outline-secondary');
+        button.classList.add('btn-success');
+
+        setTimeout(() => {
+            button.innerHTML = originalText;
+            button.classList.remove('btn-success');
+            button.classList.add('btn-outline-secondary');
+        }, 1000);
+    }
+</script>
+{% endblock %}

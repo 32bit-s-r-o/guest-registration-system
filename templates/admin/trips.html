@@ -262,8 +262,23 @@
 
     function deleteTrip(tripId, tripTitle) {
         if (confirm(`{{ _('Are you sure you want to delete the accommodation') }} "${tripTitle}"? {{ _('This action cannot be undone.') }}`)) {
-            // Add delete functionality here
-            console.log('Delete trip:', tripId);
+            // Create and submit a form to delete the trip
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/admin/trips/' + tripId + '/delete';
+
+            // Add CSRF token if available
+            const csrfToken = document.querySelector('meta[name="csrf-token"]');
+            if (csrfToken) {
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = 'csrf_token';
+                csrfInput.value = csrfToken.getAttribute('content');
+                form.appendChild(csrfInput);
+            }
+
+            document.body.appendChild(form);
+            form.submit();
         }
     }
 </script>
