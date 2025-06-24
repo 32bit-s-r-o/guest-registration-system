@@ -99,23 +99,32 @@
                 </div>
                 <div class="card-footer bg-light">
                     <div class="row">
-                        <div class="col-4">
+                        <div class="col-3">
                             <a href="{{ url_for('admin_calendars') }}?amenity={{ amenity.id }}"
                                 class="btn btn-sm btn-outline-info w-100">
                                 <i class="fas fa-calendar-alt"></i> {{ _('Calendars') }}
                             </a>
                         </div>
-                        <div class="col-4">
+                        <div class="col-3">
                             <a href="{{ url_for('admin_trips') }}?amenity={{ amenity.id }}"
                                 class="btn btn-sm btn-outline-primary w-100">
                                 <i class="fas fa-plane"></i> {{ _('Trips') }}
                             </a>
                         </div>
-                        <div class="col-4">
+                        <div class="col-3">
                             <a href="{{ url_for('amenity_housekeepers', amenity_id=amenity.id) }}"
                                 class="btn btn-sm btn-outline-success w-100">
                                 <i class="fas fa-users"></i> {{ _('Housekeepers') }}
                             </a>
+                        </div>
+                        <div class="col-3">
+                            <form method="POST" action="{{ url_for('sync_amenity_calendars', amenity_id=amenity.id) }}"
+                                style="display:inline;">
+                                <button type="submit" class="btn btn-sm btn-outline-warning w-100"
+                                    title="{{ _('Sync all calendars for this amenity') }}">
+                                    <i class="fas fa-sync-alt"></i> {{ _('Sync') }}
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>

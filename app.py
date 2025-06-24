@@ -359,24 +359,95 @@ def load_user(user_id):
     return User.query.filter_by(id=int(user_id), is_deleted=False).first()
 
 # Airbnb Calendar Sync Functions
+def parse_airbnb_guest_info(summary, description):
+    """Parse guest information from Airbnb calendar event."""
+    print(f"🔍 Parsing guest info from summary: '{summary[:100]}...'")
+    print(f"🔍 Parsing guest info from description: '{description[:100]}...'")
+    
+    guest_info = {
+        'name': '',
+        'email': '',
+        'count': 1,
+        'confirm_code': ''
+    }
+    guest_count_found = False
+    
+    # Try to extract guest name from summary
+    name_patterns = [
+        r'^(.+?)\s*-\s*Airbnb',
+        r'^(.+?)\s*\(\d+\s*guests?\)',
+        r'^(.+?)\s*-\s*\d+\s*guests?'
+    ]
+    for pattern in name_patterns:
+        match = re.search(pattern, summary, re.IGNORECASE)
+        if match:
+            guest_info['name'] = match.group(1).strip()
+            print(f"✅ Found guest name: {guest_info['name']}")
+            break
+    
+    # Try to extract email from description
+    email_pattern = r'[\w\.-]+@[\w\.-]+\.\w+'
+    email_match = re.search(email_pattern, description)
+    if email_match:
+        guest_info['email'] = email_match.group(0)
+        print(f"✅ Found guest email: {guest_info['email']}")
+    
+    # Try to extract guest count
+    count_patterns = [
+        r'(\d+)\s*guests?',
+        r'(\d+)\s*people'
+    ]
+    search_text = summary + ' ' + description
+    print(f"🔍 Searching for guest count in: '{search_text[:200]}...'")
+    for pattern in count_patterns:
+        match = re.search(pattern, search_text, re.IGNORECASE)
+        if match:
+            guest_info['count'] = int(match.group(1))
+            guest_count_found = True
+            print(f"✅ Found guest count: {guest_info['count']} (pattern: {pattern})")
+            break
+    if not guest_count_found:
+        print(f"⚠️  Using default guest count: {guest_info['count']}")
+    
+    # Try to extract confirmation code from Airbnb reservation URL
+    confirm_patterns = [
+        r'/de\s*\n\s*tails/([A-Z0-9]{10})',
+        r'/details/([A-Z0-9]{10})',
+        r'tails/([A-Z0-9]{10})',
+        r'confirmation\s+code:\s*([A-Z0-9]{6,})',
+        r'code:\s*([A-Z0-9]{6,})',
+        r'\b([A-Z0-9]{10})(?=\s|$|\\n)'
+    ]
+    for pattern in confirm_patterns:
+        match = re.search(pattern, summary + ' ' + description, re.IGNORECASE)
+        if match:
+            guest_info['confirm_code'] = match.group(1).upper()
+            print(f"✅ Found confirmation code: {guest_info['confirm_code']}")
+            break
+    if not guest_info['confirm_code']:
+        normalized_text = summary + ' ' + description.replace('\n', ' ').replace('\\n', ' ')
+        for pattern in confirm_patterns:
+            match = re.search(pattern, normalized_text, re.IGNORECASE)
+            if match:
+                guest_info['confirm_code'] = match.group(1).upper()
+                print(f"✅ Found confirmation code (normalized): {guest_info['confirm_code']}")
+                break
+    print(f"📋 Final parsed guest info: {guest_info}, guest_count_found={guest_count_found}")
+    return guest_info, guest_count_found
+
 def fetch_airbnb_calendar(calendar_url):
     """Fetch and parse Airbnb calendar data."""
     try:
         response = requests.get(calendar_url, timeout=30)
         response.raise_for_status()
-        
         cal = icalendar.Calendar.from_ical(response.content)
         reservations = []
-        
         for component in cal.walk():
             if component.name == "VEVENT":
-                # Extract reservation details from event
                 summary = str(component.get('summary', ''))
                 description = str(component.get('description', ''))
                 start_date = component.get('dtstart').dt
                 end_date = component.get('dtend').dt
-                
-                # Skip "Not Available" events - only process actual reservations
                 not_available_patterns = [
                     'not available',
                     'unavailable',
@@ -385,14 +456,10 @@ def fetch_airbnb_calendar(calendar_url):
                     'cleaning',
                     'no availability'
                 ]
-                
                 summary_lower = summary.lower()
                 if any(pattern in summary_lower for pattern in not_available_patterns):
-                    continue  # Skip this event
-                
-                # Parse guest information from summary/description
-                guest_info = parse_airbnb_guest_info(summary, description)
-                
+                    continue
+                guest_info, guest_count_found = parse_airbnb_guest_info(summary, description)
                 reservation = {
                     'id': str(component.get('uid', '')),
                     'title': summary,
@@ -401,85 +468,15 @@ def fetch_airbnb_calendar(calendar_url):
                     'guest_name': guest_info.get('name', ''),
                     'guest_email': guest_info.get('email', ''),
                     'guest_count': guest_info.get('count', 1),
+                    'guest_count_found': guest_count_found,
                     'confirm_code': guest_info.get('confirm_code', ''),
                     'description': description
                 }
                 reservations.append(reservation)
-        
         return reservations
     except Exception as e:
         print(f"Error fetching Airbnb calendar: {e}")
         return []
-
-def parse_airbnb_guest_info(summary, description):
-    """Parse guest information from Airbnb calendar event."""
-    guest_info = {
-        'name': '',
-        'email': '',
-        'count': 1,
-        'confirm_code': ''
-    }
-    
-    # Try to extract guest name from summary
-    # Common patterns: "Guest Name - Airbnb" or "Guest Name (X guests)"
-    name_patterns = [
-        r'^(.+?)\s*-\s*Airbnb',
-        r'^(.+?)\s*\(\d+\s*guests?\)',
-        r'^(.+?)\s*-\s*\d+\s*guests?'
-    ]
-    
-    for pattern in name_patterns:
-        match = re.search(pattern, summary, re.IGNORECASE)
-        if match:
-            guest_info['name'] = match.group(1).strip()
-            break
-    
-    # Try to extract email from description
-    email_pattern = r'[\w\.-]+@[\w\.-]+\.\w+'
-    email_match = re.search(email_pattern, description)
-    if email_match:
-        guest_info['email'] = email_match.group(0)
-    
-    # Try to extract guest count
-    count_patterns = [
-        r'(\d+)\s*guests?',
-        r'(\d+)\s*people'
-    ]
-    
-    for pattern in count_patterns:
-        match = re.search(pattern, summary + ' ' + description, re.IGNORECASE)
-        if match:
-            guest_info['count'] = int(match.group(1))
-            break
-    
-    # Try to extract confirmation code from Airbnb reservation URL
-    # Handle the case where URL is split across lines with \n
-    confirm_patterns = [
-        r'/de\s*\n\s*tails/([A-Z0-9]{10})',  # Handle split URL format
-        r'/details/([A-Z0-9]{10})',  # Standard format
-        r'tails/([A-Z0-9]{10})',  # Simple tails pattern
-        r'confirmation\s+code:\s*([A-Z0-9]{6,})',
-        r'code:\s*([A-Z0-9]{6,})',
-        r'\b([A-Z0-9]{10})(?=\s|$|\\n)'  # 10-character code followed by space, end, or newline
-    ]
-    
-    # Try patterns on the original description first (for split URLs)
-    for pattern in confirm_patterns:
-        match = re.search(pattern, summary + ' ' + description, re.IGNORECASE)
-        if match:
-            guest_info['confirm_code'] = match.group(1).upper()
-            break
-    
-    # If no match found, try with normalized text
-    if not guest_info['confirm_code']:
-        normalized_text = summary + ' ' + description.replace('\n', ' ').replace('\\n', ' ')
-        for pattern in confirm_patterns:
-            match = re.search(pattern, normalized_text, re.IGNORECASE)
-            if match:
-                guest_info['confirm_code'] = match.group(1).upper()
-                break
-    
-    return guest_info
 
 def sync_airbnb_reservations(amenity_id):
     """Sync Airbnb reservations for a specific amenity, ensuring unique confirmation codes."""
@@ -518,108 +515,156 @@ def sync_all_amenities_for_admin(admin_id):
     }
 
 def sync_calendar_reservations(calendar_id):
-    """Sync reservations from a specific calendar."""
-    calendar = Calendar.query.get_or_404(calendar_id)
-    
-    if not calendar.sync_enabled:
-        return {'success': False, 'message': 'Calendar sync is disabled'}
-    
+    """Sync reservations for a specific calendar, ensuring unique confirmation codes."""
+    calendar = Calendar.query.get(calendar_id)
+    if not calendar or not calendar.calendar_url or not calendar.sync_enabled:
+        return {'success': False, 'message': 'Calendar sync not configured or disabled'}
     try:
-        # Fetch calendar data
+        print(f"🔍 Starting sync for calendar: {calendar.name}")
         reservations = fetch_calendar_data(calendar.calendar_url, calendar.calendar_type)
-        
-        synced = 0
-        updated = 0
-        
+        print(f"📅 Found {len(reservations)} reservations to process")
+        synced_count = 0
+        updated_count = 0
+        housekeeping_tasks_created = 0
         for reservation in reservations:
-            # Check if trip already exists
+            print(f"🔄 Processing reservation: {reservation['title']}")
+            print(f"   Guest count from calendar: {reservation.get('guest_count', 'NOT FOUND')}")
+            print(f"   Guest name: {reservation.get('guest_name', 'NOT FOUND')}")
+            # Check if trip already exists by external reservation ID
             existing_trip = Trip.query.filter_by(
                 external_reservation_id=reservation['id'],
-                amenity_id=calendar.amenity_id
+                calendar_id=calendar_id
             ).first()
-            
+            # Also check if trip exists by confirmation code
+            confirm_code = reservation['confirm_code']
+            existing_code_trip = None
+            if confirm_code:
+                existing_code_trip = Trip.query.filter_by(
+                    external_confirm_code=confirm_code
+                ).first()
+            # Use amenity's max_guests if guest count not parsed from calendar
+            if reservation.get('guest_count_found'):
+                guest_count = reservation['guest_count']
+                print(f"   Final guest count to use: {guest_count} (from calendar data)")
+            else:
+                guest_count = calendar.amenity.max_guests
+                print(f"   Final guest count to use: {guest_count} (from amenity default)")
             if existing_trip:
-                # Update existing trip
+                print(f"   📝 Updating existing trip (ID: {existing_trip.id})")
+                print(f"   Old max_guests: {existing_trip.max_guests} -> New max_guests: {guest_count}")
                 existing_trip.title = reservation['title']
                 existing_trip.start_date = reservation['start_date']
                 existing_trip.end_date = reservation['end_date']
-                existing_trip.external_guest_name = reservation.get('guest_name', '')
-                existing_trip.external_guest_email = reservation.get('guest_email', '')
-                existing_trip.external_guest_count = reservation.get('guest_count', 1)
-                existing_trip.external_confirm_code = reservation.get('confirm_code', '')
+                existing_trip.max_guests = guest_count
+                existing_trip.external_guest_name = reservation['guest_name']
+                existing_trip.external_guest_email = reservation['guest_email']
+                existing_trip.external_confirm_code = reservation['confirm_code']
                 existing_trip.external_synced_at = datetime.utcnow()
-                existing_trip.is_externally_synced = True
-                updated += 1
+                updated_count += 1
+            elif existing_code_trip:
+                print(f"   📝 Updating existing trip by confirmation code (ID: {existing_code_trip.id})")
+                print(f"   Old max_guests: {existing_code_trip.max_guests} -> New max_guests: {guest_count}")
+                existing_code_trip.title = reservation['title']
+                existing_code_trip.start_date = reservation['start_date']
+                existing_code_trip.end_date = reservation['end_date']
+                existing_code_trip.max_guests = guest_count
+                existing_code_trip.external_guest_name = reservation['guest_name']
+                existing_code_trip.external_guest_email = reservation['guest_email']
+                existing_code_trip.external_reservation_id = reservation['id']
+                existing_code_trip.calendar_id = calendar_id
+                existing_code_trip.external_synced_at = datetime.utcnow()
+                updated_count += 1
             else:
-                # Create new trip
+                print(f"   ➕ Creating new trip with max_guests: {guest_count}")
                 trip = Trip(
                     title=reservation['title'],
                     start_date=reservation['start_date'],
                     end_date=reservation['end_date'],
-                    max_guests=calendar.amenity.max_guests,
+                    max_guests=guest_count,
                     admin_id=calendar.amenity.admin_id,
                     amenity_id=calendar.amenity_id,
-                    calendar_id=calendar.id,
+                    calendar_id=calendar_id,
                     external_reservation_id=reservation['id'],
-                    external_guest_name=reservation.get('guest_name', ''),
-                    external_guest_email=reservation.get('guest_email', ''),
-                    external_guest_count=reservation.get('guest_count', 1),
-                    external_confirm_code=reservation.get('confirm_code', ''),
+                    external_guest_name=reservation['guest_name'],
+                    external_guest_email=reservation['guest_email'],
+                    external_confirm_code=reservation['confirm_code'],
                     external_synced_at=datetime.utcnow(),
                     is_externally_synced=True
                 )
                 db.session.add(trip)
-                synced += 1
-        
-        # Update calendar last sync time
+                db.session.flush()
+                default_housekeeper_assignment = AmenityHousekeeper.query.filter_by(
+                    amenity_id=calendar.amenity_id,
+                    is_default=True
+                ).first()
+                if not default_housekeeper_assignment and calendar.amenity.default_housekeeper_id:
+                    default_housekeeper_id = calendar.amenity.default_housekeeper_id
+                elif default_housekeeper_assignment:
+                    default_housekeeper_id = default_housekeeper_assignment.housekeeper_id
+                else:
+                    default_housekeeper_id = None
+                if default_housekeeper_id:
+                    housekeeper = User.query.get(default_housekeeper_id)
+                    pay = float(housekeeper.default_housekeeper_pay) if housekeeper and housekeeper.default_housekeeper_pay else 20
+                    housekeeping_task = Housekeeping(
+                        trip_id=trip.id,
+                        housekeeper_id=default_housekeeper_id,
+                        date=reservation['end_date'] + timedelta(days=1),
+                        status='pending',
+                        pay_amount=pay,
+                        paid=False
+                    )
+                    db.session.add(housekeeping_task)
+                    housekeeping_tasks_created += 1
+                synced_count += 1
+        missing_tasks_created = create_missing_housekeeping_tasks_for_calendar(calendar_id)
+        total_housekeeping_tasks = housekeeping_tasks_created + missing_tasks_created
         calendar.last_sync = datetime.utcnow()
         db.session.commit()
-        
-        return {
-            'success': True,
-            'message': f'Synced {synced} new reservations, updated {updated} existing',
-            'synced': synced,
-            'updated': updated
-        }
-        
+        print(f"✅ Sync completed: {synced_count} new, {updated_count} updated")
+        message = f"Synced {synced_count} new reservations, updated {updated_count} existing reservations"
+        if total_housekeeping_tasks > 0:
+            message += f", created {total_housekeeping_tasks} housekeeping tasks"
+        return {'success': True, 'message': message, 'synced': synced_count, 'updated': updated_count, 'housekeeping_tasks': total_housekeeping_tasks}
     except Exception as e:
         db.session.rollback()
+        print(f"❌ Sync failed: {str(e)}")
         return {'success': False, 'message': f'Sync failed: {str(e)}'}
 
 def sync_all_calendars_for_admin(admin_id):
     """Sync all calendars for a specific admin."""
-    # Get all amenities owned by this admin
-    amenities = Amenity.query.filter_by(admin_id=admin_id).all()
-    calendars = []
-    for amenity in amenities:
-        calendars.extend(amenity.calendars)
-    
-    if not calendars:
-        return {'success': False, 'message': 'No calendars found'}
-    
-    total_synced = 0
-    total_updated = 0
-    results = []
-    
-    for calendar in calendars:
-        if calendar.sync_enabled and calendar.is_active:
+    try:
+        # Get all active calendars for the admin
+        calendars = Calendar.query.join(Amenity).filter(
+            Amenity.admin_id == admin_id,
+            Calendar.sync_enabled == True,
+            Calendar.is_active == True
+        ).all()
+        
+        total_synced = 0
+        total_updated = 0
+        failed_calendars = []
+        
+        for calendar in calendars:
             result = sync_calendar_reservations(calendar.id)
             if result['success']:
-                total_synced += result['synced']
-                total_updated += result['updated']
-            results.append(result)
-    
-    return {
-        'success': True,
-        'message': f'Synced {total_synced} new reservations, updated {total_updated} existing across {len(calendars)} calendars',
-        'total_synced': total_synced,
-        'total_updated': total_updated,
-        'calendars_processed': len(calendars),
-        'results': results
-    }
+                total_synced += result.get('synced', 0)
+                total_updated += result.get('updated', 0)
+            else:
+                failed_calendars.append(f"{calendar.name}: {result['message']}")
+        
+        if failed_calendars:
+            message = f"Synced {total_synced} new, updated {total_updated} existing reservations. Failed: {'; '.join(failed_calendars)}"
+        else:
+            message = f"Successfully synced {total_synced} new reservations and updated {total_updated} existing reservations"
+        
+        return {'success': True, 'message': message, 'synced': total_synced, 'updated': total_updated}
+        
+    except Exception as e:
+        return {'success': False, 'message': f'Sync failed: {str(e)}'}
 
-def fetch_calendar_data(calendar_url, calendar_type):
-    """Fetch calendar data based on type."""
+def fetch_calendar_data(calendar_url, calendar_type='airbnb'):
+    """Fetch and parse calendar data based on type."""
     if calendar_type == 'airbnb':
         return fetch_airbnb_calendar(calendar_url)
     else:
@@ -3521,12 +3566,19 @@ def sync_calendar_reservations(calendar_id):
         return {'success': False, 'message': 'Calendar sync not configured or disabled'}
     
     try:
+        print(f"🔍 Starting sync for calendar: {calendar.name}")
         reservations = fetch_calendar_data(calendar.calendar_url, calendar.calendar_type)
+        print(f"📅 Found {len(reservations)} reservations to process")
+        
         synced_count = 0
         updated_count = 0
         housekeeping_tasks_created = 0
         
         for reservation in reservations:
+            print(f"🔄 Processing reservation: {reservation['title']}")
+            print(f"   Guest count from calendar: {reservation.get('guest_count', 'NOT FOUND')}")
+            print(f"   Guest name: {reservation.get('guest_name', 'NOT FOUND')}")
+            
             # Check if trip already exists by external reservation ID
             existing_trip = Trip.query.filter_by(
                 external_reservation_id=reservation['id'],
@@ -3543,8 +3595,12 @@ def sync_calendar_reservations(calendar_id):
             
             # Use amenity's max_guests if guest count not parsed from calendar
             guest_count = reservation['guest_count'] if reservation['guest_count'] > 0 else calendar.amenity.max_guests
+            print(f"   Final guest count to use: {guest_count}")
+            print(f"   Source: {'calendar data' if reservation['guest_count'] > 0 else 'amenity default'}")
             
             if existing_trip:
+                print(f"   📝 Updating existing trip (ID: {existing_trip.id})")
+                print(f"   Old max_guests: {existing_trip.max_guests} -> New max_guests: {guest_count}")
                 # Update existing trip by reservation ID
                 existing_trip.title = reservation['title']
                 existing_trip.start_date = reservation['start_date']
@@ -3556,6 +3612,8 @@ def sync_calendar_reservations(calendar_id):
                 existing_trip.external_synced_at = datetime.utcnow()
                 updated_count += 1
             elif existing_code_trip:
+                print(f"   📝 Updating existing trip by confirmation code (ID: {existing_code_trip.id})")
+                print(f"   Old max_guests: {existing_code_trip.max_guests} -> New max_guests: {guest_count}")
                 # Update existing trip by confirmation code (dates may have changed)
                 existing_code_trip.title = reservation['title']
                 existing_code_trip.start_date = reservation['start_date']
@@ -3568,6 +3626,7 @@ def sync_calendar_reservations(calendar_id):
                 existing_code_trip.external_synced_at = datetime.utcnow()
                 updated_count += 1
             else:
+                print(f"   ➕ Creating new trip with max_guests: {guest_count}")
                 # Create new trip
                 trip = Trip(
                     title=reservation['title'],
@@ -3627,6 +3686,8 @@ def sync_calendar_reservations(calendar_id):
         calendar.last_sync = datetime.utcnow()
         db.session.commit()
         
+        print(f"✅ Sync completed: {synced_count} new, {updated_count} updated")
+        
         message = f"Synced {synced_count} new reservations, updated {updated_count} existing reservations"
         if total_housekeeping_tasks > 0:
             message += f", created {total_housekeeping_tasks} housekeeping tasks"
@@ -3635,6 +3696,7 @@ def sync_calendar_reservations(calendar_id):
         
     except Exception as e:
         db.session.rollback()
+        print(f"❌ Sync failed: {str(e)}")
         return {'success': False, 'message': f'Sync failed: {str(e)}'}
 
 def sync_all_calendars_for_admin(admin_id):
@@ -4388,6 +4450,35 @@ def health_metrics():
             'error': str(e),
             'timestamp': datetime.utcnow().isoformat()
         }), 500
+
+@app.route('/admin/amenities/<int:amenity_id>/sync', methods=['POST'])
+@login_required
+@role_required('admin')
+def sync_amenity_calendars(amenity_id):
+    """Sync all calendars for a specific amenity."""
+    amenity = Amenity.query.get_or_404(amenity_id)
+    if amenity.admin_id != current_user.id:
+        flash(_('Access denied'), 'error')
+        return redirect(url_for('admin_amenities'))
+    calendars = amenity.calendars
+    total_synced = 0
+    total_updated = 0
+    failed = []
+    for calendar in calendars:
+        if calendar.sync_enabled and calendar.is_active:
+            result = sync_calendar_reservations(calendar.id)
+            if result['success']:
+                total_synced += result.get('synced', 0)
+                total_updated += result.get('updated', 0)
+            else:
+                failed.append(f"{calendar.name}: {result['message']}")
+    if failed:
+        message = f"Synced {total_synced} new, updated {total_updated} existing. Failed: {'; '.join(failed)}"
+        flash(_('Calendar sync completed with some errors: %(message)s', message=message), 'warning')
+    else:
+        message = f"Successfully synced {total_synced} new and updated {total_updated} existing reservations."
+        flash(_('Calendar sync successful: %(message)s', message=message), 'success')
+    return redirect(url_for('admin_amenities'))
 
 if __name__ == '__main__':
     # Parse command line arguments
