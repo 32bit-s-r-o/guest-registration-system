@@ -223,6 +223,10 @@ Docker uses the format `EXTERNAL:INTERNAL` where:
 | `SECRET_KEY` | your-secret-key-here | Flask secret key |
 | `GUNICORN_WORKERS` | 4 | Number of Gunicorn workers |
 | `GUNICORN_TIMEOUT` | 120 | Gunicorn timeout in seconds |
+| `SERVER_URL` | - | Complete server URL (e.g., https://your-domain.com) |
+| `SERVER_PROTOCOL` | http | Server protocol (http or https) |
+| `SERVER_HOST` | localhost | Server hostname or IP address |
+| `SERVER_PORT` | 5000 | Server port number |
 
 **Example usage:**
 ```bash
@@ -234,6 +238,12 @@ POSTGRES_PASSWORD=mypassword docker-compose up -d
 
 # Configure Gunicorn
 GUNICORN_WORKERS=8 GUNICORN_TIMEOUT=180 docker-compose up -d
+
+# Configure server URL for HTTPS
+SERVER_URL=https://your-domain.com docker-compose up -d
+
+# Configure server URL components
+SERVER_PROTOCOL=https SERVER_HOST=your-domain.com SERVER_PORT=443 docker-compose up -d
 ```
 
 ## 🌐 Nginx Configuration

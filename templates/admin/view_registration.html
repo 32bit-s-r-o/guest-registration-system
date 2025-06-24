@@ -103,7 +103,7 @@
                         <div class="col-12">
                             <h6><strong>Uploaded Document:</strong></h6>
                             <div class="document-preview-container">
-                                <img src="{{ url_for('uploaded_file', filename=guest.document_image) }}"
+                                <img src="{{ url_for('main.uploaded_file', filename=guest.document_image) }}"
                                     class="img-fluid border rounded" style="max-width: 300px; max-height: 200px;"
                                     alt="Document for {{ guest.first_name }} {{ guest.last_name }}">
                                 <div class="mt-2">
