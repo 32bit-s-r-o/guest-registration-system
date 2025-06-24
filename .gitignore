@@ -494,7 +494,7 @@ yarn-error.log*
 # Kubernetes
 *.yaml
 *.yml
-!docker-compose.yml
+# !docker-compose.yml
 
 # Terraform
 *.tfstate
