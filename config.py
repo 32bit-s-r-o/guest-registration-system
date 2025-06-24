@@ -14,11 +14,29 @@ class Config:
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME', '')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD', '')
     
+    # Server URL configuration for Docker and external access
+    @property
+    def SERVER_URL(self):
+        return os.environ.get('SERVER_URL')
+
+    @property
+    def SERVER_PROTOCOL(self):
+        return os.environ.get('SERVER_PROTOCOL', 'http')
+
+    @property
+    def SERVER_HOST(self):
+        return os.environ.get('SERVER_HOST', 'localhost')
+
+    @property
+    def SERVER_PORT(self):
+        return os.environ.get('SERVER_PORT', '5000')
+    
     # Language and internationalization settings
-    BABEL_DEFAULT_LOCALE = 'en'
+    BABEL_DEFAULT_LOCALE = os.environ.get('BABEL_DEFAULT_LOCALE', 'en')
     BABEL_SUPPORTED_LOCALES = ['en', 'cs', 'sk']
     BABEL_TRANSLATION_DIRECTORIES = 'translations'
     LANGUAGE_PICKER_ENABLED = os.environ.get('LANGUAGE_PICKER_ENABLED', 'true').lower() == 'true'
     
     # Feature flags
-    DISABLE_LANGUAGE_PICKER = os.environ.get('DISABLE_LANGUAGE_PICKER', 'false').lower() == 'true' 
+    DISABLE_LANGUAGE_PICKER = os.environ.get('DISABLE_LANGUAGE_PICKER', 'false').lower() == 'true'
+    BABEL_DEFAULT_TIMEZONE = os.environ.get('BABEL_DEFAULT_TIMEZONE', 'UTC') 

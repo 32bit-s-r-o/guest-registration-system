@@ -26,7 +26,8 @@ class SystemManager:
                 'test_language_picker.py',
                 'test_fixes.py',
                 'test_refactor.py',
-                'test_standalone.py'
+                'test_standalone.py',
+                'test_server_url.py'
             ],
             'migrations': [
                 'migrations.py'

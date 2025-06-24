@@ -92,6 +92,10 @@ def handle_file_too_large(e):
 from template_filters import register_template_filters
 register_template_filters(app)
 
+# Register URL utilities
+from utils import register_url_utils
+register_url_utils(app)
+
 # Register blueprints
 from blueprints.main import main
 from blueprints.auth import auth

@@ -1,6 +1,7 @@
 from flask import session, url_for, current_app
 from flask_mail import Message
 from flask_babel import gettext as _
+from utils import get_server_url
 
 def send_approval_email(registration):
     """Send approval email to guest after registration is approved."""
@@ -44,7 +45,10 @@ def send_rejection_email(registration):
         if registration.language:
             session['language'] = registration.language
         
-        update_link = url_for('registration.register', trip_id=registration.trip_id, _external=True)
+        # Generate proper URL using server configuration
+        server_url = get_server_url()
+        update_link = f"{server_url}{url_for('registration.register', trip_id=registration.trip_id)}"
+        
         msg = Message(
             _('Registration Update Required'),
             sender=current_app.config['MAIL_USERNAME'],

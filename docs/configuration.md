@@ -921,6 +921,144 @@ For configuration issues:
 3. Test email configuration
 4. Review error logs
 
+## Server URL Configuration
+
+### Docker and External Access
+
+When running the application in Docker or behind a reverse proxy, you need to configure the server URL so that all generated links (emails, notifications) use the correct external URL instead of localhost.
+
+### Configuration Options
+
+#### Option 1: Complete SERVER_URL (Recommended)
+
+Set the complete server URL:
+
+```bash
+# For HTTPS with custom domain
+SERVER_URL=https://myapp.example.com
+
+# For HTTP with IP and port
+SERVER_URL=http://192.168.1.100:8000
+
+# For local development
+SERVER_URL=http://localhost:5000
+```
+
+#### Option 2: Individual Components
+
+Set the server components separately:
+
+```bash
+# Protocol (http or https)
+SERVER_PROTOCOL=https
+
+# Host (domain or IP address)
+SERVER_HOST=myapp.example.com
+
+# Port (80 for HTTP, 443 for HTTPS, or custom)
+SERVER_PORT=443
+```
+
+### Docker Configuration
+
+Add to your `docker-compose.yml`:
+
+```yaml
+services:
+  app:
+    environment:
+      - SERVER_URL=https://myapp.example.com
+      # Or use individual components:
+      # - SERVER_PROTOCOL=https
+      # - SERVER_HOST=myapp.example.com
+      # - SERVER_PORT=443
+```
+
+### Environment File Configuration
+
+Add to your `.env` file:
+
+```bash
+# For production with HTTPS
+SERVER_URL=https://myapp.example.com
+
+# For development
+SERVER_URL=http://localhost:8000
+
+# For internal deployment
+SERVER_URL=http://192.168.1.100:8000
+```
+
+### Template Usage
+
+The server URL is automatically available in templates:
+
+```html
+<!-- Use server_url variable -->
+<a href="{{ server_url }}/admin/dashboard">Dashboard</a>
+
+<!-- Use absolute_url filter -->
+<a href="{{ '/admin/dashboard' | absolute_url }}">Dashboard</a>
+
+<!-- Check if HTTPS -->
+{% if is_https %}
+  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+{% endif %}
+```
+
+### Email Integration
+
+Email links automatically use the configured server URL:
+
+```python
+# In email templates, links will use the correct external URL
+update_link = f"{get_server_url()}{url_for('registration.register', trip_id=trip.id)}"
+```
+
+### Testing Server URL Configuration
+
+Test your configuration:
+
+```bash
+# Run the server URL test
+python test_server_url.py
+
+# Or run all tests
+python manage.py test
+```
+
+### Common Use Cases
+
+1. **Production with Custom Domain**
+   ```bash
+   SERVER_URL=https://myapp.example.com
+   ```
+
+2. **Development with Docker**
+   ```bash
+   SERVER_URL=http://localhost:8000
+   ```
+
+3. **Internal Network Deployment**
+   ```bash
+   SERVER_URL=http://192.168.1.100:8000
+   ```
+
+4. **HTTPS with Custom Port**
+   ```bash
+   SERVER_PROTOCOL=https
+   SERVER_HOST=myapp.example.com
+   SERVER_PORT=8443
+   ```
+
+### Benefits
+
+- **Correct Email Links**: All email notifications use the proper external URL
+- **Proper Redirects**: Login/logout redirects work correctly
+- **External Access**: Links work when accessed from outside the container
+- **HTTPS Support**: Proper protocol detection for security headers
+- **Template Integration**: Easy to use in templates with variables and filters
+
 ---
 
 [← Back to Documentation Index](README.md) 
