@@ -23,7 +23,10 @@ class SystemManager:
                 'system_test.py',
                 'test_email_functionality.py',
                 'test_csv_export.py',
-                'test_language_picker.py'
+                'test_language_picker.py',
+                'test_fixes.py',
+                'test_refactor.py',
+                'test_standalone.py'
             ],
             'migrations': [
                 'migrations.py'
