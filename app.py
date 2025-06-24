@@ -517,6 +517,161 @@ def sync_all_amenities_for_admin(admin_id):
         'results': results
     }
 
+def sync_calendar_reservations(calendar_id):
+    """Sync reservations from a specific calendar."""
+    calendar = Calendar.query.get_or_404(calendar_id)
+    
+    if not calendar.sync_enabled:
+        return {'success': False, 'message': 'Calendar sync is disabled'}
+    
+    try:
+        # Fetch calendar data
+        reservations = fetch_calendar_data(calendar.calendar_url, calendar.calendar_type)
+        
+        synced = 0
+        updated = 0
+        
+        for reservation in reservations:
+            # Check if trip already exists
+            existing_trip = Trip.query.filter_by(
+                external_reservation_id=reservation['id'],
+                amenity_id=calendar.amenity_id
+            ).first()
+            
+            if existing_trip:
+                # Update existing trip
+                existing_trip.title = reservation['title']
+                existing_trip.start_date = reservation['start_date']
+                existing_trip.end_date = reservation['end_date']
+                existing_trip.external_guest_name = reservation.get('guest_name', '')
+                existing_trip.external_guest_email = reservation.get('guest_email', '')
+                existing_trip.external_guest_count = reservation.get('guest_count', 1)
+                existing_trip.external_confirm_code = reservation.get('confirm_code', '')
+                existing_trip.external_synced_at = datetime.utcnow()
+                existing_trip.is_externally_synced = True
+                updated += 1
+            else:
+                # Create new trip
+                trip = Trip(
+                    title=reservation['title'],
+                    start_date=reservation['start_date'],
+                    end_date=reservation['end_date'],
+                    max_guests=calendar.amenity.max_guests,
+                    admin_id=calendar.amenity.admin_id,
+                    amenity_id=calendar.amenity_id,
+                    calendar_id=calendar.id,
+                    external_reservation_id=reservation['id'],
+                    external_guest_name=reservation.get('guest_name', ''),
+                    external_guest_email=reservation.get('guest_email', ''),
+                    external_guest_count=reservation.get('guest_count', 1),
+                    external_confirm_code=reservation.get('confirm_code', ''),
+                    external_synced_at=datetime.utcnow(),
+                    is_externally_synced=True
+                )
+                db.session.add(trip)
+                synced += 1
+        
+        # Update calendar last sync time
+        calendar.last_sync = datetime.utcnow()
+        db.session.commit()
+        
+        return {
+            'success': True,
+            'message': f'Synced {synced} new reservations, updated {updated} existing',
+            'synced': synced,
+            'updated': updated
+        }
+        
+    except Exception as e:
+        db.session.rollback()
+        return {'success': False, 'message': f'Sync failed: {str(e)}'}
+
+def sync_all_calendars_for_admin(admin_id):
+    """Sync all calendars for a specific admin."""
+    # Get all amenities owned by this admin
+    amenities = Amenity.query.filter_by(admin_id=admin_id).all()
+    calendars = []
+    for amenity in amenities:
+        calendars.extend(amenity.calendars)
+    
+    if not calendars:
+        return {'success': False, 'message': 'No calendars found'}
+    
+    total_synced = 0
+    total_updated = 0
+    results = []
+    
+    for calendar in calendars:
+        if calendar.sync_enabled and calendar.is_active:
+            result = sync_calendar_reservations(calendar.id)
+            if result['success']:
+                total_synced += result['synced']
+                total_updated += result['updated']
+            results.append(result)
+    
+    return {
+        'success': True,
+        'message': f'Synced {total_synced} new reservations, updated {total_updated} existing across {len(calendars)} calendars',
+        'total_synced': total_synced,
+        'total_updated': total_updated,
+        'calendars_processed': len(calendars),
+        'results': results
+    }
+
+def fetch_calendar_data(calendar_url, calendar_type):
+    """Fetch calendar data based on type."""
+    if calendar_type == 'airbnb':
+        return fetch_airbnb_calendar(calendar_url)
+    else:
+        # For other calendar types, use the same parsing logic for now
+        return fetch_airbnb_calendar(calendar_url)
+
+def create_missing_housekeeping_tasks_for_calendar(calendar_id):
+    """Create housekeeping tasks for trips in a calendar that don't already have one."""
+    calendar = Calendar.query.get_or_404(calendar_id)
+    
+    # Get default housekeeper for this amenity
+    default_assignment = AmenityHousekeeper.query.filter_by(
+        amenity_id=calendar.amenity_id, is_default=True).first()
+    
+    if not default_assignment and not calendar.amenity.default_housekeeper_id:
+        return 0  # No default housekeeper assigned
+    
+    # Get all trips for this calendar
+    trips = Trip.query.filter_by(calendar_id=calendar_id).all()
+    
+    created_count = 0
+    for trip in trips:
+        # Check if housekeeping task already exists for this trip
+        existing_task = Housekeeping.query.filter_by(trip_id=trip.id).first()
+        
+        if not existing_task:
+            # Create housekeeping task for the day after the trip ends
+            housekeeping_date = trip.end_date + timedelta(days=1)
+            
+            # Determine housekeeper
+            housekeeper_id = None
+            if default_assignment:
+                housekeeper_id = default_assignment.housekeeper_id
+            elif calendar.amenity.default_housekeeper_id:
+                housekeeper_id = calendar.amenity.default_housekeeper_id
+            
+            if housekeeper_id:
+                task = Housekeeping(
+                    trip_id=trip.id,
+                    housekeeper_id=housekeeper_id,
+                    date=housekeeping_date,
+                    pay_amount=calendar.amenity.admin.default_housekeeper_pay or 20,
+                    status='pending'
+                )
+                db.session.add(task)
+                created_count += 1
+    
+    if created_count > 0:
+        db.session.commit()
+    
+    return created_count
+
 # Custom Jinja2 filters
 @app.template_filter('nl2br')
 def nl2br_filter(text):
@@ -1098,11 +1253,19 @@ def new_trip():
             flash(_('Invalid amenity selected'), 'error')
             return redirect(url_for('new_trip'))
         
+        # Get max_guests from form, fallback to amenity's max_guests
+        try:
+            max_guests = int(request.form.get('max_guests', '').strip())
+            if max_guests < 1:
+                raise ValueError
+        except Exception:
+            max_guests = amenity.max_guests
+        
         trip = Trip(
             title=request.form.get('title'),
             start_date=datetime.strptime(request.form.get('start_date'), '%Y-%m-%d').date(),
             end_date=datetime.strptime(request.form.get('end_date'), '%Y-%m-%d').date(),
-            max_guests=int(request.form.get('max_guests')),
+            max_guests=max_guests,
             admin_id=current_user.id,
             amenity_id=amenity_id
         )
@@ -1132,10 +1295,18 @@ def edit_trip(trip_id):
             flash(_('Invalid amenity selected'), 'error')
             return redirect(url_for('edit_trip', trip_id=trip_id))
         
+        # Get max_guests from form, fallback to amenity's max_guests
+        try:
+            max_guests = int(request.form.get('max_guests', '').strip())
+            if max_guests < 1:
+                raise ValueError
+        except Exception:
+            max_guests = amenity.max_guests
+        
         trip.title = request.form.get('title')
         trip.start_date = datetime.strptime(request.form.get('start_date'), '%Y-%m-%d').date()
         trip.end_date = datetime.strptime(request.form.get('end_date'), '%Y-%m-%d').date()
-        trip.max_guests = int(request.form.get('max_guests'))
+        trip.max_guests = max_guests
         trip.amenity_id = amenity_id
         
         db.session.commit()
@@ -3512,35 +3683,14 @@ def fetch_calendar_data(calendar_url, calendar_type='airbnb'):
 @role_required('admin')
 def admin_calendars():
     """Manage calendars."""
-    amenities = Amenity.query.filter_by(admin_id=current_user.id).order_by(Amenity.name).all()
+    # Get all amenities owned by this admin
+    amenities = Amenity.query.filter_by(admin_id=current_user.id).all()
     calendars_by_amenity = {}
+    
     for amenity in amenities:
-        calendars_by_amenity[amenity] = Calendar.query.filter_by(amenity_id=amenity.id).order_by(Calendar.name).all()
-
-    # Precompute statistics
-    def count_sync_enabled(calendars):
-        return sum(1 for c in calendars if getattr(c, 'sync_enabled', False))
-    def count_trips(calendars):
-        return sum(len(getattr(c, 'trips', [])) for c in calendars)
-    def count_synced_trips(calendars):
-        return sum(
-            sum(1 for t in getattr(c, 'trips', []) if getattr(t, 'is_externally_synced', False))
-            for c in calendars
-        )
-    total_calendars = sum(len(cals) for cals in calendars_by_amenity.values())
-    sync_enabled = sum(count_sync_enabled(cals) for cals in calendars_by_amenity.values())
-    total_trips = sum(count_trips(cals) for cals in calendars_by_amenity.values())
-    synced_trips = sum(count_synced_trips(cals) for cals in calendars_by_amenity.values())
-
-    return render_template(
-        'admin/calendars.html',
-        calendars_by_amenity=calendars_by_amenity,
-        amenities=amenities,
-        total_calendars=total_calendars,
-        sync_enabled=sync_enabled,
-        total_trips=total_trips,
-        synced_trips=synced_trips
-    )
+        calendars_by_amenity[amenity] = amenity.calendars
+    
+    return render_template('admin/calendars.html', calendars_by_amenity=calendars_by_amenity)
 
 @app.route('/admin/calendars/new', methods=['GET', 'POST'])
 @login_required
@@ -3558,12 +3708,12 @@ def new_calendar():
         calendar = Calendar(
             name=request.form.get('name'),
             description=request.form.get('description'),
-            amenity_id=amenity_id,
             calendar_url=request.form.get('calendar_url'),
             calendar_type=request.form.get('calendar_type', 'airbnb'),
             sync_enabled=request.form.get('sync_enabled') == 'on',
             sync_frequency=request.form.get('sync_frequency', 'daily'),
-            is_active=request.form.get('is_active') == 'on'
+            is_active=request.form.get('is_active') == 'on',
+            amenity_id=amenity_id
         )
         db.session.add(calendar)
         db.session.commit()
@@ -3584,6 +3734,13 @@ def edit_calendar(calendar_id):
         return redirect(url_for('admin_calendars'))
     
     if request.method == 'POST':
+        amenity_id = request.form.get('amenity_id')
+        amenity = Amenity.query.get(amenity_id)
+        
+        if not amenity or amenity.admin_id != current_user.id:
+            flash(_('Invalid amenity selected'), 'error')
+            return redirect(url_for('edit_calendar', calendar_id=calendar_id))
+        
         calendar.name = request.form.get('name')
         calendar.description = request.form.get('description')
         calendar.calendar_url = request.form.get('calendar_url')
@@ -3591,6 +3748,7 @@ def edit_calendar(calendar_id):
         calendar.sync_enabled = request.form.get('sync_enabled') == 'on'
         calendar.sync_frequency = request.form.get('sync_frequency', 'daily')
         calendar.is_active = request.form.get('is_active') == 'on'
+        calendar.amenity_id = amenity_id
         
         db.session.commit()
         flash(_('Calendar updated successfully!'), 'success')
@@ -4198,67 +4356,31 @@ def liveness_check():
 
 @app.route('/health/metrics')
 def health_metrics():
-    """Health metrics endpoint for monitoring systems."""
+    """Health metrics endpoint for monitoring."""
     try:
+        # Basic metrics
         metrics = {
             'timestamp': datetime.utcnow().isoformat(),
-            'version': version_manager.get_current_version(),
-            'metrics': {}
-        }
-        
-        # Database metrics
-        try:
-            db_result = db.session.execute('SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = \'public\'')
-            table_count = db_result.scalar()
-            
-            # Get user count
-            user_count = User.query.filter_by(is_deleted=False).count()
-            
-            # Get registration count
-            registration_count = Registration.query.count()
-            
-            # Get trip count
-            trip_count = Trip.query.count()
-            
-            metrics['metrics']['database'] = {
-                'tables': table_count,
-                'users': user_count,
-                'registrations': registration_count,
-                'trips': trip_count
-            }
-        except Exception as e:
-            metrics['metrics']['database'] = {'error': str(e)}
-        
-        # File system metrics
-        try:
-            upload_folder = app.config.get('UPLOAD_FOLDER', 'uploads')
-            if os.path.exists(upload_folder):
-                file_count = len([f for f in os.listdir(upload_folder) if os.path.isfile(os.path.join(upload_folder, f))])
-                folder_size = sum(os.path.getsize(os.path.join(upload_folder, f)) for f in os.listdir(upload_folder) if os.path.isfile(os.path.join(upload_folder, f)))
-                
-                metrics['metrics']['filesystem'] = {
-                    'upload_files': file_count,
-                    'upload_size_bytes': folder_size,
-                    'upload_size_mb': round(folder_size / (1024 * 1024), 2)
+            'status': 'healthy',
+            'version': app.config.get('VERSION', 'unknown'),
+            'database': {
+                'connected': True,
+                'tables': {
+                    'users': User.query.count(),
+                    'amenities': Amenity.query.count(),
+                    'trips': Trip.query.count(),
+                    'registrations': Registration.query.count(),
+                    'guests': Guest.query.count(),
+                    'invoices': Invoice.query.count(),
+                    'housekeeping': Housekeeping.query.count(),
                 }
-        except Exception as e:
-            metrics['metrics']['filesystem'] = {'error': str(e)}
-        
-        # Memory metrics
-        try:
-            import psutil
-            process = psutil.Process()
-            memory_info = process.memory_info()
-            
-            metrics['metrics']['memory'] = {
-                'rss_mb': round(memory_info.rss / (1024 * 1024), 2),
-                'vms_mb': round(memory_info.vms / (1024 * 1024), 2),
-                'percent': round(process.memory_percent(), 2)
+            },
+            'system': {
+                'uptime': 'unknown',  # Could be enhanced with process start time
+                'memory_usage': 'unknown',  # Could be enhanced with psutil
+                'cpu_usage': 'unknown',  # Could be enhanced with psutil
             }
-        except ImportError:
-            metrics['metrics']['memory'] = {'error': 'psutil not available'}
-        except Exception as e:
-            metrics['metrics']['memory'] = {'error': str(e)}
+        }
         
         return jsonify(metrics), 200
     except Exception as e:

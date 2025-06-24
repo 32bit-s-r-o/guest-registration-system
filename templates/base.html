@@ -87,7 +87,35 @@
                     {% if current_user.is_authenticated %}
                     <li class="nav-item">
                         {% if current_user.role == 'admin' %}
-                        <a class="nav-link" href="{{ url_for('admin_dashboard') }}">{{ _('Admin Dashboard') }}</a>
+                        <div class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                                {{ _('Admin') }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminDropdown">
+                                <li><a class="dropdown-item" href="{{ url_for('admin_dashboard') }}">{{ _('Dashboard')
+                                        }}</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('admin_amenities') }}">{{ _('Amenities')
+                                        }}</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('admin_trips') }}">{{ _('Trips') }}</a>
+                                </li>
+                                <li><a class="dropdown-item" href="{{ url_for('admin_calendars') }}">{{ _('Calendars')
+                                        }}</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('admin_registrations') }}">{{
+                                        _('Registrations') }}</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('admin_invoices') }}">{{ _('Invoices')
+                                        }}</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('admin_housekeeping') }}">{{
+                                        _('Housekeeping') }}</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('admin_users') }}">{{ _('Users') }}</a>
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li><a class="dropdown-item" href="{{ url_for('admin_settings') }}">{{ _('Settings')
+                                        }}</a></li>
+                            </ul>
+                        </div>
                         {% elif current_user.role == 'housekeeper' %}
                         <a class="nav-link" href="{{ url_for('housekeeper_dashboard') }}">{{ _('Housekeeper Dashboard')
                             }}</a>
