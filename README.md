@@ -323,6 +323,39 @@ docker build -t guest-registration-system .
 docker run -p 5000:5000 guest-registration-system
 ```
 
+### Docker Setup
+
+For Docker deployment, the system automatically handles setup and migrations:
+
+```bash
+# Start with automatic setup
+docker-compose up -d
+
+# The system will:
+# 1. Wait for PostgreSQL to be ready
+# 2. Run database migrations
+# 3. Create default admin user (admin/admin123)
+# 4. Start the application with Gunicorn
+```
+
+**Configuration Options:**
+- `APP_EXTERNAL_PORT`: External port for accessing the application from your PC (default: 8000)
+- `APP_PORT`: Internal port inside the Docker container (default: 5000)
+- `POSTGRES_PASSWORD`: Database password (default: postgres)
+
+**Example with custom port:**
+```bash
+# Run on port 9000
+APP_EXTERNAL_PORT=9000 docker-compose up -d
+```
+
+**Default Docker Admin Credentials:**
+- **Username**: `admin`
+- **Password**: `admin123`
+- **Email**: `admin@example.com`
+
+**Important**: Change these credentials after first login in production!
+
 ### Production Deployment
 See [Deployment Guide](docs/deployment.md) for production setup instructions.
 

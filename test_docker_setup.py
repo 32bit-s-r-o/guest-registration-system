@@ -305,6 +305,71 @@ def test_x86_64_support():
         print(f"❌ Could not test x86_64 support: {e}")
         return False
 
+def test_docker_setup_script():
+    """Test that Docker setup script exists and is executable."""
+    print("Testing Docker setup script...")
+    
+    setup_docker_path = "setup_docker.py"
+    
+    # Check if file exists
+    if not os.path.exists(setup_docker_path):
+        print(f"❌ Docker setup script not found: {setup_docker_path}")
+        return False
+    
+    # Check if file is executable
+    if not os.access(setup_docker_path, os.X_OK):
+        print(f"❌ Docker setup script not executable: {setup_docker_path}")
+        return False
+    
+    # Check file content
+    try:
+        with open(setup_docker_path, 'r') as f:
+            content = f.read()
+            if 'Docker Setup script' in content and 'create_admin_user' in content:
+                print(f"✅ Docker setup script is valid: {setup_docker_path}")
+                return True
+            else:
+                print(f"❌ Docker setup script content seems invalid: {setup_docker_path}")
+                return False
+    except Exception as e:
+        print(f"❌ Error reading Docker setup script: {e}")
+        return False
+
+def test_app_external_port_config():
+    """Test that APP_EXTERNAL_PORT is properly configured in Docker Compose files."""
+    print("Testing APP_EXTERNAL_PORT configuration...")
+    
+    compose_files = ["docker-compose.yml", "docker-compose.registry.yml"]
+    
+    for compose_file in compose_files:
+        if not os.path.exists(compose_file):
+            print(f"❌ Docker Compose file not found: {compose_file}")
+            continue
+            
+        try:
+            with open(compose_file, 'r') as f:
+                content = f.read()
+                
+            # Check if APP_EXTERNAL_PORT is defined in environment
+            if 'APP_EXTERNAL_PORT' in content:
+                print(f"✅ APP_EXTERNAL_PORT configured in {compose_file}")
+            else:
+                print(f"❌ APP_EXTERNAL_PORT not found in {compose_file}")
+                return False
+                
+            # Check if ports mapping uses the variable
+            if '${APP_EXTERNAL_PORT' in content:
+                print(f"✅ Ports mapping uses APP_EXTERNAL_PORT in {compose_file}")
+            else:
+                print(f"❌ Ports mapping doesn't use APP_EXTERNAL_PORT in {compose_file}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Error reading {compose_file}: {e}")
+            return False
+    
+    return True
+
 def main():
     """Run all Docker tests"""
     print("🐳 Docker Setup Test Suite")
@@ -319,7 +384,9 @@ def main():
         ("manage.py Docker", test_manage_py_docker),
         ("Production Requirements", test_requirements),
         ("Health Endpoint", test_health_endpoint),
-        ("x86_64 Support", test_x86_64_support)
+        ("x86_64 Support", test_x86_64_support),
+        ("Docker Setup Script", test_docker_setup_script),
+        ("APP_EXTERNAL_PORT Configuration", test_app_external_port_config)
     ]
     
     results = {}

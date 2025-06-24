@@ -168,8 +168,21 @@ run_migrations() {
 # Function to run setup
 run_setup() {
     log "--> Enter run_setup()"
+    
+    # Check for Docker setup script first
+    if [ -f "setup_docker.py" ] && [ "$DOCKER_ENV" = "true" ]; then
+        log "Using Docker setup script: setup_docker.py"
+        python3 setup_docker.py
+        local status=$?
+        if [ $status -eq 0 ]; then success "Docker setup completed"; else error "Docker setup failed"; fi
+        log "<-- Exit run_setup(), status=$status"
+        return $status
+    fi
+    
+    # Fallback to regular setup script
     if [ -f "$SETUP_SCRIPT" ]; then
-        if [ -t 0 ]; then
+        # In Docker, always use non-interactive setup
+        if [ -t 0 ] && [ "$DOCKER_ENV" != "true" ]; then
             log "Interactive setup: python3 $SETUP_SCRIPT"
             python3 "$SETUP_SCRIPT"
         else
@@ -177,21 +190,52 @@ run_setup() {
             python3 - << 'PYCODE'
 import os, sys
 from werkzeug.security import generate_password_hash
-from app import app, db, User
 from dotenv import load_dotenv
 load_dotenv()
+
+try:
+    from app import app, db, User
+    print("✅ App modules imported successfully")
+except Exception as e:
+    print(f"❌ Error importing app modules: {e}")
+    sys.exit(1)
+
 try:
     with app.app_context():
-        if User.query.filter_by(is_deleted=False).first(): sys.exit(0)
-        admin = User(username='admin', email='admin@example.com', password_hash=generate_password_hash('admin123'), role='admin')
-        db.session.add(admin); db.session.commit(); print('Default admin created')
+        print("✅ App context created")
+        
+        # Check if admin already exists (not deleted)
+        existing_admin = User.query.filter_by(is_deleted=False).first()
+        if existing_admin:
+            print(f"✅ Admin user already exists: {existing_admin.username}")
+            sys.exit(0)
+        
+        print("Creating default admin user...")
+        admin = User(
+            username='admin', 
+            email='admin@example.com', 
+            password_hash=generate_password_hash('admin123'), 
+            role='admin'
+        )
+        db.session.add(admin)
+        db.session.commit()
+        print('✅ Default admin created successfully')
+        print('   Username: admin')
+        print('   Password: admin123')
+        print('   Email: admin@example.com')
         sys.exit(0)
 except Exception as e:
-    print(f'Error: {e}'); sys.exit(1)
+    print(f"❌ Error creating admin user: {e}")
+    import traceback
+    traceback.print_exc()
+    sys.exit(1)
 PYCODE
         fi
     else
-        error "Setup script not found"
+        error "Setup script not found: $SETUP_SCRIPT"
+        log "Current directory: $(pwd)"
+        log "Files in current directory: $(ls -la)"
+        return 1
     fi
     local status=$?
     if [ $status -eq 0 ]; then success "Setup completed"; else error "Setup errors"; fi

@@ -64,7 +64,7 @@ python manage.py docker status
 
 ### 2. Access the Application
 
-- **Application**: http://localhost:8000
+- **Application**: http://localhost:${APP_EXTERNAL_PORT:-8000}
 - **Nginx Proxy**: http://localhost:80
 - **Database**: localhost:5432
 
@@ -205,6 +205,36 @@ app:
 - **Network isolation** between services
 - **Environment variable** configuration
 - **Restart policies** for reliability
+
+### Environment Variables
+
+The following environment variables can be configured:
+
+**Port Mapping Format:**
+Docker uses the format `EXTERNAL:INTERNAL` where:
+- **EXTERNAL** (left): Port you access from your PC
+- **INTERNAL** (right): Port inside the Docker container
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `APP_EXTERNAL_PORT` | 8000 | External port for accessing the application from your PC |
+| `APP_PORT` | 5000 | Internal port inside the Docker container |
+| `POSTGRES_PASSWORD` | postgres | Database password |
+| `SECRET_KEY` | your-secret-key-here | Flask secret key |
+| `GUNICORN_WORKERS` | 4 | Number of Gunicorn workers |
+| `GUNICORN_TIMEOUT` | 120 | Gunicorn timeout in seconds |
+
+**Example usage:**
+```bash
+# Run on custom port
+APP_EXTERNAL_PORT=9000 docker-compose up -d
+
+# Use custom database password
+POSTGRES_PASSWORD=mypassword docker-compose up -d
+
+# Configure Gunicorn
+GUNICORN_WORKERS=8 GUNICORN_TIMEOUT=180 docker-compose up -d
+```
 
 ## 🌐 Nginx Configuration
 
