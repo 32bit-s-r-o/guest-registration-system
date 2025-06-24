@@ -5,6 +5,74 @@ All notable changes to the Guest Registration System will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.0] - 2025-01-24
+
+### Added
+- **Blueprint-Based Architecture**
+  - Completed refactor from monolithic to modular blueprint structure
+  - Organized code into logical blueprints: main, auth, admin, registration, etc.
+  - Enhanced code organization and maintainability
+  - Improved separation of concerns across application modules
+
+- **Enhanced Test Coverage**
+  - Added comprehensive test coverage for refactored components
+  - Created new test scripts: `test_fixes.py`, `test_refactor.py`, `test_standalone.py`
+  - Integrated new tests into the universal management script
+  - Enhanced test validation for blueprint registration and functionality
+
+- **Documentation Updates**
+  - Updated all documentation to reflect new blueprint-based architecture
+  - Removed references to old monolithic structure
+  - Enhanced documentation clarity and accuracy
+  - Updated system architecture descriptions
+
+### Changed
+- **Application Structure**
+  - Restructured from single `app_old.py` file to organized blueprint modules
+  - Improved code modularity and reusability
+  - Enhanced maintainability and scalability
+  - Better separation of concerns between different application features
+
+- **Code Organization**
+  - Moved route handlers to appropriate blueprint modules
+  - Organized templates and static files by feature
+  - Improved import structure and dependency management
+  - Enhanced code readability and maintainability
+
+### Removed
+- **Old Monolithic App**
+  - Removed `app_old.py` file (181KB, 4498 lines)
+  - Eliminated monolithic application structure
+  - Cleaned up legacy code and unused components
+  - Streamlined codebase for better maintainability
+
+### Fixed
+- **Refactor-Related Issues**
+  - Fixed email function calls to use proper mail instance
+  - Resolved URL routing issues in templates
+  - Fixed template filter registration
+  - Corrected blueprint endpoint references
+  - Resolved configuration loading issues
+
+- **Test Suite Improvements**
+  - Fixed backup verification to use correct table names
+  - Enhanced email functionality tests with better data creation
+  - Improved language picker configuration testing
+  - Resolved test warnings and improved test reliability
+
+### Technical Improvements
+- **Architecture Enhancement**
+  - Implemented proper Flask blueprint structure
+  - Enhanced application scalability and maintainability
+  - Improved code organization and readability
+  - Better separation of concerns across modules
+
+- **Testing Enhancements**
+  - Added new test categories for refactored components
+  - Enhanced test coverage and validation
+  - Improved test reliability and consistency
+  - Better integration with management script
+
 ## [1.8.0] - 2025-01-XX
 
 ### Added

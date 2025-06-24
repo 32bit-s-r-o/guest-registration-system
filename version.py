@@ -12,7 +12,7 @@ from typing import Dict, List, Optional
 class VersionManager:
     def __init__(self, version_file: str = "version.json"):
         self.version_file = version_file
-        self.current_version = "1.0.0"
+        self.current_version = "1.9.0"
         self.minimum_database_version = "1.0.0"
         self.upgrade_paths = {
             "1.0.0": ["1.1.0", "1.2.0"],
@@ -116,6 +116,35 @@ class VersionManager:
 
 # Version history and changelog
 VERSION_HISTORY = {
+    "1.9.0": {
+        "date": "2025-01-24",
+        "features": [
+            "Completed refactor from monolithic to blueprint-based architecture",
+            "Removed old monolithic app_old.py file",
+            "Enhanced modular structure with organized blueprints",
+            "Improved code organization and maintainability",
+            "Added comprehensive test coverage for refactored components",
+            "Updated all documentation to reflect new architecture"
+        ],
+        "database_schema": "1.8.0",
+        "breaking_changes": [
+            "Removed monolithic app_old.py file",
+            "Restructured application to use Flask blueprints"
+        ]
+    },
+    "1.8.0": {
+        "date": "2025-01-XX",
+        "features": [
+            "Slovak language support",
+            "Enhanced housekeeping system with photo uploads",
+            "User date format preferences",
+            "Amenity management system",
+            "Enhanced calendar system",
+            "User soft delete functionality"
+        ],
+        "database_schema": "1.8.0",
+        "breaking_changes": []
+    },
     "1.0.0": {
         "date": "2025-01-01",
         "features": [
