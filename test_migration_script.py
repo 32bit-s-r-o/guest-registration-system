@@ -55,6 +55,11 @@ def test_migration_script():
                               capture_output=True, text=True, timeout=10)
         if result.returncode == 0 and "Usage:" in result.stdout:
             print("✅ Help functionality works")
+            # Check for new options
+            if "--setup-only" in result.stdout and "--migrate-only" in result.stdout:
+                print("✅ New command options are documented")
+            else:
+                print("⚠️ New command options may not be documented")
         else:
             print("❌ Help functionality failed")
             return False
@@ -75,16 +80,45 @@ def test_migration_script():
     except Exception as e:
         print(f"⚠️ Check-only test failed: {e}")
     
-    # Test 5: Test script structure
-    print("\n5. Testing script structure...")
+    # Test 5: Test setup-only functionality (without database)
+    print("\n5. Testing setup-only functionality...")
+    try:
+        result = subprocess.run([str(wrapper_script), "--setup-only"], 
+                              capture_output=True, text=True, timeout=30)
+        # This should fail without a database, but the script should handle it gracefully
+        if "Database connection failed" in result.stderr or "Database is not accessible" in result.stderr:
+            print("✅ Setup-only handles missing database gracefully")
+        else:
+            print("⚠️ Setup-only test completed (may have database connection)")
+    except Exception as e:
+        print(f"⚠️ Setup-only test failed: {e}")
+    
+    # Test 6: Test migrate-only functionality (without database)
+    print("\n6. Testing migrate-only functionality...")
+    try:
+        result = subprocess.run([str(wrapper_script), "--migrate-only"], 
+                              capture_output=True, text=True, timeout=30)
+        # This should fail without a database, but the script should handle it gracefully
+        if "Database connection failed" in result.stderr or "Database is not accessible" in result.stderr:
+            print("✅ Migrate-only handles missing database gracefully")
+        else:
+            print("⚠️ Migrate-only test completed (may have database connection)")
+    except Exception as e:
+        print(f"⚠️ Migrate-only test failed: {e}")
+    
+    # Test 7: Test script structure
+    print("\n7. Testing script structure...")
     with open(migration_script, 'r') as f:
         content = f.read()
         
     required_functions = [
         "check_database_connection",
+        "check_database_empty",
         "check_migration_status", 
         "run_migrations",
-        "check_if_migrations_needed"
+        "run_setup",
+        "check_if_migrations_needed",
+        "check_if_setup_needed"
     ]
     
     for func in required_functions:
@@ -94,8 +128,8 @@ def test_migration_script():
             print(f"❌ Function {func} not found")
             return False
     
-    # Test 6: Test Docker integration files
-    print("\n6. Testing Docker integration...")
+    # Test 8: Test Docker integration files
+    print("\n8. Testing Docker integration...")
     dockerfile = project_root / "Dockerfile"
     docker_compose = project_root / "docker-compose.yml"
     
@@ -114,10 +148,14 @@ def test_migration_script():
     if docker_compose.exists():
         with open(docker_compose, 'r') as f:
             compose_content = f.read()
-        if "migrations:" in compose_content and "service_completed_successfully" in compose_content:
-            print("✅ Docker Compose includes migration service")
+        # Check for simplified approach (no separate setup/migration services)
+        if "app:" in compose_content and "postgres:" in compose_content and "redis:" in compose_content:
+            if "setup:" not in compose_content and "migrations:" not in compose_content:
+                print("✅ Docker Compose uses simplified approach (setup/migrations in main app)")
+            else:
+                print("⚠️ Docker Compose still has separate setup/migration services")
         else:
-            print("❌ Docker Compose missing migration service")
+            print("❌ Docker Compose missing main services")
             return False
     else:
         print("❌ Docker Compose file not found")
@@ -125,6 +163,60 @@ def test_migration_script():
     
     print("\n" + "=" * 50)
     print("🎉 All migration script tests passed!")
+    print("=" * 50)
+    return True
+
+def test_setup_script():
+    """Test the setup script functionality"""
+    print("\n🔧 Testing Setup Script")
+    print("=" * 50)
+    
+    project_root = Path(__file__).parent
+    setup_script = project_root / "setup.py"
+    
+    # Test 1: Check if setup script exists
+    print("1. Checking if setup script exists...")
+    if setup_script.exists():
+        print("✅ Setup script exists")
+    else:
+        print("❌ Setup script not found")
+        return False
+    
+    # Test 2: Check setup script structure
+    print("\n2. Testing setup script structure...")
+    with open(setup_script, 'r') as f:
+        content = f.read()
+        
+    required_functions = [
+        "check_environment",
+        "test_database_connection",
+        "create_tables",
+        "create_admin_user",
+        "show_next_steps"
+    ]
+    
+    for func in required_functions:
+        if func in content:
+            print(f"✅ Function {func} found")
+        else:
+            print(f"❌ Function {func} not found")
+            return False
+    
+    # Test 3: Test setup script execution (without database)
+    print("\n3. Testing setup script execution...")
+    try:
+        result = subprocess.run([sys.executable, str(setup_script)], 
+                              capture_output=True, text=True, timeout=30)
+        # This should fail without proper environment, but should show appropriate error
+        if result.returncode != 0:
+            print("✅ Setup script handles missing environment gracefully")
+        else:
+            print("⚠️ Setup script completed (may have proper environment)")
+    except Exception as e:
+        print(f"⚠️ Setup script test failed: {e}")
+    
+    print("\n" + "=" * 50)
+    print("🎉 All setup script tests passed!")
     print("=" * 50)
     return True
 
@@ -155,13 +247,17 @@ def test_migration_commands():
     return True
 
 if __name__ == "__main__":
-    print("🚀 Starting Migration System Tests")
+    print("🚀 Starting Migration and Setup System Tests")
     print("=" * 60)
     
     success = True
     
     # Test migration script
     if not test_migration_script():
+        success = False
+    
+    # Test setup script
+    if not test_setup_script():
         success = False
     
     # Test migration commands
@@ -171,7 +267,8 @@ if __name__ == "__main__":
     print("\n" + "=" * 60)
     if success:
         print("🎉 All tests completed successfully!")
-        print("The migration system is ready to use.")
+        print("The migration and setup system is ready to use.")
+        print("✅ Simplified approach: setup and migrations run in main app container")
     else:
         print("❌ Some tests failed. Please check the issues above.")
     

@@ -41,42 +41,7 @@ services:
     networks:
       - guest_registration_network
 
-  # Migration Service (runs once and exits)
-  migrations:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      platforms:
-        - linux/amd64
-        - linux/arm64
-    container_name: guest_registration_migrations
-    environment:
-      - FLASK_APP=app.py
-      - FLASK_ENV=production
-      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/guest_registration
-      - REDIS_URL=redis://redis:6379/0
-      - SECRET_KEY=${SECRET_KEY:-your-secret-key-here}
-      - MAIL_SERVER=${MAIL_SERVER:-smtp.gmail.com}
-      - MAIL_PORT=${MAIL_PORT:-587}
-      - MAIL_USE_TLS=${MAIL_USE_TLS:-True}
-      - MAIL_USERNAME=${MAIL_USERNAME}
-      - MAIL_PASSWORD=${MAIL_PASSWORD}
-      - UPLOAD_FOLDER=/app/static/uploads
-      - MAX_CONTENT_LENGTH=${MAX_CONTENT_LENGTH:-16777216}
-    volumes:
-      - app_uploads:/app/static/uploads
-      - app_logs:/app/logs
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    command: ["/app/scripts/check_and_run_migrations.sh"]
-    restart: "no"
-    networks:
-      - guest_registration_network
-
-  # Main Application
+  # Main Application (includes setup and migrations)
   app:
     build:
       context: .
@@ -84,12 +49,6 @@ services:
       platforms:
         - linux/amd64   # x86_64 architecture (Intel/AMD 64-bit)
         - linux/arm64   # ARM 64-bit (Apple Silicon, ARM servers)
-        - linux/arm/v7  # ARM 32-bit (Raspberry Pi, ARM devices)
-        - linux/arm/v6  # ARM 32-bit (older Raspberry Pi)
-        - linux/386     # x86 32-bit (Intel/AMD 32-bit)
-        - linux/ppc64le # PowerPC 64-bit little-endian
-        - linux/s390x   # IBM S390x (mainframe)
-        - linux/riscv64 # RISC-V 64-bit
     container_name: guest_registration_app
     environment:
       - FLASK_APP=app.py
@@ -110,8 +69,6 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      migrations:
-        condition: service_completed_successfully
       postgres:
         condition: service_healthy
       redis:

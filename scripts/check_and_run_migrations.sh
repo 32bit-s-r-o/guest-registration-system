@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Migration Check and Run Script for Guest Registration System
-# This script checks if the database is connected and runs migrations if needed
+# This script checks if the database is connected and runs setup and migrations if needed
 
 set -e
 
@@ -12,7 +12,7 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Logging function
+# Logging functions
 log() {
     echo -e "${BLUE}[$(date +'%Y-%m-%d %H:%M:%S')]${NC} $1"
 }
@@ -29,28 +29,61 @@ warning() {
     echo -e "${YELLOW}[WARNING]${NC} $1"
 }
 
+# Initial debug logs
+log "Script invoked: $0 $*"
+log "Running as user: $(whoami), PID: $$"
+
+# Dump selected critical environment variables
+log "Dumping selected critical environment variables:"
+log "POSTGRES_DB=${POSTGRES_DB:-<unset>}, POSTGRES_USER=${POSTGRES_USER:-<unset>}, POSTGRES_PASSWORD=${POSTGRES_PASSWORD:+***MASKED***}, REDIS_URL=${REDIS_URL:-<unset>}, DATABASE_URL=${DATABASE_URL:-<unset>}, TABLE_PREFIX=${TABLE_PREFIX:-<unset>}"
+log "SECRET_KEY=${SECRET_KEY:+***MASKED***}, MAIL_SERVER=${MAIL_SERVER:-<unset>}, MAIL_PORT=${MAIL_PORT:-<unset>}, MAIL_USE_TLS=${MAIL_USE_TLS:-<unset>}, MAIL_USERNAME=${MAIL_USERNAME:-<unset>}, MAIL_PASSWORD=${MAIL_PASSWORD:+***MASKED***}"
+log "UPLOAD_FOLDER=${UPLOAD_FOLDER:-<unset>}, MAX_CONTENT_LENGTH=${MAX_CONTENT_LENGTH:-<unset>}"
+# Full environment dump (for deeper debugging)
+env | while IFS= read -r line; do log "$line"; done
+
 # Configuration
 MAX_RETRIES=30
 RETRY_DELAY=2
 PYTHON_SCRIPT="migrations.py"
 MANAGE_SCRIPT="manage.py"
+SETUP_SCRIPT="setup.py"
 
-# Function to check if database is accessible
+log "Configurations: MAX_RETRIES=$MAX_RETRIES, RETRY_DELAY=$RETRY_DELAY, PYTHON_SCRIPT=$PYTHON_SCRIPT, MANAGE_SCRIPT=$MANAGE_SCRIPT, SETUP_SCRIPT=$SETUP_SCRIPT, TABLE_PREFIX=${TABLE_PREFIX:-guest_reg_}"
+
+# Function to check database connectivity
 check_database_connection() {
-    log "Checking database connection..."
-    
-    # Try to connect to database using Python
-    python3 -c "
-import os
-import sys
+    log "--> Enter check_database_connection()"
+    log "Executing Python DB connection test"
+    local output status
+    output=$(python3 - << 'PYCODE'
+import os, sys
+print(f'Python version: {sys.version}')
+print(f'Python executable: {sys.executable}')
+
+# Check if psycopg2 is available
+try:
+    import psycopg2
+    print(f'psycopg2 version: {psycopg2.__version__}')
+    print(f'psycopg2 path: {psycopg2.__file__}')
+except ImportError as e:
+    print(f'psycopg2 import error: {e}')
+    print('Attempting to install psycopg2-binary...')
+    import subprocess
+    try:
+        subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'psycopg2-binary>=2.9.5'])
+        import psycopg2
+        print(f'psycopg2 successfully installed, version: {psycopg2.__version__}')
+    except Exception as install_error:
+        print(f'Failed to install psycopg2: {install_error}')
+        sys.exit(1)
+
 from sqlalchemy import create_engine, text
 from dotenv import load_dotenv
-
 load_dotenv()
-
+url = os.getenv('DATABASE_URL', 'postgresql://localhost/airbnb_guests')
+print(f'DATABASE_URL={url}')
 try:
-    database_url = os.getenv('DATABASE_URL', 'postgresql://localhost/airbnb_guests')
-    engine = create_engine(database_url)
+    engine = create_engine(url)
     with engine.connect() as conn:
         conn.execute(text('SELECT 1'))
     print('Database connection successful')
@@ -58,161 +91,177 @@ try:
 except Exception as e:
     print(f'Database connection failed: {e}')
     sys.exit(1)
-" 2>/dev/null
-    
-    return $?
+PYCODE
+) 2>&1
+    status=$?
+    log "Python DB test output: $output"
+    if [ $status -eq 0 ]; then success "DB connection test passed"; else error "DB connection test failed"; fi
+    log "<-- Exit check_database_connection(), status=$status"
+    return $status
+}
+
+# Function to check if database is empty
+check_database_empty() {
+    log "--> Enter check_database_empty()"
+    log "Executing Python DB empty check"
+    local output status
+    output=$(python3 - << 'PYCODE'
+import os, sys
+from sqlalchemy import create_engine, inspect
+from dotenv import load_dotenv
+load_dotenv()
+url = os.getenv('DATABASE_URL', 'postgresql://localhost/airbnb_guests')
+print(f'DATABASE_URL={url}')
+inspector = inspect(create_engine(url))
+tables = inspector.get_table_names()
+prefix = os.getenv('TABLE_PREFIX', 'guest_reg_')
+print(f'TABLE_PREFIX={prefix}')
+app = [t for t in tables if t.startswith(prefix)]
+if not app:
+    print('Database is empty (no application tables found)')
+    sys.exit(0)
+else:
+    print(f'Database has {len(app)} application tables: {app}')
+    sys.exit(1)
+PYCODE
+) 2>&1
+    status=$?
+    log "Python DB empty check output: $output"
+    if [ $status -eq 0 ]; then warning "Database empty"; else success "Database has tables"; fi
+    log "<-- Exit check_database_empty(), status=$status"
+    return $status
 }
 
 # Function to check migration status
 check_migration_status() {
-    log "Checking migration status..."
-    
+    log "--> Enter check_migration_status()"
+    local output status
     if [ -f "$MANAGE_SCRIPT" ]; then
-        python3 "$MANAGE_SCRIPT" migrate status
-        return $?
-    elif [ -f "$PYTHON_SCRIPT" ]; then
-        python3 "$PYTHON_SCRIPT" status
-        return $?
+        log "Using $MANAGE_SCRIPT"
+        output=$(python3 "$MANAGE_SCRIPT" migrate status 2>&1)
     else
-        error "No migration script found"
-        return 1
+        log "Using $PYTHON_SCRIPT"
+        output=$(python3 "$PYTHON_SCRIPT" status 2>&1)
     fi
+    status=$?
+    log "Migration status output: $output"
+    log "<-- Exit check_migration_status(), status=$status"
+    return $status
 }
 
 # Function to run migrations
 run_migrations() {
-    log "Running migrations..."
-    
+    log "--> Enter run_migrations()"
     if [ -f "$MANAGE_SCRIPT" ]; then
+        log "Command: python3 $MANAGE_SCRIPT migrate"
         python3 "$MANAGE_SCRIPT" migrate
-        return $?
-    elif [ -f "$PYTHON_SCRIPT" ]; then
-        python3 "$PYTHON_SCRIPT" migrate
-        return $?
     else
-        error "No migration script found"
-        return 1
+        log "Command: python3 $PYTHON_SCRIPT migrate"
+        python3 "$PYTHON_SCRIPT" migrate
     fi
+    local status=$?
+    if [ $status -eq 0 ]; then success "Migrations successful"; else error "Migrations failed"; fi
+    log "<-- Exit run_migrations(), status=$status"
+    return $status
+}
+
+# Function to run setup
+run_setup() {
+    log "--> Enter run_setup()"
+    if [ -f "$SETUP_SCRIPT" ]; then
+        if [ -t 0 ]; then
+            log "Interactive setup: python3 $SETUP_SCRIPT"
+            python3 "$SETUP_SCRIPT"
+        else
+            log "Non-interactive setup: default admin creation"
+            python3 - << 'PYCODE'
+import os, sys
+from werkzeug.security import generate_password_hash
+from app import app, db, User
+from dotenv import load_dotenv
+load_dotenv()
+try:
+    with app.app_context():
+        if User.query.filter_by(is_deleted=False).first(): sys.exit(0)
+        admin = User(username='admin', email='admin@example.com', password_hash=generate_password_hash('admin123'), role='admin')
+        db.session.add(admin); db.session.commit(); print('Default admin created')
+        sys.exit(0)
+except Exception as e:
+    print(f'Error: {e}'); sys.exit(1)
+PYCODE
+        fi
+    else
+        error "Setup script not found"
+    fi
+    local status=$?
+    if [ $status -eq 0 ]; then success "Setup completed"; else error "Setup errors"; fi
+    log "<-- Exit run_setup(), status=$status"
+    return $status
 }
 
 # Function to check if migrations are needed
 check_if_migrations_needed() {
-    log "Checking if migrations are needed..."
-    
-    # Run status check and capture output
-    if [ -f "$MANAGE_SCRIPT" ]; then
-        output=$(python3 "$MANAGE_SCRIPT" migrate status 2>&1)
-    elif [ -f "$PYTHON_SCRIPT" ]; then
-        output=$(python3 "$PYTHON_SCRIPT" status 2>&1)
-    else
-        error "No migration script found"
-        return 1
-    fi
-    
-    # Check if there are pending migrations
-    if echo "$output" | grep -q "pending\|No pending migrations"; then
-        if echo "$output" | grep -q "No pending migrations"; then
-            success "No pending migrations found"
-            return 0
-        else
-            warning "Pending migrations found"
-            return 1
-        fi
-    else
-        # If we can't determine, assume migrations might be needed
-        warning "Could not determine migration status, proceeding with migration check"
-        return 1
-    fi
+    log "--> Enter check_if_migrations_needed()"
+    local output status
+    if [ -f "$MANAGE_SCRIPT" ]; then output=$(python3 "$MANAGE_SCRIPT" migrate status 2>&1); else output=$(python3 "$PYTHON_SCRIPT" status 2>&1); fi
+    log "Raw migration status: $output"
+    if echo "$output" | grep -q "No pending migrations"; then success "No pending migrations"; return 0; elif echo "$output" | grep -q "pending"; then warning "Pending migrations"; return 1; else warning "Unknown status, assume pending"; return 1; fi
 }
 
-# Main execution
+# Function to check if setup is needed
+check_if_setup_needed() {
+    log "--> Enter check_if_setup_needed()"
+    if check_database_empty; then warning "Setup needed"; return 0; else success "Setup not needed"; return 1; fi
+}
+
+# Main
 main() {
-    log "Starting migration check and run process..."
-    
-    # Wait for database to be ready
-    log "Waiting for database to be ready..."
+    log "--> Enter main()"
+    log "Waiting for database readiness"
     for i in $(seq 1 $MAX_RETRIES); do
-        if check_database_connection; then
-            success "Database is ready"
-            break
-        else
-            if [ $i -eq $MAX_RETRIES ]; then
-                error "Database connection failed after $MAX_RETRIES attempts"
-                exit 1
-            fi
-            warning "Database not ready, retrying in ${RETRY_DELAY}s... (attempt $i/$MAX_RETRIES)"
-            sleep $RETRY_DELAY
-        fi
+        log "DB connection attempt $i"
+        if check_database_connection; then success "DB ready after $i attempts"; break; fi
+        if [ $i -eq $MAX_RETRIES ]; then error "DB unreachable after $MAX_RETRIES attempts"; exit 1; fi
+        sleep $RETRY_DELAY
     done
-    
-    # Check if migrations are needed
-    if check_if_migrations_needed; then
-        success "Database is up to date, no migrations needed"
-        exit 0
-    fi
-    
-    # Run migrations
-    log "Running migrations..."
-    if run_migrations; then
-        success "Migrations completed successfully"
-        
-        # Verify migration status after running
-        log "Verifying migration status..."
-        if check_migration_status; then
-            success "Migration verification successful"
-            exit 0
-        else
-            error "Migration verification failed"
-            exit 1
-        fi
-    else
-        error "Migrations failed"
-        exit 1
-    fi
+
+    if check_if_setup_needed; then log "Running setup"; run_setup || warning "Setup failed"; fi
+    if check_if_migrations_needed; then success "DB up to date"; exit 0; fi
+
+    log "Initiating migrations"
+    run_migrations || { error "Migration run failed"; exit 1; }
+    log "Verifying migrations"
+    check_migration_status && success "Migration verification passed" || { error "Migration verification failed"; exit 1; }
+    log "<-- Exit main()"
 }
 
-# Handle script arguments
+# Argument handling
+log "Parsing arguments: $*"
 case "${1:-}" in
     --help|-h)
-        echo "Usage: $0 [OPTIONS]"
-        echo ""
-        echo "Options:"
-        echo "  --help, -h     Show this help message"
-        echo "  --check-only   Only check migration status, don't run migrations"
-        echo "  --force        Force run migrations even if not needed"
-        echo ""
-        echo "This script checks database connectivity and runs migrations if needed."
-        exit 0
-        ;;
+        log "Help requested"
+        echo "Usage: $0 [OPTIONS]"; echo; echo "Options:"; echo "  --help, -h     Show help"; echo "  --check-only   Only check status"; echo "  --force        Force migrations"; echo "  --setup-only   Only setup"; echo "  --migrate-only Only migrate"
+        exit 0;;
     --check-only)
-        log "Check-only mode enabled"
-        if check_database_connection; then
-            success "Database is accessible"
-            check_migration_status
-        else
-            error "Database is not accessible"
-            exit 1
-        fi
-        exit 0
-        ;;
+        log "Mode: check-only"
+        check_database_connection && success "DB accessible" && check_migration_status || exit 1
+        exit 0;;
     --force)
-        log "Force mode enabled"
-        if check_database_connection; then
-            success "Database is accessible"
-            run_migrations
-        else
-            error "Database is not accessible"
-            exit 1
-        fi
-        exit 0
-        ;;
+        log "Mode: force"
+        check_database_connection && run_migrations || exit 1
+        exit 0;;
+    --setup-only)
+        log "Mode: setup-only"
+        check_database_connection && run_setup || exit 1
+        exit 0;;
+    --migrate-only)
+        log "Mode: migrate-only"
+        check_database_connection && run_migrations || exit 1
+        exit 0;;
     "")
-        # No arguments, run normal flow
-        main
-        ;;
+        main;;
     *)
         error "Unknown option: $1"
         echo "Use --help for usage information"
-        exit 1
-        ;;
-esac 
+        exit 1;;
+esac

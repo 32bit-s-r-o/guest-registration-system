@@ -1,0 +1,111 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+README.md
+CHANGELOG.md
+RELEASE_NOTES.md
+docs/
+*.md
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+.env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# Test files
+test_*.py
+*_test.py
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Backup files
+backup_*.sql
+backup_*.sql.gz
+
+# Environment files
+.env
+.env.local
+.env.production
+.env.staging
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Scripts (keep only essential ones)
+# scripts/
+# *.sh
+# # But keep the essential migration script
+# !scripts/check_and_run_migrations.sh
+
+# Uploads (will be mounted as volume)
+uploads/
+static/uploads/
+
+# Sample images (will be copied in Dockerfile)
+static/sample_images/
+
+# Translations (will be compiled in Dockerfile)
+translations/
+
+# Management scripts (keep migrations.py as it's needed by the app)
+manage.py
+setup.py
+reset_data.py
+quick_reset.py 

@@ -356,15 +356,24 @@ class SystemManager:
         
         if not args:
             print("Available Docker operations:")
-            print("  build [platform] [tag]     - Build Docker image")
-            print("  up [service]               - Start Docker Compose services")
-            print("  down                       - Stop Docker Compose services")
-            print("  logs [service]             - Show Docker logs")
-            print("  status                     - Show Docker service status")
-            print("  clean                      - Clean Docker resources")
-            print("  push [tag]                 - Push image to registry")
-            print("  multi-build [platforms]    - Build for multiple platforms")
-            print("  all-platforms [tag] [push] - Build for ALL processor architectures")
+            print("  build [platform] [tag] [registry]           - Build Docker image")
+            print("  up [service]                                - Start Docker Compose services") 
+            print("  down                                        - Stop Docker Compose services")
+            print("  logs [service]                              - Show Docker logs")
+            print("  status                                      - Show Docker service status")
+            print("  clean                                       - Clean Docker resources")
+            print("  push [tag] [registry]                       - Push image to registry")
+            print("  multi-build [platforms] [tag] [registry]    - Build for multiple platforms")
+            print("  all-platforms [tag] [registry] [push]       - Build for ALL processor architectures")
+            print("  buildx-setup                                - Setup Docker buildx for multiplatform builds")
+            print("  build-individual [platform] [tag] [registry] - Build Docker image for a single platform")
+            print("  diagnose                                    - Diagnose Docker build issues")
+            print("")
+            print("Examples:")
+            print("  python manage.py docker build")
+            print("  python manage.py docker build linux/amd64 myapp:v1.0")
+            print("  python manage.py docker multi-build \"linux/amd64,linux/arm64\" myapp:v1.0 docker.io/myuser")
+            print("  python manage.py docker all-platforms myapp:v1.0 ghcr.io/myuser true")
             return True
         
         operation = args[0]
@@ -387,35 +396,62 @@ class SystemManager:
             return self._docker_multi_build(args[1:] if len(args) > 1 else [])
         elif operation == 'all-platforms':
             return self._docker_all_platforms(args[1:] if len(args) > 1 else [])
+        elif operation == 'buildx-setup':
+            return self._docker_buildx_setup()
+        elif operation == 'build-individual':
+            return self._docker_build_individual(args[1:] if len(args) > 1 else [])
+        elif operation == 'diagnose':
+            return self._docker_diagnose()
         else:
             print(f"❌ Unknown Docker operation: {operation}")
             return False
 
     def _docker_build(self, args):
-        """Build Docker image"""
+        """Build Docker image with optional registry support"""
         platform = args[0] if args else 'linux/amd64'  # Default to x86_64
         tag = args[1] if len(args) > 1 else 'guest-registration:latest'
+        registry = args[2] if len(args) > 2 else None
         
-        print(f"🔨 Building Docker image for {platform} with tag {tag}")
+        # Add registry prefix if provided
+        if registry:
+            if not tag.startswith(registry):
+                full_tag = f"{registry.rstrip('/')}/{tag}"
+            else:
+                full_tag = tag
+        else:
+            full_tag = tag
+        
+        print(f"🔨 Building Docker image for {platform}")
+        print(f"Tag: {full_tag}")
+        if registry:
+            print(f"Registry: {registry}")
         
         try:
+            # Setup buildx builder if needed
+            self._ensure_buildx_builder()
+            
             cmd = [
                 'docker', 'buildx', 'build',
                 '--platform', platform,
-                '--tag', tag,
+                '--tag', full_tag,
                 '--file', 'Dockerfile',
+                '--load',  # Load image to local Docker after build
                 '.'
             ]
             
             result = subprocess.run(cmd, capture_output=True, text=True)
             
             if result.returncode == 0:
-                self.log_action("SUCCESS", f"Docker image built successfully: {tag}")
-                print(result.stdout)
+                self.log_action("SUCCESS", f"Docker image built successfully: {full_tag}")
+                if result.stdout.strip():
+                    print(result.stdout)
                 return True
             else:
                 self.log_action("FAILED", f"Docker build failed")
-                print("STDERR:", result.stderr)
+                if result.stderr.strip():
+                    print("STDERR:", result.stderr)
+                if result.stdout.strip():
+                    print("STDOUT:", result.stdout)
                 return False
                 
         except Exception as e:
@@ -423,41 +459,105 @@ class SystemManager:
             return False
 
     def _docker_multi_build(self, args):
-        """Build Docker image for multiple platforms"""
-        platforms = args if args else ['linux/amd64', 'linux/arm64', 'linux/arm/v7']  # Default includes x86_64
-        tag = 'guest-registration:latest'
+        """Build Docker image for multiple platforms with registry support"""
+        # Parse arguments
+        platforms_arg = args[0] if args else 'linux/amd64,linux/arm64'
+        tag = args[1] if len(args) > 1 else 'guest-registration:latest'
+        registry = args[2] if len(args) > 2 else None
         
-        print(f"🔨 Building multi-platform Docker image: {', '.join(platforms)}")
+        # Parse platforms
+        if ',' in platforms_arg:
+            platforms = [p.strip() for p in platforms_arg.split(',')]
+        else:
+            platforms = [platforms_arg]
+        
+        # Add registry prefix if provided
+        if registry:
+            if not tag.startswith(registry):
+                full_tag = f"{registry.rstrip('/')}/{tag}"
+            else:
+                full_tag = tag
+        else:
+            full_tag = tag
+        
+        print(f"🔨 Building multi-platform Docker image")
+        print(f"Platforms: {', '.join(platforms)}")
+        print(f"Tag: {full_tag}")
+        if registry:
+            print(f"Registry: {registry}")
         
         try:
-            # Create builder if it doesn't exist
-            subprocess.run(['docker', 'buildx', 'create', '--name', 'multi-builder', '--use'], 
-                         capture_output=True)
+            # Setup buildx builder with enhanced configuration
+            if not self._ensure_buildx_builder():
+                self.log_action("ERROR", "Failed to setup buildx builder")
+                return False
             
-            # Build for multiple platforms
+            # Clean up any existing build cache that might be causing issues
+            self.log_action("INFO", "Cleaning build cache to prevent context cancellation issues")
+            subprocess.run(['docker', 'builder', 'prune', '-f'], capture_output=True)
+            
+            # Build for multiple platforms with enhanced options
             platform_arg = ','.join(platforms)
             cmd = [
                 'docker', 'buildx', 'build',
                 '--platform', platform_arg,
-                '--tag', tag,
+                '--tag', full_tag,
                 '--file', 'Dockerfile',
-                '--push',  # Push to registry if available
-                '.'
+                '--progress', 'plain',  # Better progress reporting
+                '--no-cache',  # Avoid cache issues
+                '--build-arg', 'BUILDKIT_INLINE_CACHE=1'  # Enable inline cache
             ]
             
-            result = subprocess.run(cmd, capture_output=True, text=True)
+            # Add push or load flag based on registry
+            if registry:
+                cmd.append('--push')  # Push to registry
+                print("Will push to registry after build")
+            else:
+                # For local builds without registry, we can't load multi-platform images
+                # So we'll build without load/push (just builds and discards)
+                print("Local multi-platform build (images will not be loaded to local Docker)")
+            
+            cmd.append('.')
+            
+            # Run with increased timeout and better error handling
+            print(f"Running command: {' '.join(cmd)}")
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=3600)  # 60 min timeout
             
             if result.returncode == 0:
-                self.log_action("SUCCESS", f"Multi-platform Docker image built successfully: {tag}")
-                print(result.stdout)
+                self.log_action("SUCCESS", f"Multi-platform Docker image built successfully: {full_tag}")
+                if result.stdout.strip():
+                    print(result.stdout)
                 return True
             else:
-                self.log_action("FAILED", f"Multi-platform Docker build failed")
-                print("STDERR:", result.stderr)
+                self.log_action("FAILED", f"Multi-platform Docker build failed with code {result.returncode}")
+                if result.stderr.strip():
+                    print("STDERR:", result.stderr)
+                if result.stdout.strip():
+                    print("STDOUT:", result.stdout)
+                
+                # Provide specific guidance for common errors
+                if "context canceled" in result.stderr.lower():
+                    print("\n💡 Context cancellation usually indicates:")
+                    print("   - Insufficient memory/CPU resources")
+                    print("   - Network timeout during registry push")
+                    print("   - Docker daemon issues")
+                    print("\n🔧 Try these solutions:")
+                    print("   1. Increase Docker memory limit (8GB+ recommended)")
+                    print("   2. Build platforms one by one: python manage.py docker build linux/amd64")
+                    print("   3. Check Docker daemon logs: docker system info")
+                    print("   4. Restart Docker daemon")
+                
                 return False
                 
+        except subprocess.TimeoutExpired:
+            self.log_action("TIMEOUT", f"Multi-platform Docker build timed out after 60 minutes")
+            print("\n💡 Build timeout suggestions:")
+            print("   - Try building fewer platforms at once")
+            print("   - Increase Docker resources")
+            print("   - Check network connectivity")
+            return False
         except Exception as e:
-            self.log_action("ERROR", f"Multi-platform Docker build failed: {e}")
+            self.log_action("ERROR", f"Multi-platform Docker build failed with exception: {e}")
             return False
 
     def _docker_up(self, args):
@@ -577,19 +677,35 @@ class SystemManager:
     def _docker_push(self, args):
         """Push Docker image to registry"""
         tag = args[0] if args else 'guest-registration:latest'
+        registry = args[1] if len(args) > 1 else None
         
-        print(f"📤 Pushing Docker image: {tag}")
+        # Add registry prefix if provided
+        if registry:
+            if not tag.startswith(registry):
+                full_tag = f"{registry.rstrip('/')}/{tag}"
+            else:
+                full_tag = tag
+        else:
+            full_tag = tag
+        
+        print(f"📤 Pushing Docker image: {full_tag}")
+        if registry:
+            print(f"Registry: {registry}")
         
         try:
-            result = subprocess.run(['docker', 'push', tag], capture_output=True, text=True)
+            result = subprocess.run(['docker', 'push', full_tag], capture_output=True, text=True)
             
             if result.returncode == 0:
-                self.log_action("SUCCESS", f"Docker image pushed: {tag}")
-                print(result.stdout)
+                self.log_action("SUCCESS", f"Docker image pushed: {full_tag}")
+                if result.stdout.strip():
+                    print(result.stdout)
                 return True
             else:
-                self.log_action("FAILED", f"Failed to push Docker image: {tag}")
-                print("STDERR:", result.stderr)
+                self.log_action("FAILED", f"Failed to push Docker image: {full_tag}")
+                if result.stderr.strip():
+                    print("STDERR:", result.stderr)
+                if result.stdout.strip():
+                    print("STDOUT:", result.stdout)
                 return False
                 
         except Exception as e:
@@ -597,45 +713,325 @@ class SystemManager:
             return False
 
     def _docker_all_platforms(self, args):
-        """Build Docker image for ALL supported platforms"""
+        """Build Docker image for ALL supported platforms with registry support"""
         tag = args[0] if args else 'guest-registration:latest'
-        push = args[1] if len(args) > 1 else 'false'
+        registry = args[1] if len(args) > 1 else None
+        push = args[2] if len(args) > 2 else 'false'
+        
+        # Add registry prefix if provided
+        if registry:
+            if not tag.startswith(registry):
+                full_tag = f"{registry.rstrip('/')}/{tag}"
+            else:
+                full_tag = tag
+        else:
+            full_tag = tag
+        
+        # Convert push to boolean
+        should_push = push.lower() in ['true', '1', 'yes', 'y']
         
         print(f"🌍 Building Docker image for ALL processor architectures")
-        print(f"Tag: {tag}")
-        print(f"Push to registry: {push}")
+        print(f"Tag: {full_tag}")
+        if registry:
+            print(f"Registry: {registry}")
+        print(f"Push to registry: {should_push}")
+        
+        # All supported platforms
+        all_platforms = [
+            'linux/amd64',      # x86_64
+            'linux/arm64',      # ARM64 (Apple Silicon, ARM servers)
+            'linux/arm/v7',     # ARM v7 (Raspberry Pi, etc.)
+            'linux/arm/v6',     # ARM v6 (older ARM devices)
+            'linux/386',        # 32-bit x86
+            'linux/ppc64le',    # PowerPC 64-bit little endian
+            'linux/s390x',      # IBM Z architecture
+            'linux/riscv64'     # RISC-V 64-bit
+        ]
         
         try:
-            # Use the dedicated script for all platforms
+            # Check if dedicated script exists, otherwise use built-in method
             script_path = self.project_root / 'scripts' / 'build_all_platforms.sh'
-            if not script_path.exists():
-                self.log_action("ERROR", f"Script not found: build_all_platforms.sh")
-                return False
             
-            cmd = [str(script_path), tag, push]
-            
-            self.log_action("RUNNING", f"build_all_platforms.sh {tag} {push}")
-            
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=1800)  # 30 minutes timeout
-            
-            if result.returncode == 0:
-                self.log_action("SUCCESS", f"All-platform Docker build completed successfully")
-                if result.stdout.strip():
-                    print(result.stdout)
-                return True
+            if script_path.exists():
+                # Use the dedicated script
+                cmd = [str(script_path), full_tag, str(should_push).lower()]
+                
+                self.log_action("RUNNING", f"build_all_platforms.sh {full_tag} {should_push}")
+                
+                result = subprocess.run(cmd, capture_output=True, text=True, timeout=1800)
+                
+                if result.returncode == 0:
+                    self.log_action("SUCCESS", f"All-platform Docker build completed successfully")
+                    if result.stdout.strip():
+                        print(result.stdout)
+                    return True
+                else:
+                    self.log_action("FAILED", f"All-platform Docker build failed")
+                    if result.stderr.strip():
+                        print("STDERR:", result.stderr)
+                    if result.stdout.strip():
+                        print("STDOUT:", result.stdout)
+                    return False
             else:
-                self.log_action("FAILED", f"All-platform Docker build failed")
-                if result.stderr.strip():
-                    print("STDERR:", result.stderr)
-                if result.stdout.strip():
-                    print("STDOUT:", result.stdout)
-                return False
+                # Use built-in method
+                print("Script not found, using built-in multi-platform build...")
+                
+                # Setup buildx builder
+                self._ensure_buildx_builder()
+                
+                platform_arg = ','.join(all_platforms)
+                cmd = [
+                    'docker', 'buildx', 'build',
+                    '--platform', platform_arg,
+                    '--tag', full_tag,
+                    '--file', 'Dockerfile'
+                ]
+                
+                if should_push and registry:
+                    cmd.append('--push')
+                    print("Will push to registry after build")
+                else:
+                    print("Local build (images will not be loaded to local Docker)")
+                
+                cmd.append('.')
+                
+                result = subprocess.run(cmd, capture_output=True, text=True, timeout=1800)
+                
+                if result.returncode == 0:
+                    self.log_action("SUCCESS", f"All-platform Docker build completed successfully: {full_tag}")
+                    if result.stdout.strip():
+                        print(result.stdout)
+                    return True
+                else:
+                    self.log_action("FAILED", f"All-platform Docker build failed")
+                    if result.stderr.strip():
+                        print("STDERR:", result.stderr)
+                    if result.stdout.strip():
+                        print("STDOUT:", result.stdout)
+                    return False
                 
         except subprocess.TimeoutExpired:
             self.log_action("TIMEOUT", f"All-platform Docker build timed out after 30 minutes")
             return False
         except Exception as e:
             self.log_action("ERROR", f"All-platform Docker build failed with exception: {e}")
+            return False
+
+    def _ensure_buildx_builder(self):
+        """Ensure Docker buildx builder is set up for multi-platform builds"""
+        try:
+            # Check if a builder exists
+            result = subprocess.run(['docker', 'buildx', 'ls'], capture_output=True, text=True)
+            
+            if 'multi-builder' not in result.stdout:
+                self.log_action("INFO", "Creating Docker buildx builder for multi-platform builds")
+                
+                # Create and use multi-platform builder
+                create_result = subprocess.run([
+                    'docker', 'buildx', 'create', 
+                    '--name', 'multi-builder',
+                    '--driver', 'docker-container',
+                    '--use'
+                ], capture_output=True, text=True)
+                
+                if create_result.returncode != 0:
+                    self.log_action("WARNING", f"Failed to create buildx builder: {create_result.stderr}")
+                    return False
+                
+                # Bootstrap the builder
+                bootstrap_result = subprocess.run([
+                    'docker', 'buildx', 'inspect', '--bootstrap'
+                ], capture_output=True, text=True)
+                
+                if bootstrap_result.returncode != 0:
+                    self.log_action("WARNING", f"Failed to bootstrap buildx builder: {bootstrap_result.stderr}")
+                    return False
+                
+                self.log_action("SUCCESS", "Docker buildx builder created successfully")
+            else:
+                # Use existing multi-builder if available
+                subprocess.run(['docker', 'buildx', 'use', 'multi-builder'], capture_output=True)
+            
+            return True
+            
+        except Exception as e:
+            self.log_action("ERROR", f"Failed to setup buildx builder: {e}")
+            return False
+
+    def _docker_buildx_setup(self):
+        """Setup Docker buildx for multi-platform builds"""
+        print("🔧 Setting up Docker buildx for multi-platform builds")
+        print("=" * 50)
+        
+        try:
+            # Check Docker version
+            version_result = subprocess.run(['docker', '--version'], capture_output=True, text=True)
+            if version_result.returncode == 0:
+                print(f"Docker version: {version_result.stdout.strip()}")
+            
+            # Check buildx availability
+            buildx_result = subprocess.run(['docker', 'buildx', 'version'], capture_output=True, text=True)
+            if buildx_result.returncode != 0:
+                self.log_action("ERROR", "Docker buildx is not available")
+                print("Please update to a newer version of Docker that includes buildx")
+                return False
+            
+            print(f"Docker buildx version: {buildx_result.stdout.strip()}")
+            
+            # List current builders
+            ls_result = subprocess.run(['docker', 'buildx', 'ls'], capture_output=True, text=True)
+            print("\nCurrent builders:")
+            print(ls_result.stdout)
+            
+            # Create/setup multi-platform builder
+            if self._ensure_buildx_builder():
+                print("\n✅ Multi-platform builder is ready")
+                
+                # Inspect the builder to show supported platforms
+                inspect_result = subprocess.run([
+                    'docker', 'buildx', 'inspect', 'multi-builder'
+                ], capture_output=True, text=True)
+                
+                if inspect_result.returncode == 0:
+                    print("\nBuilder details:")
+                    print(inspect_result.stdout)
+                
+                return True
+            else:
+                print("\n❌ Failed to setup multi-platform builder")
+                return False
+            
+        except Exception as e:
+            self.log_action("ERROR", f"Buildx setup failed: {e}")
+            return False
+
+    def _docker_build_individual(self, args):
+        """Build Docker image for a single platform"""
+        platform = args[0] if args else 'linux/amd64'
+        tag = args[1] if len(args) > 1 else 'guest-registration:latest'
+        registry = args[2] if len(args) > 2 else None
+        
+        # Add registry prefix if provided
+        if registry:
+            if not tag.startswith(registry):
+                full_tag = f"{registry.rstrip('/')}/{tag}"
+            else:
+                full_tag = tag
+        else:
+            full_tag = tag
+        
+        print(f"🔨 Building Docker image for {platform}")
+        print(f"Tag: {full_tag}")
+        if registry:
+            print(f"Registry: {registry}")
+        
+        try:
+            # Setup buildx builder if needed
+            self._ensure_buildx_builder()
+            
+            cmd = [
+                'docker', 'buildx', 'build',
+                '--platform', platform,
+                '--tag', full_tag,
+                '--file', 'Dockerfile',
+                '--load',  # Load image to local Docker after build
+                '.'
+            ]
+            
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            
+            if result.returncode == 0:
+                self.log_action("SUCCESS", f"Docker image built successfully: {full_tag}")
+                if result.stdout.strip():
+                    print(result.stdout)
+                return True
+            else:
+                self.log_action("FAILED", f"Docker build failed")
+                if result.stderr.strip():
+                    print("STDERR:", result.stderr)
+                if result.stdout.strip():
+                    print("STDOUT:", result.stdout)
+                return False
+                
+        except Exception as e:
+            self.log_action("ERROR", f"Docker build failed: {e}")
+            return False
+
+    def _docker_diagnose(self):
+        """Diagnose Docker build issues"""
+        print("🔍 Diagnosing Docker build issues")
+        print("=" * 50)
+        
+        try:
+            # Check Docker version
+            version_result = subprocess.run(['docker', '--version'], capture_output=True, text=True)
+            if version_result.returncode != 0:
+                self.log_action("ERROR", "Docker is not installed")
+                print("Please install Docker to diagnose build issues")
+                return False
+            
+            print(f"Docker version: {version_result.stdout.strip()}")
+            
+            # Check buildx availability
+            buildx_result = subprocess.run(['docker', 'buildx', 'version'], capture_output=True, text=True)
+            if buildx_result.returncode != 0:
+                self.log_action("ERROR", "Docker buildx is not available")
+                print("Please update to a newer version of Docker that includes buildx")
+                return False
+            
+            print(f"Docker buildx version: {buildx_result.stdout.strip()}")
+            
+            # List current builders
+            ls_result = subprocess.run(['docker', 'buildx', 'ls'], capture_output=True, text=True)
+            print("\nCurrent builders:")
+            print(ls_result.stdout)
+            
+            # Check for common build issues
+            print("\n🔍 Checking for common build issues...")
+            
+            # Check for insufficient memory
+            memory_result = subprocess.run(['docker', 'system', 'df', '-v'], capture_output=True, text=True)
+            if 'No space left on device' in memory_result.stdout:
+                self.log_action("WARNING", "Insufficient Docker disk space")
+                print("💡 Consider freeing up disk space")
+            
+            # Check for insufficient CPU
+            cpu_result = subprocess.run(['docker', 'system', 'info'], capture_output=True, text=True)
+            if 'CPUs' in cpu_result.stdout:
+                cpu_count = int(cpu_result.stdout.split('CPUs: ')[1].split('/')[0])
+                if cpu_count < 2:
+                    self.log_action("WARNING", "Insufficient Docker CPU resources")
+                    print("💡 Consider adding more CPUs")
+            
+            # Check for network issues
+            network_result = subprocess.run(['docker', 'network', 'ls'], capture_output=True, text=True)
+            if 'No networks found' in network_result.stdout:
+                self.log_action("WARNING", "No Docker networks found")
+                print("💡 Consider creating a network")
+            
+            # Check for Docker daemon issues
+            daemon_result = subprocess.run(['docker', 'info'], capture_output=True, text=True)
+            if 'Error' in daemon_result.stdout:
+                self.log_action("ERROR", "Docker daemon is not running")
+                print("💡 Consider restarting Docker")
+            
+            # Check for Docker image issues
+            image_result = subprocess.run(['docker', 'images', '-a'], capture_output=True, text=True)
+            if 'No images found' in image_result.stdout:
+                self.log_action("WARNING", "No Docker images found")
+                print("💡 Consider building a new image")
+            
+            # Check for Docker container issues
+            container_result = subprocess.run(['docker', 'ps', '-a'], capture_output=True, text=True)
+            if 'No containers found' in container_result.stdout:
+                self.log_action("WARNING", "No Docker containers found")
+                print("💡 Consider running a new container")
+            
+            self.log_action("SUCCESS", "Docker build issues diagnosed")
+            return True
+            
+        except Exception as e:
+            self.log_action("ERROR", f"Docker diagnose failed: {e}")
             return False
 
 def main():
@@ -645,6 +1041,7 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
+  # Basic operations
   python manage.py test                    # Run all tests
   python manage.py migrate status          # Check migration status
   python manage.py migrate migrate         # Run pending migrations
@@ -654,15 +1051,38 @@ Examples:
   python manage.py status                  # Show system status
   python manage.py clean                   # Clean up temporary files
   python manage.py setup                   # Setup system from scratch
-  python manage.py docker                  # List Docker operations
-  python manage.py docker build            # Build Docker image
-  python manage.py docker multi-build      # Build for multiple platforms
-  python manage.py docker all-platforms    # Build for ALL processor architectures
+  python manage.py all                     # Run all operations
+
+  # Docker operations
+  python manage.py docker                                    # List Docker operations
+  python manage.py docker buildx-setup                       # Setup buildx for multiplatform
+  python manage.py docker build                              # Build for current platform
+  python manage.py docker build linux/amd64 myapp:v1.0      # Build for specific platform
+  python manage.py docker build linux/arm64 myapp:v1.0 docker.io/user  # Build with registry
+  
+  # Multi-platform builds
+  python manage.py docker multi-build                        # Build for amd64,arm64
+  python manage.py docker multi-build "linux/amd64,linux/arm64" myapp:v1.0
+  python manage.py docker multi-build "linux/amd64,linux/arm64" myapp:v1.0 ghcr.io/user
+  
+  # Individual platform builds (fallback for multi-platform issues)
+  python manage.py docker build-individual linux/amd64 myapp:v1.0
+  python manage.py docker build-individual linux/arm64 myapp:v1.0 docker.io/user
+  
+  # All-platform builds (8 architectures)
+  python manage.py docker all-platforms                      # Build for all platforms
+  python manage.py docker all-platforms myapp:v1.0          # With custom tag
+  python manage.py docker all-platforms myapp:v1.0 docker.io/user  # With registry
+  python manage.py docker all-platforms myapp:v1.0 docker.io/user true  # And push
+  
+  # Troubleshooting
+  python manage.py docker diagnose                           # Diagnose build issues
+  
+  # Docker Compose
   python manage.py docker up               # Start Docker Compose services
   python manage.py docker down             # Stop Docker Compose services
   python manage.py docker status           # Show Docker service status
   python manage.py docker logs app         # Show application logs
-  python manage.py all                     # Run all operations
         """
     )
     
