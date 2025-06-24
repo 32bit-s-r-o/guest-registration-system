@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from flask_babel import gettext as _
 from functools import wraps
 from datetime import datetime
+from utils import get_server_url
 
 trips = Blueprint('trips', __name__)
 
@@ -57,7 +58,7 @@ def new_trip():
         
         if not amenity or amenity.admin_id != current_user.id:
             flash(_('Invalid amenity selected'), 'error')
-            return redirect(url_for('trips.new_trip'))
+            return redirect(f"{get_server_url()}{url_for('trips.new_trip')}")
         
         # Get max_guests from form, fallback to amenity's max_guests
         try:
@@ -78,7 +79,7 @@ def new_trip():
         db.session.add(trip)
         db.session.commit()
         flash(_('Trip created successfully!'), 'success')
-        return redirect(url_for('trips.admin_trips'))
+        return redirect(f"{get_server_url()}{url_for('trips.admin_trips')}")
     
     amenities = Amenity.query.filter_by(admin_id=current_user.id, is_active=True).order_by(Amenity.name).all()
     return render_template('admin/new_trip.html', amenities=amenities)
@@ -91,7 +92,7 @@ def edit_trip(trip_id):
     trip = Trip.query.get_or_404(trip_id)
     if trip.admin_id != current_user.id:
         flash(_('Access denied'), 'error')
-        return redirect(url_for('trips.admin_trips'))
+        return redirect(f"{get_server_url()}{url_for('trips.admin_trips')}")
     
     if request.method == 'POST':
         amenity_id = request.form.get('amenity_id')
@@ -99,7 +100,7 @@ def edit_trip(trip_id):
         
         if not amenity or amenity.admin_id != current_user.id:
             flash(_('Invalid amenity selected'), 'error')
-            return redirect(url_for('trips.edit_trip', trip_id=trip_id))
+            return redirect(f"{get_server_url()}{url_for('trips.edit_trip', trip_id=trip_id)}")
         
         # Get max_guests from form, fallback to amenity's max_guests
         try:
@@ -117,7 +118,7 @@ def edit_trip(trip_id):
         
         db.session.commit()
         flash(_('Trip updated successfully!'), 'success')
-        return redirect(url_for('trips.admin_trips'))
+        return redirect(f"{get_server_url()}{url_for('trips.admin_trips')}")
     
     amenities = Amenity.query.filter_by(admin_id=current_user.id, is_active=True).order_by(Amenity.name).all()
     return render_template('admin/edit_trip.html', trip=trip, amenities=amenities)
@@ -130,14 +131,14 @@ def delete_trip(trip_id):
     trip = Trip.query.get_or_404(trip_id)
     if trip.admin_id != current_user.id:
         flash(_('Access denied'), 'error')
-        return redirect(url_for('trips.admin_trips'))
+        return redirect(f"{get_server_url()}{url_for('trips.admin_trips')}")
     
     # Check if trip has registrations
     if trip.registrations:
         flash(_('Cannot delete trip with existing registrations'), 'error')
-        return redirect(url_for('trips.admin_trips'))
+        return redirect(f"{get_server_url()}{url_for('trips.admin_trips')}")
     
     db.session.delete(trip)
     db.session.commit()
     flash(_('Trip deleted successfully!'), 'success')
-    return redirect(url_for('trips.admin_trips')) 
+    return redirect(f"{get_server_url()}{url_for('trips.admin_trips')}") 

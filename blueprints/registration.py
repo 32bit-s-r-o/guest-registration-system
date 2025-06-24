@@ -4,6 +4,7 @@ from werkzeug.utils import secure_filename
 import os
 import uuid
 from datetime import datetime
+from utils import get_server_url
 
 registration = Blueprint('registration', __name__)
 
@@ -22,15 +23,15 @@ def submit_confirm_code():
     
     if not confirm_code:
         flash(_('Please enter a confirmation code'), 'error')
-        return redirect(url_for('registration.register_landing'))
+        return redirect(f"{get_server_url()}{url_for('registration.register_landing')}")
     
     # Check if confirmation code exists
     trip = Trip.query.filter_by(external_confirm_code=confirm_code).first()
     if not trip:
         flash(_('Invalid confirmation code. Please check your code and try again.'), 'error')
-        return redirect(url_for('registration.register_landing'))
+        return redirect(f"{get_server_url()}{url_for('registration.register_landing')}")
     
-    return redirect(url_for('registration.register', trip_id=trip.id))
+    return redirect(f"{get_server_url()}{url_for('registration.register', trip_id=trip.id)}")
 
 @registration.route('/register/id/<int:trip_id>')
 def register(trip_id):
@@ -45,7 +46,7 @@ def register_by_code(confirm_code):
     trip = Trip.query.filter_by(external_confirm_code=confirm_code).first()
     if not trip:
         flash(_('Invalid confirmation code. Please check your code and try again.'), 'error')
-        return redirect(url_for('registration.register_landing'))
+        return redirect(f"{get_server_url()}{url_for('registration.register_landing')}")
     
     admin = User.query.get(trip.admin_id)
     return render_template('register.html', trip=trip, admin=admin)
@@ -136,12 +137,12 @@ def submit_registration(trip_id):
         'invoice_data': invoice_data
     }
     
-    return redirect(url_for('registration.confirm_registration'))
+    return redirect(f"{get_server_url()}{url_for('registration.confirm_registration')}")
 
 @registration.route('/confirm')
 def confirm_registration():
     if 'registration_data' not in session:
-        return redirect(url_for('main.index'))
+        return redirect(f"{get_server_url()}{url_for('main.index')}")
     
     data = session['registration_data']
     trip = Trip.query.get(data['trip_id'])
@@ -151,7 +152,7 @@ def confirm_registration():
 @registration.route('/submit', methods=['POST'])
 def submit_for_approval():
     if 'registration_data' not in session:
-        return redirect(url_for('main.index'))
+        return redirect(f"{get_server_url()}{url_for('main.index')}")
     
     data = session['registration_data']
     trip = Trip.query.get(data['trip_id'])
@@ -217,11 +218,11 @@ def submit_for_approval():
         db.session.commit()
         # Clear session data
         session.pop('registration_data', None)
-        return redirect(url_for('registration.registration_success'))
+        return redirect(f"{get_server_url()}{url_for('registration.registration_success')}")
     except Exception as e:
         db.session.rollback()
         flash(_('Error submitting registration: %(error)s', error=str(e)), 'error')
-        return redirect(url_for('registration.confirm_registration'))
+        return redirect(f"{get_server_url()}{url_for('registration.confirm_registration')}")
 
 @registration.route('/success')
 def registration_success():
