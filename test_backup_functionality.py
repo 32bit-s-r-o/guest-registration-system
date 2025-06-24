@@ -159,8 +159,8 @@ class BackupTester:
             with open(self.backup_file, 'r') as f:
                 content = f.read()
             
-            # Check for expected table structures
-            tables = ['admin', 'trip', 'registration', 'guest']
+            # Check for expected table structures - use correct table names
+            tables = ['user', 'trip', 'registration', 'guest']  # Changed 'admin' to 'user'
             found_tables = []
             
             for table in tables:
@@ -265,7 +265,7 @@ BACKUP_FILE="$BACKUP_DIR/guest_reg_backup_$DATE.sql"
 mkdir -p "$BACKUP_DIR"
 
 pg_dump -h localhost -p 5432 -U postgres -d ekom21 \\
-    -t {TABLE_PREFIX}admin \\
+    -t {TABLE_PREFIX}user \\
     -t {TABLE_PREFIX}trip \\
     -t {TABLE_PREFIX}registration \\
     -t {TABLE_PREFIX}guest \\
@@ -377,7 +377,7 @@ fi
         print("\n📝 Manual Backup Commands:")
         print("   ├─ Create backup:")
         print(f"   │  pg_dump -h localhost -U postgres -d ekom21 \\")
-        for table in ['admin', 'trip', 'registration', 'guest']:
+        for table in ['user', 'trip', 'registration', 'guest']:
             print(f"   │    -t {TABLE_PREFIX}{table} \\")
         print("   │    --no-owner --no-privileges -f backup.sql")
         print("   ├─ Compress backup:")

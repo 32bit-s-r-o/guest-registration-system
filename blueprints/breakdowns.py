@@ -28,7 +28,23 @@ def role_required(role):
 @role_required('admin')
 def admin_breakdowns():
     """Main breakdowns/analytics page."""
-    return render_template('admin/breakdowns.html')
+    # Get summary statistics for the overview cards
+    registrations = Registration.query.join(Trip).filter(Trip.admin_id == current_user.id).all()
+    guests = Guest.query.join(Registration).join(Trip).filter(Trip.admin_id == current_user.id).all()
+    trips = Trip.query.filter_by(admin_id=current_user.id).all()
+    invoices = Invoice.query.filter_by(admin_id=current_user.id).all()
+    
+    # Calculate totals
+    total_amount = sum(float(invoice.total_amount) for invoice in invoices)
+    
+    stats = {
+        'total_registrations': len(registrations),
+        'total_guests': len(guests),
+        'total_trips': len(trips),
+        'total_revenue': total_amount
+    }
+    
+    return render_template('admin/breakdowns.html', stats=stats)
 
 @breakdowns.route('/admin/breakdowns/registrations')
 @login_required

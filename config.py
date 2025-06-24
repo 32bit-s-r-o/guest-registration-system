@@ -6,7 +6,7 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     UPLOAD_FOLDER = os.environ.get('UPLOAD_FOLDER', 'uploads')
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max file size
-    TABLE_PREFIX = os.environ.get('TABLE_PREFIX', '')
+    TABLE_PREFIX = os.environ.get('TABLE_PREFIX', 'guest_reg_')
     VERSION = os.environ.get('VERSION', '1.0.0')
     MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
     MAIL_PORT = int(os.environ.get('MAIL_PORT', 587))
@@ -17,6 +17,7 @@ class Config:
     # Language and internationalization settings
     BABEL_DEFAULT_LOCALE = 'en'
     BABEL_SUPPORTED_LOCALES = ['en', 'cs', 'sk']
+    BABEL_TRANSLATION_DIRECTORIES = 'translations'
     LANGUAGE_PICKER_ENABLED = os.environ.get('LANGUAGE_PICKER_ENABLED', 'true').lower() == 'true'
     
     # Feature flags

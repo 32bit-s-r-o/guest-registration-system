@@ -58,9 +58,7 @@ def approve_registration(registration_id):
     
     # Send approval email
     from email_utils import send_approval_email
-    from flask_mail import Mail
-    mail = Mail(current_app)
-    if send_approval_email(registration, mail):
+    if send_approval_email(registration):
         flash(_('Registration approved and email sent to user'), 'success')
     else:
         flash(_('Registration approved but email failed to send'), 'warning')
@@ -79,9 +77,7 @@ def reject_registration(registration_id):
     
     # Send rejection email
     from email_utils import send_rejection_email
-    from flask_mail import Mail
-    mail = Mail(current_app)
-    if send_rejection_email(registration, mail):
+    if send_rejection_email(registration):
         flash(_('Registration rejected and email sent to user'), 'success')
     else:
         flash(_('Registration rejected but email failed to send'), 'warning')

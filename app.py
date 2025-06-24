@@ -16,6 +16,7 @@ from flask_babel import Babel, gettext as _
 from flask_mail import Mail, Message
 from weasyprint import HTML, CSS
 from weasyprint.text.fonts import FontConfiguration
+from werkzeug.exceptions import RequestEntityTooLarge
 
 # Import version and migration managers
 from version import VersionManager, version_manager, check_version_compatibility, get_version_changelog
@@ -34,20 +35,19 @@ from database import (
 # Import config
 from config import Config
 
+# Load environment variables
+from dotenv import load_dotenv
+load_dotenv()
+
 # Initialize Flask app
 app = Flask(__name__)
 app.config.from_object(Config)
 
-# Initialize extensions
-db.init_app(app)
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = 'auth.admin_login'
-babel = Babel(app)
-mail = Mail(app)
-
 # Initialize migration manager
 migration_manager = MigrationManager()
+
+# Ensure upload directory exists
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 def get_locale():
     # If language picker is disabled, always return English
@@ -64,13 +64,29 @@ def get_locale():
     
     return 'en'
 
+# Initialize extensions
+db.init_app(app)
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'auth.admin_login'
+babel = Babel(app, locale_selector=get_locale)
+mail = Mail(app)
+
 @app.context_processor
 def inject_get_locale():
-    return dict(get_locale=get_locale)
+    return dict(
+        get_locale=get_locale,
+        language_picker_enabled=app.config['LANGUAGE_PICKER_ENABLED']
+    )
 
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+@app.errorhandler(RequestEntityTooLarge)
+def handle_file_too_large(e):
+    flash(_('File too large. Maximum file size is 16MB.'), 'error')
+    return redirect(request.referrer or url_for('main.index'))
 
 # Register template filters
 from template_filters import register_template_filters

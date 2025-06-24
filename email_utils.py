@@ -2,7 +2,7 @@ from flask import session, url_for, current_app
 from flask_mail import Message
 from flask_babel import gettext as _
 
-def send_approval_email(registration, mail):
+def send_approval_email(registration):
     """Send approval email to guest after registration is approved."""
     try:
         # Set language based on registration
@@ -27,7 +27,7 @@ Thank you for choosing our service.
 Best regards,
 The Admin Team
 """, trip_title=registration.trip.title)
-        mail.send(msg)
+        current_app.extensions['mail'].send(msg)
         
         # Restore original language
         session['language'] = original_lang
@@ -36,7 +36,7 @@ The Admin Team
         print(f"Error sending approval email: {e}")
         return False
 
-def send_rejection_email(registration, mail):
+def send_rejection_email(registration):
     """Send rejection email to guest when registration is rejected."""
     try:
         # Set language based on registration
@@ -64,7 +64,7 @@ Thank you for your understanding.
 Best regards,
 The Admin Team
 """, trip_title=registration.trip.title, admin_comment=registration.admin_comment, update_link=update_link)
-        mail.send(msg)
+        current_app.extensions['mail'].send(msg)
         
         # Restore original language
         session['language'] = original_lang

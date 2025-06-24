@@ -59,11 +59,11 @@ class EmailFunctionalityTest:
             return False
     
     def test_invoice_pdf_email(self):
-        """Test sending invoice PDF by email"""
+        """Test invoice PDF email functionality"""
         print("\n📧 Testing Invoice PDF Email Functionality")
         print("=" * 50)
         
-        # Get invoices list
+        # First, try to create a test invoice if none exist
         try:
             response = self.session.get(f"{BASE_URL}/admin/invoices")
             if response.status_code != 200:
@@ -72,14 +72,62 @@ class EmailFunctionalityTest:
             
             # Check if there are any invoices
             if 'href="/admin/invoice/' not in response.text:
-                self.log_test("Invoice PDF Email", "WARN", "No invoices found to test with")
+                # Create a test invoice
+                self.log_test("Invoice PDF Email", "INFO", "No invoices found, creating test invoice...")
+                
+                # Create a test trip first
+                response = self.session.get(f"{BASE_URL}/admin/trips/new")
+                if response.status_code == 200:
+                    trip_data = {
+                        'title': 'Test Trip for Email',
+                        'start_date': '2025-07-01',
+                        'end_date': '2025-07-03',
+                        'max_guests': '2',
+                        'amenity_id': '1'  # Assuming amenity 1 exists
+                    }
+                    response = self.session.post(f"{BASE_URL}/admin/trips/new", data=trip_data)
+                    if response.status_code == 200:
+                        self.log_test("Test Trip Creation", "PASS", "Test trip created")
+                    else:
+                        self.log_test("Test Trip Creation", "FAIL", f"Status: {response.status_code}")
+                        return
+                
+                # Create a test invoice
+                response = self.session.get(f"{BASE_URL}/admin/invoices/new")
+                if response.status_code == 200:
+                    invoice_data = {
+                        'client_name': 'Test Client for Email',
+                        'client_email': 'test@example.com',
+                        'issue_date': '2025-06-24',
+                        'due_date': '2025-07-24',
+                        'currency': 'EUR',
+                        'item_count': '1',
+                        'item_description_0': 'Test Service',
+                        'item_quantity_0': '1',
+                        'item_unit_price_0': '100',
+                        'item_vat_rate_0': '21'
+                    }
+                    response = self.session.post(f"{BASE_URL}/admin/invoices/new", data=invoice_data)
+                    if response.status_code == 200:
+                        self.log_test("Test Invoice Creation", "PASS", "Test invoice created")
+                    else:
+                        self.log_test("Test Invoice Creation", "FAIL", f"Status: {response.status_code}")
+                        return
+                else:
+                    self.log_test("Test Invoice Creation", "FAIL", f"New invoice form status: {response.status_code}")
+                    return
+            
+            # Now get the invoices list again
+            response = self.session.get(f"{BASE_URL}/admin/invoices")
+            if response.status_code != 200:
+                self.log_test("Invoice PDF Email", "FAIL", f"Status: {response.status_code}")
                 return
             
             # Extract first invoice ID
             import re
             match = re.search(r'href="/admin/invoice/(\d+)"', response.text)
             if not match:
-                self.log_test("Invoice PDF Email", "WARN", "Could not find invoice ID")
+                self.log_test("Invoice PDF Email", "WARN", "No invoices found to test with")
                 return
             
             invoice_id = match.group(1)
@@ -154,6 +202,30 @@ class EmailFunctionalityTest:
             
             # Check if there are any pending registrations
             if 'href="/admin/registration/' not in response.text:
+                # Create a test registration if none exist
+                self.log_test("Registration Rejection Email", "INFO", "No registrations found, creating test registration...")
+                
+                # Create a test trip first
+                response = self.session.get(f"{BASE_URL}/admin/trips/new")
+                if response.status_code == 200:
+                    trip_data = {
+                        'title': 'Test Trip for Rejection Email',
+                        'start_date': '2025-07-01',
+                        'end_date': '2025-07-03',
+                        'max_guests': '2',
+                        'amenity_id': '1'  # Assuming amenity 1 exists
+                    }
+                    response = self.session.post(f"{BASE_URL}/admin/trips/new", data=trip_data)
+                    if response.status_code == 200:
+                        self.log_test("Test Trip Creation", "PASS", "Test trip created")
+                    else:
+                        self.log_test("Test Trip Creation", "FAIL", f"Status: {response.status_code}")
+                        return
+                
+                # Create a test registration (this would normally be done through the registration form)
+                # For testing purposes, we'll simulate this by creating a pending registration
+                # This is a simplified approach - in a real scenario, you'd go through the full registration process
+                self.log_test("Test Registration Creation", "INFO", "Test registration creation would require full registration flow")
                 self.log_test("Registration Rejection Email", "WARN", "No registrations found to test with")
                 return
             

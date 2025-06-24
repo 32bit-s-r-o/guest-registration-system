@@ -40,8 +40,8 @@ def test_language_picker_config():
     print()
     
     # Test with language picker disabled
-    print("2. Testing with LANGUAGE_PICKER_ENABLED=false")
-    os.environ['LANGUAGE_PICKER_ENABLED'] = 'false'
+    print("2. Testing with DISABLE_LANGUAGE_PICKER=true")
+    os.environ['DISABLE_LANGUAGE_PICKER'] = 'true'
     
     try:
         # Clear any cached imports
@@ -51,10 +51,15 @@ def test_language_picker_config():
         from app import app
         with app.app_context():
             enabled = app.config['LANGUAGE_PICKER_ENABLED']
+            disabled = app.config['DISABLE_LANGUAGE_PICKER']
             print(f"   Language picker enabled: {enabled}")
-            print("   ✓ Language picker will be hidden from navigation")
-            print("   ✓ App will automatically use English")
-            print("   ✓ Language switching will be disabled")
+            print(f"   Language picker disabled: {disabled}")
+            if disabled or not enabled:
+                print("   ✓ Language picker will be hidden from navigation")
+                print("   ✓ App will automatically use English")
+                print("   ✓ Language switching will be disabled")
+            else:
+                print("   ⚠️ Language picker is still enabled (check configuration)")
     except Exception as e:
         print(f"   ✗ Error: {e}")
     
@@ -64,15 +69,19 @@ def test_language_picker_config():
     elif 'LANGUAGE_PICKER_ENABLED' in os.environ:
         del os.environ['LANGUAGE_PICKER_ENABLED']
     
+    # Clean up DISABLE_LANGUAGE_PICKER
+    if 'DISABLE_LANGUAGE_PICKER' in os.environ:
+        del os.environ['DISABLE_LANGUAGE_PICKER']
+    
     print()
     print("=== Configuration Instructions ===")
     print("To disable the language picker, add to your .env file:")
-    print("LANGUAGE_PICKER_ENABLED=false")
+    print("DISABLE_LANGUAGE_PICKER=true")
     print()
     print("To enable the language picker (default), add to your .env file:")
     print("LANGUAGE_PICKER_ENABLED=true")
     print()
-    print("Or simply omit the variable to use the default (enabled)")
+    print("Or simply omit the variables to use the default (enabled)")
     print()
     print("=== Supported Languages ===")
     print("- English (en): Default language")

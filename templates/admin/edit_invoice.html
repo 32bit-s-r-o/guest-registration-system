@@ -7,7 +7,7 @@
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1><i class="fas fa-edit"></i> {{ _('Edit Invoice') }} {{ invoice.invoice_number }}</h1>
-            <a href="{{ url_for('view_invoice', invoice_id=invoice.id) }}" class="btn btn-secondary">
+            <a href="{{ url_for('invoices.view_invoice', invoice_id=invoice.id) }}" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> {{ _('Back to Invoice') }}
             </a>
         </div>
@@ -62,7 +62,8 @@
                             <div class="mb-3">
                                 <label for="issue_date" class="form-label">{{ _('Issue Date') }} *</label>
                                 <input type="date" class="form-control" id="issue_date" name="issue_date"
-                                    value="{{ invoice.issue_date.strftime('%Y-%m-%d') }}" required>
+                                    value="{{ invoice.issue_date.strftime('%Y-%m-%d') if invoice.issue_date else '' }}"
+                                    required>
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -145,7 +146,8 @@
                 <button type="submit" class="btn btn-primary btn-lg">
                     <i class="fas fa-save"></i> {{ _('Update Invoice') }}
                 </button>
-                <a href="{{ url_for('view_invoice', invoice_id=invoice.id) }}" class="btn btn-outline-secondary">
+                <a href="{{ url_for('invoices.view_invoice', invoice_id=invoice.id) }}"
+                    class="btn btn-outline-secondary">
                     <i class="fas fa-times"></i> {{ _('Cancel') }}
                 </a>
             </div>

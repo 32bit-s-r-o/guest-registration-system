@@ -1,7 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app
 from flask_login import login_required, current_user, login_user
 from flask_babel import gettext as _
-from functools import wraps
 from datetime import datetime, timedelta
 from werkzeug.utils import secure_filename
 import os
@@ -9,26 +8,7 @@ import os
 housekeeping = Blueprint('housekeeping', __name__)
 
 from database import db, User, Housekeeping, HousekeepingPhoto, Trip, Amenity, AmenityHousekeeper, Calendar, create_missing_housekeeping_tasks_for_calendar
-
-def role_required(role):
-    def decorator(f):
-        @wraps(f)
-        def decorated_function(*args, **kwargs):
-            if not current_user.is_authenticated:
-                login_manager = current_app.extensions.get('login_manager')
-                return login_manager.unauthorized()
-            if current_user.role != role:
-                from flask import abort
-                abort(403)
-            return f(*args, **kwargs)
-        return decorated_function
-    return decorator
-
-def allowed_file(filename):
-    """Check if the uploaded file is allowed."""
-    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+from utils import role_required, allowed_file
 
 @housekeeping.route('/housekeeper')
 def housekeeper_landing():
