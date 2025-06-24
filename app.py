@@ -44,9 +44,30 @@ load_dotenv()
 # Create migration manager instance
 migration_manager = MigrationManager()
 
+# Database configuration
+def get_database_url():
+    """Construct database URL from environment variables or use default."""
+    # Check if DATABASE_URL is explicitly set
+    database_url = os.getenv('DATABASE_URL')
+    if database_url:
+        # If it contains Docker-style variable substitution, handle it
+        if '${POSTGRES_PASSWORD:-postgres}' in database_url:
+            postgres_password = os.getenv('POSTGRES_PASSWORD', 'postgres')
+            database_url = database_url.replace('${POSTGRES_PASSWORD:-postgres}', postgres_password)
+        return database_url
+    
+    # Construct URL from individual components
+    db_host = os.getenv('DB_HOST', 'localhost')
+    db_port = os.getenv('DB_PORT', '5432')
+    db_name = os.getenv('DB_NAME', 'guest_registration')
+    db_user = os.getenv('DB_USER', 'postgres')
+    db_password = os.getenv('POSTGRES_PASSWORD', 'postgres')
+    
+    return f'postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}'
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key-here')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'postgresql://localhost/airbnb_guests')
+app.config['SQLALCHEMY_DATABASE_URI'] = get_database_url()
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
@@ -871,6 +892,12 @@ def admin_dashboard():
     trips = Trip.query.filter_by(admin_id=current_user.id).all()
     pending_registrations = Registration.query.filter_by(status='pending').count()
     
+    # Get all registrations for this admin
+    registrations = Registration.query.join(Trip).filter(Trip.admin_id == current_user.id).all()
+    
+    # Get all invoices for this admin
+    invoices = Invoice.query.filter_by(admin_id=current_user.id).all()
+    
     # Get calendars for all amenities owned by this admin
     amenities = Amenity.query.filter_by(admin_id=current_user.id).all()
     calendars = []
@@ -880,6 +907,8 @@ def admin_dashboard():
     return render_template('admin/dashboard.html', 
                          trips=trips, 
                          pending_registrations=pending_registrations,
+                         registrations=registrations,
+                         invoices=invoices,
                          calendars=calendars)
 
 @app.route('/admin/settings', methods=['GET', 'POST'])
@@ -4079,14 +4108,12 @@ def detailed_health_check():
 def readiness_check():
     """Readiness check for Kubernetes and orchestration systems."""
     try:
-        # Basic database connectivity
-        db.session.execute('SELECT 1')
-        
         # Check if application is ready to serve requests
         upload_folder = app.config.get('UPLOAD_FOLDER', 'uploads')
         if not os.path.exists(upload_folder):
             os.makedirs(upload_folder, exist_ok=True)
         
+        # Basic application readiness (no database dependency)
         return jsonify({
             'status': 'ready',
             'timestamp': datetime.utcnow().isoformat(),

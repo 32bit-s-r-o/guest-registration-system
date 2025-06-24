@@ -403,6 +403,38 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - [ ] API rate limiting
 - [ ] Advanced backup scheduling
 
+## 🗄️ Database Configuration
+
+The application supports two ways to configure the database connection:
+
+### Option 1: DATABASE_URL (Recommended)
+Set the complete database URL with Docker-style variable substitution:
+
+```bash
+# In your .env file
+DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@192.168.13.113:5433/guest_registration
+POSTGRES_PASSWORD=your_secure_password
+```
+
+### Option 2: Individual Components
+Set each database component separately:
+
+```bash
+# In your .env file
+DB_HOST=192.168.13.113
+DB_PORT=5433
+DB_NAME=guest_registration
+DB_USER=postgres
+POSTGRES_PASSWORD=your_secure_password
+```
+
+### Testing Database Connection
+Run the test script to verify your database connection:
+
+```bash
+python test_db_connection.py
+```
+
 ---
 
 **Status**: Production Ready ✅  
