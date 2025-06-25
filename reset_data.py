@@ -11,6 +11,7 @@ from datetime import datetime, timedelta, date
 from werkzeug.security import generate_password_hash
 from app import app, db, User, Trip, Registration, Guest
 from config import Config
+from utils import check_production_lock
 
 def get_table_names():
     """Get the actual table names with prefix."""
@@ -27,6 +28,9 @@ def reset_all_data():
     print("\n=== Resetting All Data (Preserving Admin) ===")
     
     try:
+        # Check production lock
+        check_production_lock("Database reset")
+        
         with app.app_context():
             # Get table names for display
             tables = get_table_names()
@@ -63,6 +67,9 @@ def reset_all_data():
             print(f"   Admin preserved: {tables['admin']}")
             
             return True
+    except RuntimeError as e:
+        print(f"❌ Production lock prevented database reset: {e}")
+        return False
     except Exception as e:
         print(f"❌ Error resetting data: {e}")
         return False
@@ -372,6 +379,9 @@ def seed_data():
     print("🌱 Seeding database with sample data...")
     
     try:
+        # Check production lock
+        check_production_lock("Database seeding")
+        
         with app.app_context():
             # Create sample admin if not exists (not deleted)
             existing_admin = User.query.filter_by(username='admin', is_deleted=False).first()
@@ -758,6 +768,9 @@ def seed_data():
             print("📸 Sample document images copied to uploads directory")
             return True
             
+    except RuntimeError as e:
+        print(f"❌ Production lock prevented database seeding: {e}")
+        return False
     except Exception as e:
         print(f"❌ Error seeding data: {e}")
         return False

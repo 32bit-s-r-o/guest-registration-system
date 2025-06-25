@@ -214,6 +214,7 @@ class TestSuiteRunner:
         
         # List of test scripts to run (only include existing ones)
         all_test_scripts = [
+            'test_production_lock.py',  # Production lock test should run first
             'test_simple.py',  # Simple test that doesn't require database
             'test_backup_api.py',
             'test_backup_functionality.py',

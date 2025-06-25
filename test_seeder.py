@@ -7,6 +7,7 @@ import os
 import sys
 from datetime import datetime, timedelta
 from test_config import TestConfig
+from utils import check_production_lock
 
 def seed_test_data():
     """Seed comprehensive test data"""
@@ -17,6 +18,17 @@ def seed_test_data():
     TestConfig.setup_test_environment()
     
     try:
+        # Check production lock (but allow override for test environments)
+        try:
+            check_production_lock("Test data seeding")
+        except RuntimeError as e:
+            # For test environments, we might want to allow seeding even in production-like settings
+            # Check if this is explicitly a test environment
+            if os.environ.get('TESTING', '').lower() == 'true':
+                print("⚠️  Test environment detected - allowing seeding despite production-like settings")
+            else:
+                raise e
+        
         # Import after environment setup
         from app import app
         from database import db, User, Trip, Registration, Guest, Invoice, InvoiceItem
@@ -186,7 +198,11 @@ def seed_test_data():
             print(f"📁 Test Table Prefix: {TestConfig.TEST_TABLE_PREFIX}")
             
             print("\n✅ Test data seeded successfully!")
+            return True
             
+    except RuntimeError as e:
+        print(f"❌ Production lock prevented test data seeding: {e}")
+        return False
     except Exception as e:
         print(f"❌ Error seeding test data: {e}")
         import traceback

@@ -15,6 +15,7 @@ from werkzeug.utils import secure_filename
 import csv
 import io
 from decimal import Decimal
+from utils import check_production_lock
 
 admin = Blueprint('admin', __name__)
 
@@ -202,6 +203,9 @@ def reset_data():
     """Reset all data in the database except admin accounts."""
     from flask import current_app
     try:
+        # Check production lock
+        check_production_lock("Database reset")
+        
         # Get table names for logging
         table_prefix = current_app.config.get('TABLE_PREFIX', '')
         tables_to_reset = [
@@ -236,6 +240,9 @@ def reset_data():
         flash(_('All guest registration data has been reset successfully.'), 'success')
         print("Database reset completed successfully")
         
+    except RuntimeError as e:
+        flash(str(e), 'error')
+        print(f"Production lock prevented database reset: {str(e)}")
     except Exception as e:
         db.session.rollback()
         flash(_('Error resetting data: %(error)s', error=str(e)), 'error')
@@ -248,6 +255,9 @@ def reset_data():
 def seed_data():
     """Seed the database with sample data. Only real reservations are seeded. 'Not Available' or blocked events are intentionally excluded to match Airbnb sync logic."""
     try:
+        # Check production lock
+        check_production_lock("Database seeding")
+        
         # Create sample admin if not exists
         existing_admin = User.query.filter_by(username='admin').first()
         if not existing_admin:
@@ -590,6 +600,9 @@ def seed_data():
         db.session.commit()
         
         flash(_('Sample data has been seeded successfully! Created 5 trips, 7 registrations (including 1 single-person pending), 3 invoices with realistic data, and updated admin contact information.'), 'success')
+    except RuntimeError as e:
+        flash(str(e), 'error')
+        print(f"Production lock prevented database seeding: {str(e)}")
     except Exception as e:
         db.session.rollback()
         flash(_('Error seeding data: %(error)s', error=str(e)), 'error')
@@ -601,6 +614,9 @@ def seed_data():
 def seed_reset():
     """Reset all data except admin accounts and then seed with sample data."""
     try:
+        # Check production lock
+        check_production_lock("Database reset and seeding")
+        
         # Get table names for logging
         table_prefix = app.config.get('TABLE_PREFIX', 'guest_reg_')
         tables_to_reset = [
@@ -769,6 +785,16 @@ def seed_reset():
                     {'first_name': 'Mary', 'last_name': 'Jane', 'document_type': 'driving_license', 'document_number': 'DL4445556', 'image': 'license_mary_jane.jpg'}
                 ]
             },
+            # Pending registration with ONE person
+            {
+                'trip_index': 0,
+                'email': 'solo.traveler@example.com',
+                'status': 'pending',
+                'created_at': datetime.now() - timedelta(hours=2),
+                'guests': [
+                    {'first_name': 'Emma', 'last_name': 'Wilson', 'document_type': 'passport', 'document_number': 'MN1234567', 'image': 'passport_emma_wilson.jpg'}
+                ]
+            },
             # Rejected registration
             {
                 'trip_index': 0,
@@ -820,6 +846,9 @@ def seed_reset():
         
         flash(_('Database has been reset and seeded with sample data successfully! Admin accounts have been preserved. Created 5 trips and 6 registrations with various statuses. Sample document images have been copied to uploads directory.'), 'success')
         
+    except RuntimeError as e:
+        flash(str(e), 'error')
+        print(f"Production lock prevented database reset and seeding: {str(e)}")
     except Exception as e:
         db.session.rollback()
         print(f"Error during reset and seed: {str(e)}")

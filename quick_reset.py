@@ -6,10 +6,12 @@ This script provides a fast way to reset the database without the web interface.
 
 import os
 import sys
+import argparse
 import shutil
 from app import app, db, User, Trip, Registration, Guest, Invoice, InvoiceItem
 from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash
+from utils import check_production_lock
 
 def copy_sample_image(image_filename):
     """Copy a sample image from static/sample_images to uploads directory."""
@@ -32,6 +34,9 @@ def quick_reset():
     print("=" * 40)
     
     try:
+        # Check production lock
+        check_production_lock("Database reset")
+        
         with app.app_context():
             # Get table prefix
             table_prefix = app.config.get('TABLE_PREFIX', 'guest_reg_')
@@ -77,6 +82,9 @@ def quick_reset():
             
             return True
             
+    except RuntimeError as e:
+        print(f"❌ Production lock prevented database reset: {e}")
+        return False
     except Exception as e:
         print(f"❌ Error during reset: {e}")
         return False
@@ -87,6 +95,9 @@ def quick_seed():
     print("=" * 30)
     
     try:
+        # Check production lock
+        check_production_lock("Database seeding")
+        
         with app.app_context():
             # Use existing admin or create one if none exists (not deleted)
             existing_admin = User.query.filter_by(is_deleted=False).first()
@@ -279,6 +290,9 @@ def quick_seed():
             
             return True
             
+    except RuntimeError as e:
+        print(f"❌ Production lock prevented database seeding: {e}")
+        return False
     except Exception as e:
         print(f"❌ Error during seeding: {e}")
         return False

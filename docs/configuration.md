@@ -85,6 +85,126 @@ UPLOAD_FOLDER=uploads
 MAX_CONTENT_LENGTH=16777216
 ```
 
+## Production Lock System
+
+### Overview
+
+The system includes a **Production Lock** feature that prevents accidental seeding or resetting of production databases. This is a critical safety feature that protects your production data from being overwritten with test data.
+
+### How It Works
+
+The production lock automatically detects production environments based on several indicators:
+
+1. **Environment Variables**: `FLASK_ENV=production`
+2. **Docker Environment**: `DOCKER_ENV=true`
+3. **Database URL Patterns**: Contains 'prod', 'production', 'live', or 'staging'
+4. **Server URLs**: HTTPS URLs or non-localhost domains
+5. **Server Hosts**: Non-localhost hostnames
+
+### Protected Operations
+
+The following operations are protected by the production lock:
+
+- **Database Seeding**: Adding sample/test data to the database
+- **Database Reset**: Clearing all guest data from the database
+- **Reset and Seed**: Combined reset and seeding operations
+
+### Override Options
+
+If you absolutely need to perform these operations in production (NOT RECOMMENDED), you can override the lock:
+
+```bash
+# Option 1: Set environment variable (temporary override)
+export ALLOW_PRODUCTION_SEED=true
+
+# Option 2: Change environment to development (temporary)
+export FLASK_ENV=development
+```
+
+### Error Messages
+
+When the production lock is activated, you'll see a detailed error message explaining:
+
+- Why the environment was detected as production
+- What operations are blocked
+- How to override the lock (if needed)
+- Warnings about the risks of seeding production data
+
+Example error message:
+```
+🚫 PRODUCTION LOCK ACTIVATED 🚫
+
+Database seeding is not allowed in production environment.
+
+Environment detected as production due to:
+- FLASK_ENV=production
+- DOCKER_ENV=true
+- Production database URL
+- Production server URL
+- Non-localhost server host
+
+To override this lock (NOT RECOMMENDED):
+1. Set environment variable: ALLOW_PRODUCTION_SEED=true
+2. Or set environment variable: FLASK_ENV=development
+
+⚠️  WARNING: Seeding production databases can:
+- Overwrite real customer data
+- Disrupt business operations
+- Cause data loss
+- Impact system performance
+
+If you need to reset production data, use proper backup/restore procedures.
+```
+
+### Testing the Production Lock
+
+You can test the production lock functionality:
+
+```bash
+# Run the production lock test suite
+python test_production_lock.py
+
+# Test specific scenarios
+export FLASK_ENV=production
+python reset_data.py seed  # Should be blocked
+
+export ALLOW_PRODUCTION_SEED=true
+python reset_data.py seed  # Should be allowed with warning
+```
+
+### Best Practices
+
+1. **Never Override in Production**: Only use the override in emergency situations
+2. **Use Proper Backup/Restore**: For production data management, use database backup and restore procedures
+3. **Test in Development**: Always test seeding operations in development environments first
+4. **Monitor Logs**: Check application logs for production lock activations
+5. **Document Overrides**: If you must override, document why and when
+
+### Configuration Examples
+
+#### Development Environment (Lock Disabled)
+```bash
+FLASK_ENV=development
+DATABASE_URL=sqlite:///dev.db
+SERVER_HOST=localhost
+# Production lock: DISABLED
+```
+
+#### Production Environment (Lock Enabled)
+```bash
+FLASK_ENV=production
+DATABASE_URL=postgresql://user:pass@prod-server.com:5432/prod_db
+SERVER_URL=https://myapp.com
+# Production lock: ENABLED
+```
+
+#### Docker Environment (Lock Enabled)
+```bash
+DOCKER_ENV=true
+DATABASE_URL=postgresql://postgres:pass@db:5432/airbnb_guests
+# Production lock: ENABLED
+```
+
 ## Configuration Examples
 
 ### Development Configuration
@@ -142,6 +262,7 @@ TABLE_PREFIX=guest_reg_
 LANGUAGE_PICKER_ENABLED=true
 UPLOAD_FOLDER=/app/uploads
 MAX_CONTENT_LENGTH=16777216
+DOCKER_ENV=true
 ```
 
 ## Database Configuration
@@ -449,6 +570,9 @@ python test_email_functionality.py
 
 # Test file uploads
 python -c "from app import app; print('Upload config OK')"
+
+# Test production lock
+python test_production_lock.py
 ```
 
 ## Troubleshooting
@@ -491,6 +615,17 @@ python -c "from app import app; print('Upload config OK')"
    nano config.env
    ```
 
+5. **Production Lock Issues**
+   ```bash
+   # Test production lock
+   python test_production_lock.py
+   
+   # Check environment variables
+   echo "FLASK_ENV: $FLASK_ENV"
+   echo "DATABASE_URL: $DATABASE_URL"
+   echo "SERVER_URL: $SERVER_URL"
+   ```
+
 ### Debug Configuration
 
 ```bash
@@ -512,36 +647,53 @@ python app.py
    - Rotate keys regularly
 
 2. **Secure Database Connections**
+   - Use SSL/TLS for database connections
    - Use strong passwords
-   - Enable SSL/TLS
-   - Restrict database access
+   - Limit database access
 
-3. **Email Security**
-   - Use app passwords for Gmail
-   - Enable 2FA on email accounts
-   - Use secure SMTP connections
+3. **Environment Separation**
+   - Use different databases for dev/test/prod
+   - Use different email accounts
+   - Use different API keys
 
-4. **File Upload Security**
-   - Validate file types
-   - Limit file sizes
-   - Secure upload directory
+4. **Production Lock**
+   - Never override production lock unnecessarily
+   - Use proper backup/restore procedures
+   - Document any overrides
 
-### Configuration Management
+### Performance Best Practices
 
-1. **Environment Separation**
-   - Use different configs for dev/test/prod
-   - Never commit production secrets
-   - Use environment variables
+1. **Database Optimization**
+   - Use connection pooling
+   - Optimize queries
+   - Use appropriate indexes
 
-2. **Backup Configuration**
-   - Backup configuration files
-   - Document configuration changes
-   - Version control configuration templates
+2. **File Uploads**
+   - Set appropriate file size limits
+   - Use CDN for static files
+   - Implement proper cleanup
 
-3. **Monitoring Configuration**
-   - Log configuration changes
-   - Monitor configuration errors
-   - Alert on configuration issues
+3. **Caching**
+   - Enable caching where appropriate
+   - Use Redis for session storage
+   - Cache database queries
+
+### Monitoring Best Practices
+
+1. **Logging**
+   - Enable comprehensive logging
+   - Monitor error logs
+   - Track performance metrics
+
+2. **Health Checks**
+   - Implement health check endpoints
+   - Monitor database connectivity
+   - Check email functionality
+
+3. **Backup Strategy**
+   - Regular database backups
+   - Test backup restoration
+   - Document recovery procedures
 
 ## Related Documentation
 
@@ -811,6 +963,9 @@ python test_email_functionality.py
 
 # Test file uploads
 python -c "from app import app; print('Upload config OK')"
+
+# Test production lock
+python test_production_lock.py
 ```
 
 ## Troubleshooting
@@ -853,6 +1008,17 @@ python -c "from app import app; print('Upload config OK')"
    nano config.env
    ```
 
+5. **Production Lock Issues**
+   ```bash
+   # Test production lock
+   python test_production_lock.py
+   
+   # Check environment variables
+   echo "FLASK_ENV: $FLASK_ENV"
+   echo "DATABASE_URL: $DATABASE_URL"
+   echo "SERVER_URL: $SERVER_URL"
+   ```
+
 ### Debug Configuration
 
 ```bash
@@ -874,19 +1040,19 @@ python app.py
    - Rotate keys regularly
 
 2. **Secure Database Connections**
+   - Use SSL/TLS for database connections
    - Use strong passwords
-   - Enable SSL/TLS
-   - Restrict database access
+   - Limit database access
 
-3. **Email Security**
-   - Use app passwords for Gmail
-   - Enable 2FA on email accounts
-   - Use secure SMTP connections
+3. **Environment Separation**
+   - Use different databases for dev/test/prod
+   - Use different email accounts
+   - Use different API keys
 
-4. **File Upload Security**
-   - Validate file types
-   - Limit file sizes
-   - Secure upload directory
+4. **Production Lock**
+   - Never override production lock unnecessarily
+   - Use proper backup/restore procedures
+   - Document any overrides
 
 ### Configuration Management
 

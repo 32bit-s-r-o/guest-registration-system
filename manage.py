@@ -11,6 +11,7 @@ import argparse
 import time
 from datetime import datetime
 from pathlib import Path
+from utils import check_production_lock
 
 class SystemManager:
     def __init__(self):
@@ -228,6 +229,13 @@ class SystemManager:
         """Run seed data operations"""
         print("🌱 Running Seed Operations")
         print("=" * 50)
+        
+        try:
+            # Check production lock for seed operations
+            check_production_lock("Seed operations")
+        except RuntimeError as e:
+            print(f"❌ Production lock prevented seed operations: {e}")
+            return False
         
         seed_results = {}
         for seed_script in self.scripts['seeds']:
