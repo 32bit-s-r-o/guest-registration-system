@@ -5,6 +5,53 @@ All notable changes to the Guest Registration System will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.2] - 2025-06-25
+
+### Fixed
+- **PostgreSQL Database Connection Issues**
+  - Resolved circular import problems in blueprint modules
+  - Fixed migration manager initialization causing premature database connections
+  - Updated blueprint imports to use proper lazy loading pattern
+  - Moved `get_migration_manager()` function to migrations.py to avoid circular imports
+
+- **Database Migration System**
+  - Fixed database migration system for development environment
+  - Added complete PostgreSQL DATABASE_URL to .env file configuration
+  - Enhanced migration script to properly load environment variables
+  - Improved database connection reliability and error handling
+
+- **Data Seeding and Reset Scripts**
+  - Updated reset_data.py script with correct field names (is_externally_synced, external_guest_*, etc.)
+  - Added amenity creation and assignment to trip seeding process
+  - Fixed field name mismatches between database models and seeding scripts
+  - Enhanced sample data creation with proper amenity relationships
+
+- **Test Suite Improvements**
+  - Enhanced test suite with proper database isolation
+  - Fixed test environment setup for both SQLite and PostgreSQL
+  - Improved test reliability and consistency
+  - Better integration with management script
+
+### Technical Improvements
+- **Application Startup Reliability**
+  - Improved application startup process
+  - Enhanced error handling during initialization
+  - Better separation of concerns in blueprint modules
+  - Improved code organization and maintainability
+
+- **Database Schema Compatibility**
+  - Ensured compatibility with existing database schema
+  - Maintained backward compatibility with existing data
+  - Enhanced migration system reliability
+  - Improved database connection management
+
+## [1.9.1] - 2025-06-24
+
+### Fixed
+- Migration system now dynamically replaces table prefix in migration SQL files, enabling true test database isolation.
+- Test suite now creates and migrates tables with the correct test prefix (`test_guest_reg_`), preventing interference with production data.
+- Added logic to reset test database and re-apply migrations for prefix changes.
+
 ## [1.9.0] - 2025-01-24
 
 ### Added
@@ -72,12 +119,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Enhanced test coverage and validation
   - Improved test reliability and consistency
   - Better integration with management script
-
-## [1.9.1] - 2025-06-24
-### Fixed
-- Migration system now dynamically replaces table prefix in migration SQL files, enabling true test database isolation.
-- Test suite now creates and migrates tables with the correct test prefix (`test_guest_reg_`), preventing interference with production data.
-- Added logic to reset test database and re-apply migrations for prefix changes.
 
 ## [1.8.0] - 2025-01-XX
 

@@ -9,12 +9,12 @@ import json
 from datetime import datetime
 from typing import Dict, List, Optional
 
-__version__ = '1.9.1'
+__version__ = '1.9.2'
 
 class VersionManager:
     def __init__(self, version_file: str = "version.json"):
         self.version_file = version_file
-        self.current_version = "1.9.0"
+        self.current_version = "1.9.2"
         self.minimum_database_version = "1.0.0"
         self.upgrade_paths = {
             "1.0.0": ["1.1.0", "1.2.0"],
@@ -118,6 +118,30 @@ class VersionManager:
 
 # Version history and changelog
 VERSION_HISTORY = {
+    "1.9.2": {
+        "date": "2025-06-25",
+        "features": [
+            "Fixed PostgreSQL database connection issues",
+            "Resolved circular import problems in blueprint modules",
+            "Updated reset_data.py script with correct field names",
+            "Added amenity creation and assignment to trip seeding",
+            "Fixed database migration system for development environment",
+            "Enhanced test suite with proper database isolation",
+            "Improved application startup reliability"
+        ],
+        "database_schema": "1.8.0",
+        "breaking_changes": []
+    },
+    "1.9.1": {
+        "date": "2025-06-24",
+        "features": [
+            "Migration system now dynamically replaces table prefix in migration SQL files",
+            "Test suite creates and migrates tables with correct test prefix",
+            "Added logic to reset test database and re-apply migrations for prefix changes"
+        ],
+        "database_schema": "1.8.0",
+        "breaking_changes": []
+    },
     "1.9.0": {
         "date": "2025-01-24",
         "features": [
