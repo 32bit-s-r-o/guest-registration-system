@@ -9,12 +9,12 @@ import json
 from datetime import datetime
 from typing import Dict, List, Optional
 
-__version__ = '1.9.2'
+__version__ = '1.9.3'
 
 class VersionManager:
     def __init__(self, version_file: str = "version.json"):
         self.version_file = version_file
-        self.current_version = "1.9.2"
+        self.current_version = "1.9.3"
         self.minimum_database_version = "1.0.0"
         self.upgrade_paths = {
             "1.0.0": ["1.1.0", "1.2.0"],
@@ -118,6 +118,19 @@ class VersionManager:
 
 # Version history and changelog
 VERSION_HISTORY = {
+    "1.9.3": {
+        "date": "2025-06-25",
+        "features": [
+            "Fixed invoice status change functionality on both list and detail pages",
+            "Corrected route URLs from '/status' to '/change-status' in JavaScript",
+            "Updated form data format from JSON to URL-encoded for better compatibility",
+            "Fixed WeasyPrint PDF generation compatibility in Docker containers",
+            "Updated WeasyPrint to version 60.2 with pydyf 0.10.0 for stable PDF generation",
+            "Improved invoice PDF rendering with proper line breaks for multi-line fields"
+        ],
+        "database_schema": "1.8.0",
+        "breaking_changes": []
+    },
     "1.9.2": {
         "date": "2025-06-25",
         "features": [

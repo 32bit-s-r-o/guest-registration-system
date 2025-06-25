@@ -5,6 +5,38 @@ All notable changes to the Guest Registration System will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.3] - 2025-06-25
+
+### Fixed
+- **Invoice Status Change Functionality**
+  - Fixed invoice status change not working on both list and detail pages
+  - Corrected JavaScript route URLs from `/admin/invoices/<id>/status` to `/admin/invoices/<id>/change-status`
+  - Updated form data format from JSON to URL-encoded for better compatibility with Flask routes
+  - Enhanced error handling and user feedback for status changes
+
+- **PDF Generation in Docker**
+  - Fixed WeasyPrint PDF generation compatibility issues in Docker containers
+  - Updated WeasyPrint from version 59.0 to 60.2 with pydyf 0.10.0 for stable PDF generation
+  - Resolved `TypeError: PDF.__init__() takes 1 positional argument but 3 were given` error
+  - Updated both requirements.txt and Dockerfile to use compatible library versions
+
+- **Invoice PDF Rendering**
+  - Improved invoice PDF rendering with proper line breaks for multi-line fields
+  - Fixed notes and address fields displaying `<br>` tags instead of actual line breaks
+  - Enhanced PDF template to properly render newlines as line breaks using `.replace('\\n', '<br>') | safe`
+  - Improved overall PDF formatting and readability
+
+### Technical Improvements
+- **Frontend JavaScript**
+  - Standardized fetch API usage across invoice status change functionality
+  - Improved error handling in client-side status update operations
+  - Enhanced user experience with proper loading states and feedback
+
+- **Docker Container Compatibility**
+  - Ensured WeasyPrint library compatibility across different Python environments
+  - Fixed package version conflicts in Docker build process
+  - Enhanced container stability for PDF generation operations
+
 ## [1.9.2] - 2025-06-25
 
 ### Fixed
