@@ -57,7 +57,7 @@ RUN pip install --no-cache-dir --force-reinstall --no-binary=:all: \
     Pillow>=10.0.1
 
 # Install WeasyPrint after ensuring dependencies are built
-RUN pip install --no-cache-dir --force-reinstall WeasyPrint==59.0
+RUN pip install --no-cache-dir --force-reinstall WeasyPrint==60.2 pydyf==0.10.0
 
 # Verify critical modules during build
 RUN python -c "import PIL; from PIL import _imaging; print('Pillow _imaging OK')"
