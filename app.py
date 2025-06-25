@@ -48,6 +48,63 @@ app.config.from_object(Config)
 # Ensure upload directory exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
+# Startup logging
+def log_startup_info():
+    """Log startup information including database and table prefix"""
+    print("🚀 Guest Registration System Starting Up")
+    print("=" * 50)
+    
+    # Get version information
+    from version import __version__
+    print(f"📦 Version: {__version__}")
+    
+    # Get system information
+    import sys
+    import os
+    print(f"🐍 Python: {sys.version.split()[0]}")
+    print(f"📂 Working Directory: {os.getcwd()}")
+    
+    # Get database information
+    db_url = app.config.get('SQLALCHEMY_DATABASE_URI', 'Not configured')
+    table_prefix = app.config.get('TABLE_PREFIX', 'Not configured')
+    
+    # Mask sensitive database credentials for security
+    if 'postgresql://' in db_url:
+        # Parse PostgreSQL URL to show host and database name
+        try:
+            from urllib.parse import urlparse
+            parsed = urlparse(db_url)
+            host = parsed.hostname
+            port = parsed.port or 5432
+            database = parsed.path.lstrip('/')
+            masked_url = f"postgresql://***:***@{host}:{port}/{database}"
+        except:
+            masked_url = "postgresql://***:***@***/***"
+        print(f"🗄️  Database: {masked_url}")
+    elif 'sqlite:///' in db_url:
+        db_file = db_url.replace('sqlite:///', '')
+        print(f"🗄️  Database: SQLite ({db_file})")
+    else:
+        print(f"🗄️  Database: {db_url}")
+    
+    print(f"🏷️  Table Prefix: {table_prefix}")
+    print(f"📁 Upload Folder: {app.config.get('UPLOAD_FOLDER', 'Not configured')}")
+    
+    # Get server URL properly (it's a property)
+    try:
+        server_url = app.config.SERVER_URL
+        if server_url is None:
+            server_url = "Not configured"
+    except:
+        server_url = "Not configured"
+    print(f"🌐 Server URL: {server_url}")
+    
+    print(f"🔧 Debug Mode: {app.config.get('DEBUG', False)}")
+    print("=" * 50)
+
+# Log startup information
+log_startup_info()
+
 def get_locale():
     # If language picker is disabled, always return English
     if os.environ.get('DISABLE_LANGUAGE_PICKER', 'false').lower() == 'true':
@@ -70,6 +127,32 @@ login_manager.init_app(app)
 login_manager.login_view = 'auth.admin_login'
 babel = Babel(app, locale_selector=get_locale)
 mail = Mail(app)
+
+# Test database connection and log status
+def test_database_connection():
+    """Test database connection and log the result"""
+    try:
+        with app.app_context():
+            # Test the connection by executing a simple query
+            from sqlalchemy import text
+            db.session.execute(text('SELECT 1'))
+            print("✅ Database connection: SUCCESS")
+            
+            # Get database info
+            if 'postgresql://' in app.config.get('SQLALCHEMY_DATABASE_URI', ''):
+                result = db.session.execute(text('SELECT current_database(), current_user, version()'))
+                db_info = result.fetchone()
+                print(f"   📊 Database: {db_info[0]}")
+                print(f"   👤 User: {db_info[1]}")
+                print(f"   🔧 Version: {db_info[2].split()[1]}")
+            else:
+                print("   📊 Database: SQLite")
+                
+    except Exception as e:
+        print(f"❌ Database connection: FAILED - {str(e)}")
+
+# Test database connection
+test_database_connection()
 
 @app.context_processor
 def inject_get_locale():
@@ -127,6 +210,20 @@ app.register_blueprint(export)
 app.register_blueprint(breakdowns)
 app.register_blueprint(api)
 app.register_blueprint(health)
+
+# Final startup logging
+def log_startup_complete():
+    """Log that the application startup is complete"""
+    print("🎯 Application startup complete!")
+    print(f"📋 Registered {len(app.blueprints)} blueprints:")
+    for blueprint_name in app.blueprints.keys():
+        print(f"   - {blueprint_name}")
+    print("=" * 50)
+    print("🌐 Ready to serve requests!")
+    print("=" * 50)
+
+# Log startup completion
+log_startup_complete()
 
 if __name__ == '__main__':
     app.run(debug=True) 
