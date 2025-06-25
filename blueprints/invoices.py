@@ -314,6 +314,21 @@ def generate_invoice_pdf(invoice_id):
         except:
             pass
 
+@invoices.route('/admin/invoices/<int:invoice_id>/recalculate', methods=['POST'])
+@login_required
+def recalculate_invoice_totals(invoice_id):
+    """Recalculate invoice totals from items."""
+    invoice = Invoice.query.filter_by(id=invoice_id, admin_id=current_user.id).first_or_404()
+    
+    # Recalculate totals from the items
+    invoice.subtotal = sum(item.line_total for item in invoice.items)
+    invoice.vat_total = sum(item.vat_amount for item in invoice.items)
+    invoice.total_amount = invoice.subtotal + invoice.vat_total
+    
+    db.session.commit()
+    flash(_('Invoice totals recalculated successfully!'), 'success')
+    return redirect(url_for('invoices.view_invoice', invoice_id=invoice.id))
+
 @invoices.route('/admin/invoices/<int:invoice_id>/send-pdf', methods=['POST'])
 @login_required
 @role_required('admin')
