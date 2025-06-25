@@ -16,7 +16,7 @@ from database import db, User, Trip, Registration, Guest, Invoice, Housekeeping
 from version import version_manager
 from migrations import MigrationManager
 from sqlalchemy import text
-from app import get_migration_manager
+from migrations import get_migration_manager
 
 def role_required(role):
     def decorator(f):

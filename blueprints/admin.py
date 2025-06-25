@@ -25,10 +25,7 @@ from database import (
 )
 from version import version_manager, check_version_compatibility, get_version_changelog
 from config import Config
-from app import get_migration_manager
-
-# Get migration manager instance
-migration_manager = get_migration_manager()
+from migrations import get_migration_manager
 
 def role_required(role):
     def decorator(f):
@@ -835,6 +832,7 @@ def seed_reset():
 @role_required('admin')
 def admin_migrations():
     """Migration management page"""
+    migration_manager = get_migration_manager()
     current_version = migration_manager.get_current_version()
     app_version = version_manager.get_current_version()
     applied_migrations = migration_manager.get_applied_migrations()
@@ -856,6 +854,7 @@ def admin_migrations():
 def run_migrations():
     """Run pending migrations"""
     try:
+        migration_manager = get_migration_manager()
         # Create backup before migration
         backup_file = migration_manager.create_backup_before_migration()
         
@@ -878,6 +877,7 @@ def run_migrations():
 def rollback_migration(version):
     """Rollback specific migration"""
     try:
+        migration_manager = get_migration_manager()
         success = migration_manager.rollback_migration(version)
         
         if success:

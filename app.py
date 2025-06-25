@@ -20,7 +20,7 @@ from werkzeug.exceptions import RequestEntityTooLarge
 
 # Import version and migration managers
 from version import VersionManager, version_manager, check_version_compatibility, get_version_changelog
-from migrations import MigrationManager
+from migrations import MigrationManager, get_migration_manager
 
 # Import all database models and utilities from database.py
 from database import (
@@ -43,15 +43,7 @@ load_dotenv()
 app = Flask(__name__)
 app.config.from_object(Config)
 
-# Initialize migration manager lazily (only when needed)
-migration_manager = None
-
-def get_migration_manager():
-    """Get migration manager instance, creating it if needed"""
-    global migration_manager
-    if migration_manager is None:
-        migration_manager = MigrationManager()
-    return migration_manager
+# Note: get_migration_manager is now imported from migrations.py
 
 # Ensure upload directory exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)

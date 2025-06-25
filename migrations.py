@@ -377,6 +377,16 @@ class MigrationManager:
                 name = '_'.join(filename.replace('.sql', '').split('_')[2:])
                 print(f"   ├─ {version} - {name}")
 
+# Global migration manager instance
+_migration_manager = None
+
+def get_migration_manager():
+    """Get migration manager instance, creating it if needed (lazy loading)"""
+    global _migration_manager
+    if _migration_manager is None:
+        _migration_manager = MigrationManager()
+    return _migration_manager
+
 def create_initial_migrations():
     """Create initial migration files for existing schema"""
     manager = MigrationManager()

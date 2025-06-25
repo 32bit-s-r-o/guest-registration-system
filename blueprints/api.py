@@ -10,7 +10,7 @@ api = Blueprint('api', __name__)
 
 from database import db, User, Guest, Registration, Trip, Invoice, InvoiceItem
 from version import version_manager, check_version_compatibility, get_version_changelog
-from app import get_migration_manager
+from migrations import get_migration_manager
 
 def role_required(role):
     def decorator(f):

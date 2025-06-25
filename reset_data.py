@@ -411,6 +411,40 @@ def seed_data():
                     admin.custom_line_2 = 'Free WiFi & Parking'
                     admin.custom_line_3 = 'Pet Friendly Options Available'
             
+            # Create sample amenities first (required for trips)
+            from database import Amenity
+            
+            amenities_data = [
+                {
+                    'name': 'Beach House Villa',
+                    'description': 'Beautiful beachfront villa with ocean views, perfect for family vacations',
+                    'max_guests': 8
+                },
+                {
+                    'name': 'Mountain Cabin Retreat',
+                    'description': 'Cozy mountain cabin surrounded by nature, ideal for peaceful getaways',
+                    'max_guests': 6
+                },
+                {
+                    'name': 'City Center Apartment',
+                    'description': 'Modern apartment in the heart of the city with easy access to attractions',
+                    'max_guests': 4
+                }
+            ]
+            
+            created_amenities = []
+            for amenity_data in amenities_data:
+                amenity = Amenity(
+                    name=amenity_data['name'],
+                    description=amenity_data['description'],
+                    max_guests=amenity_data['max_guests'],
+                    admin_id=admin.id
+                )
+                db.session.add(amenity)
+                created_amenities.append(amenity)
+            
+            db.session.flush()  # Get amenity IDs
+            
             # Create sample trips with variety
             trips_data = [
                 {
@@ -418,49 +452,54 @@ def seed_data():
                     'start_date': datetime.now().date() + timedelta(days=30),
                     'end_date': datetime.now().date() + timedelta(days=37),
                     'max_guests': 6,
-                    'is_airbnb_synced': True,
-                    'airbnb_guest_name': 'John Smith',
-                    'airbnb_guest_email': 'john.smith@example.com',
-                    'airbnb_guest_count': 4,
-                    'airbnb_confirm_code': 'SUMMER2024'
+                    'amenity_index': 0,  # Beach House Villa
+                    'is_externally_synced': True,
+                    'external_guest_name': 'John Smith',
+                    'external_guest_email': 'john.smith@example.com',
+                    'external_guest_count': 4,
+                    'external_confirm_code': 'SUMMER2024'
                 },
                 {
                     'title': "Mountain Retreat Weekend",
                     'start_date': datetime.now().date() + timedelta(days=14),
                     'end_date': datetime.now().date() + timedelta(days=16),
                     'max_guests': 4,
-                    'is_airbnb_synced': False,
-                    'airbnb_confirm_code': 'MOUNTAIN24'
+                    'amenity_index': 1,  # Mountain Cabin Retreat
+                    'is_externally_synced': False,
+                    'external_confirm_code': 'MOUNTAIN24'
                 },
                 {
                     'title': "City Break Adventure",
                     'start_date': datetime.now().date() + timedelta(days=60),
                     'end_date': datetime.now().date() + timedelta(days=65),
                     'max_guests': 8,
-                    'is_airbnb_synced': True,
-                    'airbnb_guest_name': 'Alice Johnson',
-                    'airbnb_guest_email': 'alice.j@example.com',
-                    'airbnb_guest_count': 3,
-                    'airbnb_confirm_code': 'CITY2024'
+                    'amenity_index': 0,  # Beach House Villa
+                    'is_externally_synced': True,
+                    'external_guest_name': 'Alice Johnson',
+                    'external_guest_email': 'alice.j@example.com',
+                    'external_guest_count': 3,
+                    'external_confirm_code': 'CITY2024'
                 },
                 {
                     'title': "Winter Ski Trip",
                     'start_date': datetime.now().date() + timedelta(days=90),
                     'end_date': datetime.now().date() + timedelta(days=97),
                     'max_guests': 5,
-                    'is_airbnb_synced': False,
-                    'airbnb_confirm_code': 'SKI2024'
+                    'amenity_index': 1,  # Mountain Cabin Retreat
+                    'is_externally_synced': False,
+                    'external_confirm_code': 'SKI2024'
                 },
                 {
                     'title': "Weekend Getaway",
                     'start_date': datetime.now().date() + timedelta(days=7),
                     'end_date': datetime.now().date() + timedelta(days=9),
                     'max_guests': 3,
-                    'is_airbnb_synced': True,
-                    'airbnb_guest_name': 'Bob Wilson',
-                    'airbnb_guest_email': 'bob.wilson@example.com',
-                    'airbnb_guest_count': 2,
-                    'airbnb_confirm_code': 'WEEKEND24'
+                    'amenity_index': 2,  # City Center Apartment
+                    'is_externally_synced': True,
+                    'external_guest_name': 'Bob Wilson',
+                    'external_guest_email': 'bob.wilson@example.com',
+                    'external_guest_count': 2,
+                    'external_confirm_code': 'WEEKEND24'
                 }
             ]
             
@@ -472,12 +511,13 @@ def seed_data():
                     end_date=trip_data['end_date'],
                     max_guests=trip_data['max_guests'],
                     admin_id=admin.id,
-                    is_airbnb_synced=trip_data.get('is_airbnb_synced', False),
-                    airbnb_guest_name=trip_data.get('airbnb_guest_name'),
-                    airbnb_guest_email=trip_data.get('airbnb_guest_email'),
-                    airbnb_guest_count=trip_data.get('airbnb_guest_count'),
-                    airbnb_synced_at=datetime.utcnow() if trip_data.get('is_airbnb_synced') else None,
-                    airbnb_confirm_code=trip_data.get('airbnb_confirm_code')
+                    amenity_id=created_amenities[trip_data['amenity_index']].id,
+                    is_externally_synced=trip_data.get('is_externally_synced', False),
+                    external_guest_name=trip_data.get('external_guest_name'),
+                    external_guest_email=trip_data.get('external_guest_email'),
+                    external_guest_count=trip_data.get('external_guest_count'),
+                    external_synced_at=datetime.utcnow() if trip_data.get('is_externally_synced') else None,
+                    external_confirm_code=trip_data.get('external_confirm_code')
                 )
                 db.session.add(trip)
                 created_trips.append(trip)
