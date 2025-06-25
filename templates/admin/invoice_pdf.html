@@ -28,7 +28,7 @@
             <p>{{ invoice.admin.contact_name }}</p>
             {% endif %}
             {% if invoice.admin.contact_address %}
-            <p>{{ invoice.admin.contact_address | nl2br }}</p>
+            <p>{{ invoice.admin.contact_address.replace('\n', '<br>') | safe }}</p>
             {% endif %}
             {% if invoice.admin.contact_phone %}
             <p>Phone: {{ invoice.admin.contact_phone }}</p>
@@ -54,7 +54,7 @@
             <p>VAT Number: {{ invoice.client_vat_number }}</p>
             {% endif %}
             {% if invoice.client_address %}
-            <p>{{ invoice.client_address | nl2br }}</p>
+            <p>{{ invoice.client_address.replace('\n', '<br>') | safe }}</p>
             {% endif %}
         </div>
     </div>
@@ -113,7 +113,7 @@
     {% if invoice.notes %}
     <div class="notes">
         <h4>Notes:</h4>
-        <p>{{ invoice.notes | nl2br }}</p>
+        <p>{{ invoice.notes.replace('\n', '<br>') | safe }}</p>
     </div>
     {% endif %}
 
