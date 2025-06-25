@@ -8,7 +8,7 @@ from utils import get_server_url
 trips = Blueprint('trips', __name__)
 
 # Import database models from database.py
-from database import db, User, Trip, Amenity
+from database import db, User, Trip, Amenity, Registration, Guest
 
 def role_required(role):
     def decorator(f):
@@ -141,4 +141,27 @@ def delete_trip(trip_id):
     db.session.delete(trip)
     db.session.commit()
     flash(_('Trip deleted successfully!'), 'success')
-    return redirect(f"{get_server_url()}{url_for('trips.admin_trips')}") 
+    return redirect(f"{get_server_url()}{url_for('trips.admin_trips')}")
+
+@trips.route('/admin/trips/<int:trip_id>/delete-registrations', methods=['POST'])
+@login_required
+@role_required('admin')
+def delete_trip_registrations(trip_id):
+    """Delete all registrations (and their guests) for a trip."""
+    trip = Trip.query.get_or_404(trip_id)
+    if trip.admin_id != current_user.id:
+        flash(_('Access denied'), 'error')
+        return redirect(url_for('trips.edit_trip', trip_id=trip_id))
+
+    # Find all registrations for this trip
+    registrations = Registration.query.filter_by(trip_id=trip_id).all()
+    reg_ids = [reg.id for reg in registrations]
+
+    # Delete all guests for these registrations
+    Guest.query.filter(Guest.registration_id.in_(reg_ids)).delete(synchronize_session=False)
+    # Delete all registrations
+    Registration.query.filter(Registration.id.in_(reg_ids)).delete(synchronize_session=False)
+    db.session.commit()
+
+    flash(_('All registrations for this trip have been deleted.'), 'success')
+    return redirect(url_for('trips.edit_trip', trip_id=trip_id)) 
