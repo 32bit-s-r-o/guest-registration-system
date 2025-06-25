@@ -12,8 +12,8 @@ email-validator==2.0.0
 requests==2.31.0
 icalendar==5.0.7
 python-dateutil==2.8.2
-WeasyPrint==59.0
-pydyf==0.8.0
+WeasyPrint==60.2
+pydyf==0.10.0
 Flask-Babel>=3.1.0
 gunicorn==21.2.0
 cffi>=1.15.1
