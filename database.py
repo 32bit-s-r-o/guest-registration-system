@@ -30,6 +30,10 @@ def get_table_name(base_name):
         # Fallback for when not in app context
         return base_name
 
+def get_table_prefix():
+    """Get the current table prefix from environment or config."""
+    return os.environ.get('TABLE_PREFIX', getattr(Config, 'TABLE_PREFIX', ''))
+
 def get_database_url():
     """Get database URL from environment or use default."""
     database_url = Config.SQLALCHEMY_DATABASE_URI
@@ -50,7 +54,7 @@ def copy_sample_image(image_filename):
 
 # Database Models
 class User(UserMixin, db.Model):
-    __tablename__ = f"{Config.TABLE_PREFIX}user"
+    __tablename__ = f"{get_table_prefix()}user"
     
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
@@ -86,21 +90,23 @@ class User(UserMixin, db.Model):
     
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+    
+    __table_args__ = {'schema': None, 'extend_existing': True}
 
 class Amenity(db.Model):
-    __tablename__ = f"{Config.TABLE_PREFIX}amenity"
+    __tablename__ = f"{get_table_prefix()}amenity"
     
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text)
     max_guests = db.Column(db.Integer, nullable=False, default=1)
-    admin_id = db.Column(db.Integer, db.ForeignKey(f"{Config.TABLE_PREFIX}user.id"), nullable=False)
+    admin_id = db.Column(db.Integer, db.ForeignKey(f'{get_table_prefix()}user.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     # Status
     is_active = db.Column(db.Boolean, default=True)
     # Backward compatibility
-    default_housekeeper_id = db.Column(db.Integer, db.ForeignKey(f"{Config.TABLE_PREFIX}user.id"))
+    default_housekeeper_id = db.Column(db.Integer, db.ForeignKey(f'{get_table_prefix()}user.id'))
     
     # Relationships
     admin = db.relationship('User', backref='amenities', foreign_keys=[admin_id])
@@ -108,13 +114,15 @@ class Amenity(db.Model):
     trips = db.relationship('Trip', backref='amenity', lazy=True)
     calendars = db.relationship('Calendar', backref='amenity', lazy=True, cascade='all, delete-orphan')
     housekeepers = db.relationship('AmenityHousekeeper', backref='amenity', lazy=True, cascade='all, delete-orphan')
+    
+    __table_args__ = {'schema': None, 'extend_existing': True}
 
 class AmenityHousekeeper(db.Model):
-    __tablename__ = f"{Config.TABLE_PREFIX}amenity_housekeeper"
+    __tablename__ = f"{get_table_prefix()}amenity_housekeeper"
     
     id = db.Column(db.Integer, primary_key=True)
-    amenity_id = db.Column(db.Integer, db.ForeignKey(f"{Config.TABLE_PREFIX}amenity.id"), nullable=False)
-    housekeeper_id = db.Column(db.Integer, db.ForeignKey(f"{Config.TABLE_PREFIX}user.id"), nullable=False)
+    amenity_id = db.Column(db.Integer, db.ForeignKey(f'{get_table_prefix()}amenity.id'), nullable=False)
+    housekeeper_id = db.Column(db.Integer, db.ForeignKey(f'{get_table_prefix()}user.id'), nullable=False)
     is_default = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -124,15 +132,16 @@ class AmenityHousekeeper(db.Model):
     
     __table_args__ = (
         db.UniqueConstraint('amenity_id', 'housekeeper_id', name='uq_amenity_housekeeper'),
+        {'schema': None, 'extend_existing': True}
     )
 
 class Calendar(db.Model):
-    __tablename__ = f"{Config.TABLE_PREFIX}calendar"
+    __tablename__ = f"{get_table_prefix()}calendar"
     
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text)
-    amenity_id = db.Column(db.Integer, db.ForeignKey(f"{Config.TABLE_PREFIX}amenity.id"), nullable=False)
+    amenity_id = db.Column(db.Integer, db.ForeignKey(f'{get_table_prefix()}amenity.id'), nullable=False)
     # Calendar settings
     calendar_url = db.Column(db.Text, nullable=False)
     calendar_type = db.Column(db.String(50), default='airbnb')  # airbnb, booking, vrbo, custom
@@ -146,9 +155,11 @@ class Calendar(db.Model):
     
     # Relationships
     trips = db.relationship('Trip', backref='calendar', lazy=True)
+    
+    __table_args__ = {'schema': None, 'extend_existing': True}
 
 class Trip(db.Model):
-    __tablename__ = f"{Config.TABLE_PREFIX}trip"
+    __tablename__ = f"{get_table_prefix()}trip"
     
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
@@ -156,9 +167,9 @@ class Trip(db.Model):
     end_date = db.Column(db.Date, nullable=False)
     max_guests = db.Column(db.Integer, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    admin_id = db.Column(db.Integer, db.ForeignKey(f"{Config.TABLE_PREFIX}user.id"), nullable=False)
-    amenity_id = db.Column(db.Integer, db.ForeignKey(f"{Config.TABLE_PREFIX}amenity.id"), nullable=False)
-    calendar_id = db.Column(db.Integer, db.ForeignKey(f"{Config.TABLE_PREFIX}calendar.id"))
+    admin_id = db.Column(db.Integer, db.ForeignKey(f'{get_table_prefix()}user.id'), nullable=False)
+    amenity_id = db.Column(db.Integer, db.ForeignKey(f'{get_table_prefix()}amenity.id'), nullable=False)
+    calendar_id = db.Column(db.Integer, db.ForeignKey(f'{get_table_prefix()}calendar.id'))
     registrations = db.relationship('Registration', backref='trip', lazy=True)
     # External sync fields
     external_reservation_id = db.Column(db.String(100), unique=True)
@@ -169,12 +180,14 @@ class Trip(db.Model):
     is_externally_synced = db.Column(db.Boolean, default=False)
     # External confirmation code
     external_confirm_code = db.Column(db.String(50), unique=True)
+    
+    __table_args__ = {'schema': None, 'extend_existing': True}
 
 class Registration(db.Model):
-    __tablename__ = f"{Config.TABLE_PREFIX}registration"
+    __tablename__ = f"{get_table_prefix()}registration"
     
     id = db.Column(db.Integer, primary_key=True)
-    trip_id = db.Column(db.Integer, db.ForeignKey(f"{Config.TABLE_PREFIX}trip.id"), nullable=False)
+    trip_id = db.Column(db.Integer, db.ForeignKey(f'{get_table_prefix()}trip.id'), nullable=False)
     email = db.Column(db.String(120), nullable=False)
     status = db.Column(db.String(20), default='pending')  # pending, approved, rejected
     admin_comment = db.Column(db.Text)
@@ -182,12 +195,14 @@ class Registration(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     guests = db.relationship('Guest', backref='registration', lazy=True, cascade='all, delete-orphan')
+    
+    __table_args__ = {'schema': None, 'extend_existing': True}
 
 class Guest(db.Model):
-    __tablename__ = f"{Config.TABLE_PREFIX}guest"
+    __tablename__ = f"{get_table_prefix()}guest"
     
     id = db.Column(db.Integer, primary_key=True)
-    registration_id = db.Column(db.Integer, db.ForeignKey(f"{Config.TABLE_PREFIX}registration.id"), nullable=False)
+    registration_id = db.Column(db.Integer, db.ForeignKey(f'{get_table_prefix()}registration.id'), nullable=False)
     first_name = db.Column(db.String(100), nullable=False)
     last_name = db.Column(db.String(100), nullable=False)
     age_category = db.Column(db.String(20), nullable=False, default='adult')  # adult, child
@@ -196,14 +211,16 @@ class Guest(db.Model):
     document_image = db.Column(db.String(255))  # File path to uploaded image
     gdpr_consent = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    __table_args__ = {'schema': None, 'extend_existing': True}
 
 class Invoice(db.Model):
-    __tablename__ = f"{Config.TABLE_PREFIX}invoice"
+    __tablename__ = f"{get_table_prefix()}invoice"
     
     id = db.Column(db.Integer, primary_key=True)
     invoice_number = db.Column(db.String(50), unique=True, nullable=False)
-    admin_id = db.Column(db.Integer, db.ForeignKey(f"{Config.TABLE_PREFIX}user.id"), nullable=False)
-    registration_id = db.Column(db.Integer, db.ForeignKey(f"{Config.TABLE_PREFIX}registration.id"))
+    admin_id = db.Column(db.Integer, db.ForeignKey(f'{get_table_prefix()}user.id'), nullable=False)
+    registration_id = db.Column(db.Integer, db.ForeignKey(f'{get_table_prefix()}registration.id'))
     client_name = db.Column(db.String(200), nullable=False)
     client_email = db.Column(db.String(200))
     client_vat_number = db.Column(db.String(50))
@@ -223,12 +240,14 @@ class Invoice(db.Model):
     items = db.relationship('InvoiceItem', backref='invoice', lazy=True, cascade='all, delete-orphan')
     admin = db.relationship('User', backref='invoices')
     registration = db.relationship('Registration', backref='invoices')
+    
+    __table_args__ = {'schema': None, 'extend_existing': True}
 
 class InvoiceItem(db.Model):
-    __tablename__ = f"{Config.TABLE_PREFIX}invoice_item"
+    __tablename__ = f"{get_table_prefix()}invoice_item"
     
     id = db.Column(db.Integer, primary_key=True)
-    invoice_id = db.Column(db.Integer, db.ForeignKey(f"{Config.TABLE_PREFIX}invoice.id"), nullable=False)
+    invoice_id = db.Column(db.Integer, db.ForeignKey(f'{get_table_prefix()}invoice.id'), nullable=False)
     description = db.Column(db.String(500), nullable=False)
     quantity = db.Column(db.Numeric(10, 2), default=1)
     unit_price = db.Column(db.Numeric(10, 2), nullable=False)
@@ -237,13 +256,15 @@ class InvoiceItem(db.Model):
     vat_amount = db.Column(db.Numeric(10, 2), default=0)
     total_with_vat = db.Column(db.Numeric(10, 2), default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    __table_args__ = {'schema': None, 'extend_existing': True}
 
 class Housekeeping(db.Model):
-    __tablename__ = f"{Config.TABLE_PREFIX}housekeeping"
+    __tablename__ = f"{get_table_prefix()}housekeeping"
     
     id = db.Column(db.Integer, primary_key=True)
-    trip_id = db.Column(db.Integer, db.ForeignKey(f"{Config.TABLE_PREFIX}trip.id"), nullable=False)
-    housekeeper_id = db.Column(db.Integer, db.ForeignKey(f"{Config.TABLE_PREFIX}user.id"), nullable=False)
+    trip_id = db.Column(db.Integer, db.ForeignKey(f'{get_table_prefix()}trip.id'), nullable=False)
+    housekeeper_id = db.Column(db.Integer, db.ForeignKey(f'{get_table_prefix()}user.id'), nullable=False)
     date = db.Column(db.Date, nullable=False)
     status = db.Column(db.String(20), default='pending')  # pending, in_progress, completed
     pay_amount = db.Column(db.Numeric(10, 2), default=0)
@@ -257,15 +278,19 @@ class Housekeeping(db.Model):
     # Relationships
     trip = db.relationship('Trip', backref='housekeeping_tasks')
     housekeeper = db.relationship('User', backref='housekeeping_tasks')
+    
+    __table_args__ = {'schema': None, 'extend_existing': True}
 
 class HousekeepingPhoto(db.Model):
-    __tablename__ = f"{Config.TABLE_PREFIX}housekeeping_photo"
+    __tablename__ = f"{get_table_prefix()}housekeeping_photo"
     id = db.Column(db.Integer, primary_key=True)
-    task_id = db.Column(db.Integer, db.ForeignKey(f"{Config.TABLE_PREFIX}housekeeping.id"), nullable=False)
+    task_id = db.Column(db.Integer, db.ForeignKey(f'{get_table_prefix()}housekeeping.id'), nullable=False)
     file_path = db.Column(db.String(255), nullable=False)
     uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     task = db.relationship('Housekeeping', backref=db.backref('photos', lazy=True, cascade='all, delete-orphan'))
+    
+    __table_args__ = {'schema': None, 'extend_existing': True}
 
 # Business logic functions
 def parse_airbnb_guest_info(summary, description):

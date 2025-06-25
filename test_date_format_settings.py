@@ -10,6 +10,23 @@ from dotenv import load_dotenv
 import uuid
 from config import Config
 
+# Set up test environment before importing app
+def setup_test_environment():
+    """Set up test environment variables"""
+    # Database configuration with absolute path
+    if 'DATABASE_URL' not in os.environ:
+        db_path = os.path.abspath('guest_registration_test.db')
+        os.environ['DATABASE_URL'] = f'sqlite:///{db_path}'
+    if 'TABLE_PREFIX' not in os.environ:
+        os.environ['TABLE_PREFIX'] = 'test_guest_reg_'
+    
+    # Flask configuration
+    os.environ['FLASK_ENV'] = 'testing'
+    os.environ['TESTING'] = 'true'
+
+# Set up test environment
+setup_test_environment()
+
 # Add the current directory to Python path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 

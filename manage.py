@@ -160,7 +160,7 @@ class SystemManager:
         print("5. Provide detailed summary")
         print("=" * 60)
         
-        return self.run_script('run_test_suite.py', args)
+        return self.run_script('run_test_suite_fixed.py', args)
     
     def setup_test_environment(self, args=None):
         """Set up test environment only"""
@@ -173,7 +173,7 @@ class SystemManager:
         print("- Create test upload directory")
         print("=" * 50)
         
-        return self.run_script('run_test_suite.py', ['setup'])
+        return self.run_script('run_test_suite_fixed.py', ['setup'])
     
     def seed_test_data(self, args=None):
         """Seed test data only"""
@@ -186,7 +186,7 @@ class SystemManager:
         print("- 8 test invoices with different amounts")
         print("=" * 50)
         
-        return self.run_script('run_test_suite.py', ['seed'])
+        return self.run_script('run_test_suite_fixed.py', ['seed'])
     
     def start_test_server(self, args=None):
         """Start test server only"""
@@ -199,7 +199,7 @@ class SystemManager:
         print("- Press Ctrl+C to stop")
         print("=" * 50)
         
-        return self.run_script('run_test_suite.py', ['server'])
+        return self.run_script('run_test_suite_fixed.py', ['server'])
     
     def cleanup_test_environment(self, args=None):
         """Clean up test environment"""
@@ -211,7 +211,7 @@ class SystemManager:
         print("- Clean up temporary files")
         print("=" * 50)
         
-        return self.run_script('run_test_suite.py', ['cleanup'])
+        return self.run_script('run_test_suite_fixed.py', ['cleanup'])
     
     def run_migrations(self, args=None):
         """Run migration operations"""

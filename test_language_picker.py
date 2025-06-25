@@ -8,10 +8,24 @@ import os
 import sys
 from config import Config
 
+# Set up test environment before importing app
+def setup_test_environment():
+    """Set up test environment variables"""
+    # Database configuration
+    os.environ['DATABASE_URL'] = os.environ.get('DATABASE_URL', 'sqlite:///guest_registration_test.db')
+    os.environ['TABLE_PREFIX'] = os.environ.get('TABLE_PREFIX', 'test_guest_reg_')
+    
+    # Flask configuration
+    os.environ['FLASK_ENV'] = 'testing'
+    os.environ['TESTING'] = 'true'
+
 def test_language_picker_config():
     """Test the language picker configuration."""
     
     print("=== Language Picker Configuration Test ===\n")
+    
+    # Set up test environment
+    setup_test_environment()
     
     # Store original environment variable
     original_value = os.environ.get('LANGUAGE_PICKER_ENABLED')

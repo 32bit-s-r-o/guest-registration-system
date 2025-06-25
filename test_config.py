@@ -37,8 +37,9 @@ class TestConfig:
     @classmethod
     def setup_test_environment(cls):
         """Set up test environment variables"""
-        # Database configuration
-        os.environ['DATABASE_URL'] = f'postgresql://postgres:4c4d90dfc806dcaa7b21bab49bee72eadd78cbb757a36ff3988d62a9385d5cc3@192.168.13.113:5433/{cls.TEST_DATABASE_NAME}'
+        # Database configuration (use SQLite for tests)
+        db_path = os.path.abspath(f'{cls.TEST_DATABASE_NAME}.db')
+        os.environ['DATABASE_URL'] = f'sqlite:///{db_path}'
         os.environ['TABLE_PREFIX'] = cls.TEST_TABLE_PREFIX
         
         # Server configuration
@@ -84,7 +85,8 @@ class TestConfig:
     @classmethod
     def get_test_database_url(cls):
         """Get test database URL"""
-        return f'postgresql://postgres:4c4d90dfc806dcaa7b21bab49bee72eadd78cbb757a36ff3988d62a9385d5cc3@192.168.13.113:5433/{cls.TEST_DATABASE_NAME}'
+        db_path = os.path.abspath(f'{cls.TEST_DATABASE_NAME}.db')
+        return f'sqlite:///{db_path}'
     
     @classmethod
     def get_test_app_config(cls):

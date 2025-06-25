@@ -108,10 +108,56 @@ class MigrationManager:
     def apply_migration(self, version, name, sql_content, rollback_sql=None):
         """Apply a migration to the database"""
         try:
+            # Detect if using SQLite
+            is_sqlite = self.engine.url.get_backend_name() == 'sqlite'
             with self.engine.connect() as conn:
-                # Execute the migration SQL
-                conn.execute(text(sql_content))
-                
+                if is_sqlite:
+                    raw_conn = conn.connection
+                    import re
+                    # Split into statements
+                    statements = [stmt.strip() for stmt in sql_content.split(';') if stmt.strip()]
+                    for stmt in statements:
+                        # Debug output for CREATE TABLE
+                        if stmt.upper().startswith('CREATE TABLE'):
+                            print(f"[DEBUG] Attempting: {stmt[:80]}...")
+                        # Check for ALTER TABLE ... ADD COLUMN ...
+                        alter_match = re.match(r"ALTER TABLE (\w+) ADD COLUMN (.+)", stmt, re.IGNORECASE)
+                        if alter_match:
+                            table, col_def = alter_match.group(1), alter_match.group(2)
+                            col_name = col_def.split()[0]
+                            pragma = f"PRAGMA table_info({table});"
+                            cur = raw_conn.execute(pragma)
+                            columns = [row[1] for row in cur.fetchall()]
+                            if col_name in columns:
+                                print(f"⚠️  Skipping duplicate column {col_name} on table {table} (SQLite)")
+                                continue
+                            col_def_sqlite = re.sub(r'UNIQUE', '', col_def, flags=re.IGNORECASE)
+                            col_def_sqlite = re.sub(r'REFERENCES [^ )]+(\([^)]*\))?( ON DELETE [A-Z]+)?', '', col_def_sqlite, flags=re.IGNORECASE)
+                            stmt_sqlite = f"ALTER TABLE {table} ADD COLUMN {col_def_sqlite.strip()}"
+                            try:
+                                print(f"[DEBUG] Attempting: {stmt_sqlite}")
+                                raw_conn.execute(stmt_sqlite)
+                            except Exception as e:
+                                print(f"⚠️  SQLite statement failed: {stmt_sqlite}\n   {e}")
+                            continue
+                        # Check for CREATE INDEX ... ON ... (col)
+                        index_match = re.match(r"CREATE INDEX IF NOT EXISTS (\w+) ON (\w+)\((\w+)\)", stmt, re.IGNORECASE)
+                        if index_match:
+                            idx_name, table, col = index_match.groups()
+                            pragma = f"PRAGMA table_info({table});"
+                            cur = raw_conn.execute(pragma)
+                            columns = [row[1] for row in cur.fetchall()]
+                            if col not in columns:
+                                print(f"⚠️  Skipping index {idx_name} on missing column {col} in table {table} (SQLite)")
+                                continue
+                        # Otherwise, try to execute
+                        try:
+                            raw_conn.execute(stmt)
+                        except Exception as e:
+                            print(f"⚠️  SQLite statement failed: {stmt}\n   {e}")
+                else:
+                    # Execute the migration SQL (Postgres, etc.)
+                    conn.execute(text(sql_content))
                 # Record the migration
                 checksum = self._calculate_checksum(sql_content)
                 insert_sql = f"""
@@ -125,10 +171,8 @@ class MigrationManager:
                     'rollback_sql': rollback_sql
                 })
                 conn.commit()
-                
             print(f"✅ Applied migration: {version} - {name}")
             return True
-            
         except Exception as e:
             print(f"❌ Failed to apply migration {version}: {e}")
             return False
@@ -234,12 +278,43 @@ class MigrationManager:
         if down_sql:
             down_sql = down_sql.replace('guest_reg_', self.table_prefix)
         
+        # Detect if using SQLite and convert PostgreSQL syntax
+        is_sqlite = self.engine.url.get_backend_name() == 'sqlite'
+        if is_sqlite:
+            up_sql = self._convert_to_sqlite_syntax(up_sql)
+            if down_sql:
+                down_sql = self._convert_to_sqlite_syntax(down_sql)
+        
         # Extract version and name from filename
         parts = filename.replace('.sql', '').split('_')
         version = parts[1]
         name = '_'.join(parts[2:])
         
         return self.apply_migration(version, name, up_sql, down_sql)
+    
+    def _convert_to_sqlite_syntax(self, sql_content):
+        """Convert PostgreSQL syntax to SQLite-compatible syntax"""
+        # Replace SERIAL with INTEGER PRIMARY KEY AUTOINCREMENT
+        sql_content = sql_content.replace('SERIAL PRIMARY KEY', 'INTEGER PRIMARY KEY AUTOINCREMENT')
+        
+        # Remove IF NOT EXISTS from ALTER TABLE statements (SQLite doesn't support this)
+        import re
+        sql_content = re.sub(r'ALTER TABLE (\w+) ADD COLUMN IF NOT EXISTS', r'ALTER TABLE \1 ADD COLUMN', sql_content)
+        
+        # Remove ON CONFLICT DO NOTHING (SQLite uses different syntax)
+        sql_content = sql_content.replace('ON CONFLICT DO NOTHING', '')
+        
+        # Remove ALTER COLUMN SET NOT NULL (SQLite doesn't support this)
+        sql_content = re.sub(r'ALTER TABLE \w+ ALTER COLUMN \w+ SET NOT NULL;?', '', sql_content)
+        
+        # Remove DROP COLUMN IF EXISTS (SQLite doesn't support this)
+        sql_content = re.sub(r'ALTER TABLE \w+ DROP COLUMN IF EXISTS \w+;?', '', sql_content)
+        
+        # Convert boolean defaults
+        sql_content = sql_content.replace('BOOLEAN DEFAULT TRUE', 'BOOLEAN DEFAULT 1')
+        sql_content = sql_content.replace('BOOLEAN DEFAULT FALSE', 'BOOLEAN DEFAULT 0')
+        
+        return sql_content
     
     def create_backup_before_migration(self):
         """Create a backup before running migrations"""

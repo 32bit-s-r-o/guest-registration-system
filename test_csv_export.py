@@ -7,9 +7,10 @@ import requests
 import json
 from datetime import datetime
 from config import Config
+import os
 
 # Configuration
-BASE_URL = "http://127.0.0.1:5000"
+BASE_URL = os.environ.get('BASE_URL', 'http://localhost:5001')
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "admin123"
 

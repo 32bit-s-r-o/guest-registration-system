@@ -153,6 +153,9 @@
             </div>
         </div>
     </div>
+
+    <!-- Hidden field for item count -->
+    <input type="hidden" name="item_count" id="item_count" value="0">
 </form>
 {% endblock %}
 
@@ -211,12 +214,18 @@
         `;
         container.appendChild(itemDiv);
         itemCount++;
+        updateItemCount();
         updateSummary();
     }
 
     function removeItem(button) {
         button.closest('.invoice-item').remove();
+        updateItemCount();
         updateSummary();
+    }
+
+    function updateItemCount() {
+        document.getElementById('item_count').value = itemCount;
     }
 
     function calculateItemTotal(input) {

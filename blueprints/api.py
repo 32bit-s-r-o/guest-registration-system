@@ -8,9 +8,9 @@ import csv
 
 api = Blueprint('api', __name__)
 
-from database import db, User, Guest, Registration, Trip, Invoice
+from database import db, User, Guest, Registration, Trip, Invoice, InvoiceItem
 from version import version_manager, check_version_compatibility, get_version_changelog
-from migrations import MigrationManager
+from app import get_migration_manager
 
 def role_required(role):
     def decorator(f):
@@ -93,7 +93,7 @@ def api_version():
 @api.route('/api/version/compatibility')
 def api_version_compatibility():
     """Check version compatibility"""
-    migration_manager = MigrationManager()
+    migration_manager = get_migration_manager()
     current_db_version = migration_manager.get_current_version()
     app_version = version_manager.get_current_version()
     

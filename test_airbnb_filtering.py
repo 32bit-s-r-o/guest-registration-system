@@ -7,6 +7,21 @@ This script tests that "Not Available" events are filtered out and only "Reserve
 import os
 import sys
 from datetime import datetime, timedelta
+
+# Set up test environment before importing app
+def setup_test_environment():
+    """Set up test environment variables"""
+    # Database configuration
+    os.environ['DATABASE_URL'] = os.environ.get('DATABASE_URL', 'sqlite:///guest_registration_test.db')
+    os.environ['TABLE_PREFIX'] = os.environ.get('TABLE_PREFIX', 'test_guest_reg_')
+    
+    # Flask configuration
+    os.environ['FLASK_ENV'] = 'testing'
+    os.environ['TESTING'] = 'true'
+
+# Set up test environment
+setup_test_environment()
+
 from app import app, fetch_airbnb_calendar
 from config import Config
 

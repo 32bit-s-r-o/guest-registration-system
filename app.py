@@ -43,8 +43,15 @@ load_dotenv()
 app = Flask(__name__)
 app.config.from_object(Config)
 
-# Initialize migration manager
-migration_manager = MigrationManager()
+# Initialize migration manager lazily (only when needed)
+migration_manager = None
+
+def get_migration_manager():
+    """Get migration manager instance, creating it if needed"""
+    global migration_manager
+    if migration_manager is None:
+        migration_manager = MigrationManager()
+    return migration_manager
 
 # Ensure upload directory exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)

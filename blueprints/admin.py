@@ -10,19 +10,25 @@ import shutil
 import subprocess
 import re
 from io import BytesIO
+from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
+import csv
+import io
+from decimal import Decimal
 
 admin = Blueprint('admin', __name__)
 
 # Import database models and utilities
 from database import (
     db, User, Trip, Registration, Guest, Invoice, InvoiceItem, Amenity, Calendar,
-    sync_calendar_reservations, sync_all_calendars_for_admin
+    sync_calendar_reservations, sync_all_calendars_for_admin, AmenityHousekeeper, Housekeeping, HousekeepingPhoto
 )
 from version import version_manager, check_version_compatibility, get_version_changelog
-from migrations import MigrationManager
+from config import Config
+from app import get_migration_manager
 
 # Get migration manager instance
-migration_manager = MigrationManager()
+migration_manager = get_migration_manager()
 
 def role_required(role):
     def decorator(f):

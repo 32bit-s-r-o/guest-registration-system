@@ -16,6 +16,7 @@ from database import db, User, Trip, Registration, Guest, Invoice, Housekeeping
 from version import version_manager
 from migrations import MigrationManager
 from sqlalchemy import text
+from app import get_migration_manager
 
 def role_required(role):
     def decorator(f):
@@ -138,7 +139,7 @@ def detailed_health_check():
     
     # Migration status check
     try:
-        migration_manager = MigrationManager()
+        migration_manager = get_migration_manager()
         current_version = migration_manager.get_current_version()
         applied_migrations = migration_manager.get_applied_migrations()
         pending_migrations = migration_manager.get_pending_migrations()

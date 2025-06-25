@@ -21,14 +21,8 @@ def get_database_url():
             database_url = database_url.replace('${POSTGRES_PASSWORD:-postgres}', postgres_password)
         return database_url
     
-    # Construct URL from individual components
-    db_host = os.getenv('DB_HOST', 'localhost')
-    db_port = os.getenv('DB_PORT', '5432')
-    db_name = os.getenv('DB_NAME', 'guest_registration')
-    db_user = os.getenv('DB_USER', 'postgres')
-    db_password = os.getenv('POSTGRES_PASSWORD', 'postgres')
-    
-    return f'postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}'
+    # Default to SQLite for test suite
+    return 'sqlite:///guest_registration_test.db'
 
 def test_connection():
     """Test database connection."""
