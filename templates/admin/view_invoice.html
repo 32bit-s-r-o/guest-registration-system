@@ -248,19 +248,18 @@
 <script>
     function changeStatus() {
         const status = document.getElementById('statusSelect').value;
-        fetch(`/admin/invoices/{{ invoice.id }}/status`, {
+        fetch(`/admin/invoices/{{ invoice.id }}/change-status`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/x-www-form-urlencoded',
             },
-            body: JSON.stringify({ status: status })
+            body: `status=${status}`
         })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
+            .then(response => {
+                if (response.ok) {
                     location.reload();
                 } else {
-                    alert('{{ _("Error updating status") }}: ' + data.message);
+                    alert('{{ _("Error updating status") }}');
                 }
             })
             .catch(error => {

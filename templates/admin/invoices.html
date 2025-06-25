@@ -176,19 +176,18 @@
 {% block scripts %}
 <script>
     function changeStatus(invoiceId, status) {
-        fetch(`/admin/invoices/${invoiceId}/status`, {
+        fetch(`/admin/invoices/${invoiceId}/change-status`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/x-www-form-urlencoded',
             },
-            body: JSON.stringify({ status: status })
+            body: `status=${status}`
         })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
+            .then(response => {
+                if (response.ok) {
                     location.reload();
                 } else {
-                    alert('Error updating status: ' + data.message);
+                    alert('Error updating status');
                 }
             })
             .catch(error => {
