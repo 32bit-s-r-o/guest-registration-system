@@ -38,6 +38,7 @@ log "Dumping selected critical environment variables:"
 log "POSTGRES_DB=${POSTGRES_DB:-<unset>}, POSTGRES_USER=${POSTGRES_USER:-<unset>}, POSTGRES_PASSWORD=${POSTGRES_PASSWORD:+***MASKED***}, DATABASE_URL=${DATABASE_URL:-<unset>}, TABLE_PREFIX=${TABLE_PREFIX:-<unset>}"
 log "SECRET_KEY=${SECRET_KEY:+***MASKED***}, MAIL_SERVER=${MAIL_SERVER:-<unset>}, MAIL_PORT=${MAIL_PORT:-<unset>}, MAIL_USE_TLS=${MAIL_USE_TLS:-<unset>}, MAIL_USERNAME=${MAIL_USERNAME:-<unset>}, MAIL_PASSWORD=${MAIL_PASSWORD:+***MASKED***}"
 log "UPLOAD_FOLDER=${UPLOAD_FOLDER:-<unset>}, MAX_CONTENT_LENGTH=${MAX_CONTENT_LENGTH:-<unset>}"
+log "SERVER_URL=${SERVER_URL:-<unset>}, SERVER_PROTOCOL=${SERVER_PROTOCOL:-<unset>}, SERVER_HOST=${SERVER_HOST:-<unset>}, SERVER_PORT=${SERVER_PORT:-<unset>}"
 # Full environment dump (for deeper debugging)
 env | while IFS= read -r line; do log "$line"; done
 
