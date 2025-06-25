@@ -5,6 +5,56 @@ All notable changes to the Guest Registration System will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.4] - 2025-06-25
+
+### Added
+- **Production Lock Feature**
+  - Added production environment detection to prevent accidental database seeding/reset operations
+  - Implemented `check_production_lock()` utility function with comprehensive environment checks
+  - Added `ALLOW_PRODUCTION_SEED` environment variable override for emergency situations
+  - Enhanced security by blocking destructive operations in production environments
+  - Added production lock test to comprehensive test suite for validation
+
+- **Trip Management Enhancements**
+  - Added ability to delete all registrations for a specific trip
+  - Implemented new route `/admin/trips/<id>/delete-registrations` with proper access control
+  - Enhanced admin interface with registration management capabilities
+  - Added confirmation dialog for bulk registration deletion
+  - Improved trip edit page with registration management options
+
+### Fixed
+- **Trip Edit Page Routing**
+  - Fixed critical routing error on trip edit page (`update_trip` endpoint not found)
+  - Corrected form action URL from `trips.update_trip` to `trips.edit_trip`
+  - Resolved `werkzeug.routing.exceptions.BuildError` preventing trip editing
+  - Enhanced trip edit functionality with proper form submission
+
+### Technical Improvements
+- **Production Safety**
+  - Implemented comprehensive production environment detection
+  - Added environment variable checks for FLASK_ENV, DOCKER_ENV, DATABASE_URL patterns
+  - Enhanced error messages with clear guidance for production lock bypass
+  - Added production lock to all seeding and reset operations across the application
+
+- **Code Quality**
+  - Added production lock checks to admin blueprint, CLI scripts, and management tools
+  - Enhanced error handling and user feedback for production operations
+  - Improved code organization with centralized production lock utilities
+  - Added comprehensive documentation for production lock configuration
+
+- **Testing Enhancements**
+  - Added `test_production_lock.py` to comprehensive test suite
+  - Enhanced test coverage for production environment detection
+  - Improved test validation for production lock functionality
+  - Added test scenarios for production lock override mechanisms
+
+### Documentation
+- **Configuration Guide Updates**
+  - Added production lock configuration section to `docs/configuration.md`
+  - Documented `ALLOW_PRODUCTION_SEED` environment variable usage
+  - Added best practices for production environment management
+  - Enhanced security guidelines for database operations
+
 ## [1.9.3] - 2025-06-25
 
 ### Fixed

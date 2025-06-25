@@ -9,12 +9,12 @@ import json
 from datetime import datetime
 from typing import Dict, List, Optional
 
-__version__ = '1.9.3'
+__version__ = '1.9.4'
 
 class VersionManager:
     def __init__(self, version_file: str = "version.json"):
         self.version_file = version_file
-        self.current_version = "1.9.3"
+        self.current_version = "1.9.4"
         self.minimum_database_version = "1.0.0"
         self.upgrade_paths = {
             "1.0.0": ["1.1.0", "1.2.0"],
@@ -118,6 +118,19 @@ class VersionManager:
 
 # Version history and changelog
 VERSION_HISTORY = {
+    "1.9.4": {
+        "date": "2025-06-25",
+        "features": [
+            "Added production lock feature to prevent accidental database seeding/reset in production",
+            "Fixed trip edit page routing error (update_trip endpoint)",
+            "Added ability to delete all registrations for a specific trip",
+            "Enhanced admin interface with registration management capabilities",
+            "Added production lock test to comprehensive test suite",
+            "Updated documentation with production lock configuration and best practices"
+        ],
+        "database_schema": "1.8.0",
+        "breaking_changes": []
+    },
     "1.9.3": {
         "date": "2025-06-25",
         "features": [
