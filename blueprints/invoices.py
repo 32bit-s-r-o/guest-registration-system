@@ -89,7 +89,10 @@ def new_invoice():
                 )
                 db.session.add(item)
         
-        # Calculate totals
+        # Commit items first to ensure they are in the database
+        db.session.commit()
+        
+        # Now calculate totals from the committed items
         invoice.subtotal = sum(item.line_total for item in invoice.items)
         invoice.vat_total = sum(item.vat_amount for item in invoice.items)
         invoice.total_amount = invoice.subtotal + invoice.vat_total
@@ -155,7 +158,10 @@ def edit_invoice(invoice_id):
                 )
                 db.session.add(item)
         
-        # Recalculate totals
+        # Commit items first to ensure they are in the database
+        db.session.commit()
+        
+        # Recalculate totals from the committed items
         invoice.subtotal = sum(item.line_total for item in invoice.items)
         invoice.vat_total = sum(item.vat_amount for item in invoice.items)
         invoice.total_amount = invoice.subtotal + invoice.vat_total
